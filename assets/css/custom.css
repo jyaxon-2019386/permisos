@@ -1,0 +1,377 @@
+/***********************************************************
+  1) VARIABLES
+************************************************************/
+:root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --text: #0f172a;
+    --text-secondary: #64748b;
+}
+
+/***********************************************************
+  2) BASE / RESETEO
+************************************************************/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e2e8ff 0%, #f8fafc 100%);
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    padding: 2rem;
+}
+
+/***********************************************************
+  3) CONTENEDOR PRINCIPAL
+************************************************************/
+.login-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+}
+
+/* Fade + scale in al cargar */
+.fade-in-container {
+    opacity: 0;
+    animation: fadeInContainer 1s ease forwards;
+}
+
+@keyframes fadeInContainer {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/***********************************************************
+  4) SECCIÓN IZQUIERDA (ILUSTRACIÓN)
+************************************************************/
+.illustration {
+    background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Imagen */
+.illustration img {
+    width: 100%;
+    max-width: 400px;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+/* Textos */
+.text-white {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.title-left {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+.subtitle-left {
+    text-align: center;
+    margin-top: 1rem;
+    opacity: 0.9;
+}
+
+/* Animación: showLeft */
+.animate-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    animation: showLeft 0.8s ease forwards 0.2s;
+}
+
+@keyframes showLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Efecto scale al hover */
+.scale-on-hover:hover img {
+    transform: scale(1.05);
+}
+
+/***********************************************************
+  5) SECCIÓN DERECHA (FORMULARIO)
+************************************************************/
+.form-section {
+    padding: 6rem 4rem;
+    position: relative;
+}
+
+/* showRight */
+.animate-right {
+    opacity: 0;
+    transform: translateX(40px);
+    animation: showRight 0.8s ease forwards 0.4s;
+}
+
+@keyframes showRight {
+    0% {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* bounceIn (keyframes) */
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.95) translateY(40px);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05) translateY(-10px);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Antes, aquí ponías "animation: bounceIn 1s ease;" 
+   y eso sobrescribía la animación de .animate-right.
+   Lo eliminamos y dejamos la clase vacía para combinar abajo. */
+.bounce-in {
+    /* intencionalmente vacío (ver .animate-right.bounce-in) */
+}
+
+/* FIX de animaciones combinadas */
+.animate-right.bounce-in {
+    /* Ejecuta showRight y bounceIn simultáneamente y conserva el último fotograma */
+    animation: showRight 0.8s ease forwards 0.4s, bounceIn 1s ease forwards 0.4s;
+}
+
+/***********************************************************
+  6) ENCABEZADO DEL FORMULARIO
+************************************************************/
+.form-header {
+    margin-bottom: 3rem;
+}
+
+.form-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.form-header p {
+    color: var(--text-secondary);
+}
+
+/***********************************************************
+  7) INPUTS
+************************************************************/
+.input-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    padding-left: 3rem;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.input-group input:focus+.input-icon {
+    color: var(--primary-hover);
+}
+
+/***********************************************************
+  8) BOTÓN
+************************************************************/
+.btn-primary {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2);
+}
+
+/* scaleIn */
+.btn-animate {
+    animation: scaleIn 0.8s ease;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Onda al hacer click */
+.wave-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.wave-btn::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transform: scale(1);
+    opacity: 0;
+    pointer-events: none;
+    animation: none 0.8s ease;
+}
+
+.wave-btn:active::after {
+    animation: wave 0.8s ease;
+    opacity: 1;
+}
+
+@keyframes wave {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(30);
+        opacity: 0;
+    }
+}
+
+/***********************************************************
+  9) ENLACES
+************************************************************/
+.additional-options {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.additional-options a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.3s ease;
+}
+
+.additional-options a:hover {
+    color: var(--primary);
+}
+
+/***********************************************************
+  10) SEPARADOR
+************************************************************/
+.divider {
+    margin: 2rem 0;
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+    justify-content: center;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.divider::before {
+    margin-right: 1rem;
+}
+
+.divider::after {
+    margin-left: 1rem;
+}
+
+/***********************************************************
+  11) RESPONSIVIDAD
+************************************************************/
+@media (max-width: 768px) {
+    .login-container {
+        grid-template-columns: 1fr;
+    }
+
+    .illustration {
+        display: none;
+        /* oculta la ilustración en móvil */
+    }
+
+    .form-section {
+        padding: 4rem 2rem;
+    }
+}

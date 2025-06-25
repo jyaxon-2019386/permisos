@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CREA - Mis Proyectos</title>
+  <link rel="icon" type="image/png" href="../../../assets/img/icons/favicon-16x16.png" />
+
+  <!-- Fuentes y estilos -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../../../assets/css/projects.css" />
+  <link rel="stylesheet" href="../../dashboards/style.css" />
+
+  <!-- Cargar Notyf antes de los módulos -->
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar fade-in">
+    <div class="sidebar-header">
+        <h2 class="sidebar-logo">CREA</h2>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="#" class="active"><i class="fa fa-home"></i> Inicio</a></li>
+        <li><a href="#"><i class="fa fa-plus"></i> Crear Nuevo Proyecto</a></li>
+        <li><a href="#"><i class="fa fa-folder-open"></i> Ver tus Proyectos</a></li>
+        <li><a href="#"><i class="fa fa-chart-bar"></i> Analíticas</a></li>
+        <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
+        <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
+        <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
+        <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li>
+        
+        <li>
+           <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+           <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+           </a>
+        </li>
+    </ul>
+</aside>
+
+  <div class="main-content">
+    <header class="topbar slide-up">
+
+      <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
+          <i class="fa fa-bars"></i>
+      </button>
+  
+      <!-- <div class="search-box">
+          <i class="fa fa-search"></i>
+          <input type="text" placeholder="Buscar..." />
+      </div> -->
+  
+      
+      
+      <!-- En la sección del topbar, modifica el contenedor del avatar -->
+      <div class="topbar-actions">
+          <i class="fa fa-bell"></i>
+          <!-- Menú desplegable del avatar -->
+          <div class="dropdown">
+              <img class="dropdown-toggle img-fluid rounded-circle border shadow" 
+                  id="avatar" 
+                  alt="Avatar de usuario" 
+                  style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false">
+              
+              <!-- Opciones del menú desplegable -->
+              <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#">
+                      <i class="fa fa-user"></i> Perfil
+                  </a></li>
+                  <li><a class="dropdown-item" href="#">
+                      <i class="fa fa-cog"></i> Configuración
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" 
+                      href="#" 
+                      data-bs-toggle="modal" 
+                      data-bs-target="#logoutModal">
+                      <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                  </a></li>
+              </ul>
+          </div>
+      </div>
+  
+  </header>
+  
+    <div class="container mt-4">
+      <!-- Subbarra con botón y enlace -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="../../dashboards/main.html" class="back-link"><i class="fas fa-arrow-left me-2"></i>Volver</a>
+        <button class="btn-gantt"><i class="fas fa-chart-bar me-2"></i>Crear Gantt</button>
+      </div>
+  
+      <h2 class="page-title mb-4">Mis Proyectos</h2>
+  
+      <!-- Contenedor dinámico de tarjetas -->
+      <div id="projects-container" class="row g-4">
+        <div class="d-flex justify-content-center align-items-center" id="loading-msg" style="height: 100px;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <span class="ms-2">Cargando proyectos...</span>
+        </div>
+        <div class="no-projects text-center" id="no-projects-msg">No tienes proyectos creados</div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               ¿Estás seguro de que deseas cerrar la sesión?
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+               <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+            </div>
+         </div>
+      </div>
+   </div>
+  
+    <!-- Scripts -->
+    <script type="module">
+      import { getProjects } from '../../../assets/js/pages/pages/projects/load-projects.js';
+      import { notyf } from '../../../assets/js/plugins/notify.js';
+    
+      document.addEventListener('DOMContentLoaded', async () => {
+        // Obtén el usuario_id de la sesión (esto debe haber sido establecido en el login)
+        const userId = sessionStorage.getItem('usuario_id');
+        if (!userId) {
+          alert("No hay usuario autenticado, por favor inicia sesión.");
+          window.location.href = "../authentication/login.html";
+          return;
+        }
+    
+        const container = document.getElementById('projects-container');
+        // Remover el mensaje de carga una vez que se tengan los proyectos
+        const loadingMsg = document.getElementById('loading-msg');
+    
+        const projects = await getProjects();
+    
+        if (loadingMsg) loadingMsg.remove();
+    
+        const emptyMsg = document.getElementById('no-projects-msg');
+        if (!projects || projects.length === 0) return;
+    
+        // Remover el mensaje de "no hay proyectos" si existen proyectos
+        if (emptyMsg) emptyMsg.remove();
+    
+        projects.forEach(proj => {
+          const col = document.createElement('div');
+          col.className = 'col-md-4';
+    
+          col.innerHTML = `
+            <div class="card card-project">
+              <div class="card-body">
+                <h5 class="card-title">${proj.nombre_proyecto || 'Sin nombre'}</h5>
+                <p class="text-due">
+                  <i class="far fa-calendar-alt me-1"></i>
+                  Creado: ${proj.created_at ? new Date(proj.created_at).toLocaleDateString() : 'N/A'}
+                </p>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span>Progreso</span>
+                  <span>${proj.progreso || 0}%</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" style="width: ${proj.progreso || 0}%;"></div>
+                </div>
+                <button class="btn btn-sm btn-primary btn-add-note" data-project-id="${proj.id || ''}">
+                  Agregar Nota
+                </button>
+                <div class="notes-container mt-2"></div>
+              </div>
+            </div>
+          `;
+    
+          container.appendChild(col);
+        });
+    
+        // Escucha eventos en el contenedor para agregar notas
+        container.addEventListener('click', (e) => {
+          if(e.target && e.target.matches('.btn-add-note')) {
+            // Obtén el id del proyecto si fuera necesario para guardar la nota
+            const projectId = e.target.getAttribute('data-project-id');
+            const note = prompt("Ingresa tu nota o comentario para el proyecto");
+            if (note) {
+              const notesContainer = e.target.nextElementSibling;
+              const noteElement = document.createElement('p');
+              noteElement.textContent = note;
+              noteElement.className = "note-item mb-1";
+              notesContainer.appendChild(noteElement);
+              notyf.success("Nota agregada");
+            }
+          }
+        });
+      });
+    </script>
+  </div>
+  <!-- Barra de navegación principal -->
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <script src="../../../assets/js/pages/pages/projects/projects.js"> </script>
+</body>
+</html>

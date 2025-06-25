@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Nuevo Proyecto - Portada General</title>
+  <link rel="icon" type="image/png" href="../../../assets/img/icons/favicon-16x16.png" />
+
+  <!-- Fuentes e Iconos -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Material+Icons+Round">
+  <link rel="stylesheet" href="../../../assets/css/material-dashboard.css?v=3.0.5" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
+
+  <!-- <link rel="stylesheet" href="../../../assets/css/projects.css" /> -->
+  <link rel="stylesheet" href="../../dashboards/style.css" />
+
+  <style>
+    /* Ajustes de diseño */
+    .section-card {
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+    .section-card .card-header {
+      background: #f7f9fc;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .section-card .card-body {
+      padding: 1.5rem;
+    }
+    .section-icon {
+      margin-right: .5rem;
+      vertical-align: middle;
+      color: #556cd6;
+    }
+  </style>
+</head>
+
+<!-- Sidebar -->
+<aside class="sidebar fade-in">
+  <div class="sidebar-header">
+      <h2 class="sidebar-logo">CREA</h2>
+  </div>
+  <ul class="sidebar-menu">
+      <li><a href="#" class="active"><i class="fa fa-home"></i> Inicio</a></li>
+      <li><a href="#"><i class="fa fa-plus"></i> Crear Nuevo Proyecto</a></li>
+      <li><a href="#"><i class="fa fa-folder-open"></i> Ver tus Proyectos</a></li>
+      <li><a href="#"><i class="fa fa-chart-bar"></i> Analíticas</a></li>
+      <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
+      <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
+      <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
+      <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li>
+      
+      <li>
+         <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+         <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+         </a>
+      </li>
+  </ul>
+</aside>
+
+<div class="main-content">
+
+  <header class="topbar slide-up">
+
+    <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- <div class="search-box">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Buscar..." />
+    </div> -->
+
+    
+    
+    <!-- En la sección del topbar, modifica el contenedor del avatar -->
+    <div class="topbar-actions">
+        <i class="fa fa-bell"></i>
+        <!-- Menú desplegable del avatar -->
+        <div class="dropdown">
+            <img class="dropdown-toggle img-fluid rounded-circle border shadow" 
+                id="avatar" 
+                alt="Avatar de usuario" 
+                style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                data-bs-toggle="dropdown" 
+                aria-expanded="false">
+            
+            <!-- Opciones del menú desplegable -->
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#">
+                    <i class="fa fa-user"></i> Perfil
+                </a></li>
+                <li><a class="dropdown-item" href="#">
+                    <i class="fa fa-cog"></i> Configuración
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" 
+                    href="#" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#logoutModal">
+                    <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+</header>
+
+  <body class="bg-gray-200">
+    <main class="main-content mx-auto py-4">
+      <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <a href="../../dashboards/main.html" class="back-link"><i class="fas fa-arrow-left me-2"></i>Volver</a>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-lg-10">
+            <form id="form-new-project">
+  
+              <!-- Sección: Datos del Proyecto -->
+              <div class="card section-card">
+                <div class="card-header">
+                  <i class="material-icons section-icon">description</i>Datos del Proyecto
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="centro_costos" class="form-label">Centro de Costos</label>
+                      <select id="centro_costos" class="form-select">
+                        <option value="" disabled selected>Seleccione...</option>
+                        <option>Marketing Digital</option>
+                        <option>Desarrollo de Producto</option>
+                        <option>Operaciones</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Código</label>
+                      <div class="input-group">
+                        <span class="form-control bg-light" id="codigo">
+                          <span class="text-dark">DEP-</span>
+                          <span class="text-primary">001</span>
+                          <span class="text-dark">-2023</span>
+                        </span>
+                      </div>
+                      <small class="text-muted">Formato: DEP-001-2023</small>
+                    </div>
+                    <div class="col-12">
+                      <label for="nombre_proyecto" class="form-label">Nombre del Proyecto</label>
+                      <input type="text" id="nombre_proyecto" class="form-control" placeholder="Ingrese el nombre del proyecto" />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                      <input type="text" id="fecha_inicio" class="form-control datetimepicker" placeholder="DD/MM/AAAA" />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                      <input type="text" id="fecha_fin" class="form-control datetimepicker" placeholder="DD/MM/AAAA" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Sección: Equipo de Trabajo -->
+              <div class="card section-card">
+                <div class="card-header">
+                  <i class="material-icons section-icon">group</i>Equipo de Trabajo
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label for="miembros_equipo" class="form-label">Miembros del Equipo</label>
+                      <textarea id="miembros_equipo" class="form-control" rows="2" placeholder="IDs en formato JSON: [1,2,3]"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Sección: Objetivos y Metas -->
+              <div class="card section-card">
+                <div class="card-header">
+                  <i class="material-icons section-icon">flag</i>Objetivos y Metas
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label for="objetivos" class="form-label">Objetivos</label>
+                      <textarea id="objetivos" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label for="metas_indicadores" class="form-label">Metas e Indicadores</label>
+                      <textarea id="metas_indicadores" class="form-control" rows="3"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Sección: Recursos y Plan de Trabajo -->
+              <div class="card section-card">
+                <div class="card-header">
+                  <i class="material-icons section-icon">build</i>Recursos y Plan de Trabajo
+                </div>
+                <div class="card-body">
+                  <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                      <label class="form-label">Asignación de Recursos</label><br>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="asignacionRecursos" id="asignacionSi" value="si">
+                        <label class="form-check-label" for="asignacionSi">Sí</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="asignacionRecursos" id="asignacionNo" value="no">
+                        <label class="form-check-label" for="asignacionNo">No</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="planTrabajo" class="form-label">Plan de Trabajo</label>
+                      <textarea id="planTrabajo" class="form-control" rows="3"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Sección: Inversión y Retorno -->
+              <div class="card section-card">
+                <div class="card-header">
+                  <i class="material-icons section-icon">attach_money</i>Inversión y Retorno
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="descripcionInversion" class="form-label">Descripción de la Inversión</label>
+                      <textarea id="descripcionInversion" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-3">
+                      <label for="montoInversion" class="form-label">Monto Inversión (Q)</label>
+                      <input type="number" id="montoInversion" class="form-control" placeholder="0.00" />
+                    </div>
+                    <div class="col-md-3">
+                      <label for="retornoInversion" class="form-label">Retorno (Q)</label>
+                      <input type="number" id="retornoInversion" class="form-control" placeholder="0.00" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Sección: Notas y Evaluación Final -->
+              <div class="card section-card">
+                <div class="card-header">
+                  <i class="material-icons section-icon">note</i>Notas y Evaluación Final
+                </div>
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label for="notasImportantes" class="form-label">Notas Importantes</label>
+                      <textarea id="notasImportantes" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label for="conclusionFinal" class="form-label">Conclusión Final</label>
+                      <textarea id="conclusionFinal" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Evaluación Final</label><br>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="exito" value="exito">
+                        <label class="form-check-label" for="exito">Éxito</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="noExito" value="noExito">
+                        <label class="form-check-label" for="noExito">No éxito</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="exitoParcial" value="exitoParcial">
+                        <label class="form-check-label" for="exitoParcial">Éxito parcial</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Botones -->
+              <div class="d-flex justify-content-end">
+                <a href="../../dashboards/main.html" class="btn btn-outline-secondary me-2">Cancelar</a>
+                <button type="button" onclick="saveProject()" class="btn btn-primary">Crear Proyecto</button>
+              </div>
+  
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ¿Estás seguro de que deseas cerrar la sesión?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    <!-- JS Core -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script src="../../../assets/js/core/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+  <script src="../../../assets/js/core/bootstrap.min.js"></script>
+  
+  <script src="../../../assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../../../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../../../assets/js/plugins/flatpickr.min.js"></script>
+  
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    if (document.querySelector('.datetimepicker')) {
+      flatpickr('.datetimepicker', { allowInput: true });
+    }
+  });
+</script>
+  
+  <script src="../../../assets/js/material-dashboard.min.js?v=3.0.5"></script>
+  <script type="module" src="../../../assets/js/pages/pages/projects/new-project.js"></script>
+  </body>
+</html>
