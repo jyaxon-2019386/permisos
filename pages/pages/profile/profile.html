@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Datos del Usuario</title>
+
+    <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
+
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Hoja de estilos principal -->
+    <link rel="stylesheet" href="../../dashboards/style.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../profile/css/style.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar fade-in">
+        <div class="sidebar-header">
+            <h2 class="sidebar-logo">PERMISOS</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="../../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
+            <li><a href="#"><i class="fa fa-plus"></i> Crear Nueva Solicitud</a></li>
+            <li><a href="../../ticket/ticket.html"><i class="fa fa-folder-open"></i> Ver mis Boletas</a></li>
+            <li><a href="profile.html" class="active"><i class="fa fa-user"></i> Mi Perfil</a></li>
+            <!-- <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
+            <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
+            <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
+            <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li> -->
+
+            <li>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                    <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar slide-up">
+
+            <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
+                <i class="fa fa-bars"></i>
+            </button>
+
+            <div class="topbar-actions">
+                <i class="fa fa-bell"></i>
+                <!-- Menú desplegable del avatar -->
+                <div class="dropdown">
+                    <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
+                        alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+
+                    <!-- Opciones del menú desplegable -->
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="profile.html">
+                                <i class="fa fa-user"></i> Perfil
+                            </a></li>
+                        <li><a class="dropdown-item" href="#">
+                                <i class="fa fa-cog"></i> Configuración
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal">
+                                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                            </a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <div class="container">
+            <div class="card shadow-sm rounded-2xl">
+                <div class="card-header bg-white border-0 d-flex align-items-center">
+                    <h2 class="mb-2 mt-3"><strong>Perfil de Usuario</strong></h2>
+                </div>
+
+                <div class="card-body p-4">
+                    <div id="error" class="text-danger mb-3"></div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fa fa-user info-icon"></i>
+                                <div>
+                                    <div class="info-label">Nombre</div>
+                                    <div id="nombre" class="info-value">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fa fa-briefcase info-icon"></i>
+                                <div>
+                                    <div class="info-label">Puesto</div>
+                                    <div id="puesto" class="info-value">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fa fa-building info-icon"></i>
+                                <div>
+                                    <div class="info-label">Empresa</div>
+                                    <div id="empresa" class="info-value">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fa fa-calendar-alt info-icon"></i>
+                                <div>
+                                    <div class="info-label">Inicio de labores</div>
+                                    <div id="inicioLabores" class="info-value">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="info-item-highlight">
+                                <div class="highlight-icon-wrapper">
+                                    <i class="fa fa-sun fa-2x"></i>
+                                </div>
+                                <div class="highlight-text">
+                                    <div class="info-label">Vacaciones Disponibles</div>
+                                    <div id="vacaciones" class="highlight-value">-</div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn-action"
+                                        onclick="window.location.href='../pages/projects/new-project.html'">
+                                        <i class="fa fa-plus"></i> Solicitar Vacaciones
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+           <div class="modal-content">
+              <div class="modal-header">
+                 <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                 ¿Estás seguro de que deseas cerrar la sesión?
+              </div>
+              <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                 <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+              </div>
+           </div>
+        </div>
+     </div>
+
+    <script src="../../../assets/js/pages/pages/profile/getUser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            // Si el sidebar está oculto, se muestra y se asigna el margen original al contenedor principal.
+            if (getComputedStyle(sidebar).display === 'none') {
+                sidebar.style.display = 'block';
+                // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
+                mainContent.style.marginLeft = "220px"; /* O el valor que uses en tu CSS */
+            } else {
+                // Oculta el sidebar y expande el contenedor principal
+                sidebar.style.display = 'none';
+                mainContent.style.marginLeft = "0";
+            }
+        }
+    </script>
+</body>
+
+</html>

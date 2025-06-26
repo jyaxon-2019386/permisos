@@ -21,7 +21,7 @@ export async function login() {
         if (response.status === 200 && data?.success) {
             notyf.success(escapeHtml(data.greeting));
             sessionStorage.setItem('usuario_principal', data.usuario);
-            sessionStorage.setItem('usuario_id', data.id_usuario);
+            sessionStorage.setItem('idUsuario', data.idUsuario);
             
             // Agregar el avatar usando la API de Dicebear
             const avatar = `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(data.usuario)}`;

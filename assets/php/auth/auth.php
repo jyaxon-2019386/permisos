@@ -8,7 +8,7 @@ switch ($request_method) {
                 $usuario = isset($_GET['usuario']) ? trim($_GET['usuario']) : '';
                 $contrasena = isset($_GET['contrasena']) ? trim($_GET['contrasena']) : '';
 
-                header('Content-Type: application/json'); 
+                header('Content-Type: application/json; charset=utf-8'); 
 
                 if (!$usuario || !$contrasena) {
                     http_response_code(400); 
@@ -19,22 +19,30 @@ switch ($request_method) {
                     break;
                 }
 
-                // Consulta segura usando ODBC (evita inyección)
                 $sql = "SELECT * FROM Usuario WHERE usuario = ?";
                 $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt, [$usuario]);
+
+                // 👇 Conversión necesaria si el usuario tiene Ñ, etc.
+                $isUsuario = mb_convert_encoding($usuario, 'Windows-1252', 'UTF-8');
+                $exec = odbc_execute($stmt, [$isUsuario]);
 
                 if ($exec && ($user = odbc_fetch_array($stmt))) {
+                    // Convertir todo el array a UTF-8
+                    $user = array_map(function($val) {
+                        return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
+                    }, $user);
+
                     $db_password = $user['contrasena'];
 
                     if ($contrasena === $db_password) {
                         $_SESSION['idUsuario'] = $user['idUsuario'];
+                        $nombre = $user['nombre'];
                         http_response_code(200);
                         echo json_encode([
                             "success" => true,
                             "message" => "Login exitoso",
-                            "greeting" => 'Bienvenido de nuevo, ' . $user['nombre'],
-                            "nombre" => $user['nombre'],    
+                            "greeting" => 'Bienvenido de nuevo, ' . $nombre,
+                            "nombre" => $nombre,
                             "usuario" => $usuario,
                             "idUsuario" => $user['idUsuario'],
                         ]);
@@ -49,16 +57,41 @@ switch ($request_method) {
                     http_response_code(400);
                     echo json_encode([
                         "success" => false,
-                        "error" => "Usuario no encontrado"]);
+                        "error" => "Usuario no encontrado"
+                    ]);
                 }
                 break;
+            case 'getUser':
+                $idUsuario = isset($_GET['idUsuario']) ? trim($_GET['idUsuario']) : '';
+                $sql = "SELECT * FROM Usuario WHERE idUsuario = ?";
+                $stmt = odbc_prepare($con, $sql);
 
-                default:
-                http_response_code(500);
-                echo json_encode([
+                // 👇 Conversión necesaria si el usuario tiene Ñ, etc.
+                $exec = odbc_execute($stmt, [$idUsuario]);
+                if ($exec && ($idUsuario = odbc_fetch_array($stmt))) {
+                    $idUsuario = array_map(function($val) {
+                    return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
+                }, $idUsuario);
+                    http_response_code(200);
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Usuario encontrado",
+                        "user" => $idUsuario
+                    ]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode([
                         "success" => false,
-                        "error" => "Quest GET no encontrado"]);
-                    break;
+                        "error" => "Usuario no encontrado"
+                    ]);
+                }
+                break;
+            default:
+            http_response_code(500);
+            echo json_encode([
+                    "success" => false,
+                    "error" => "Quest GET no encontrado"]);
+                break;
             }
             break;
     case 'POST':
@@ -69,7 +102,7 @@ switch ($request_method) {
                 $usuario = $data['usuario'] ?? '';
                 $contrasena = $data['contrasena'] ?? '';
 
-                header('Content-Type: application/json'); 
+                header('Content-Type: application/json; charset=utf-8'); 
 
 
                 // Validar campos vacíos
@@ -155,7 +188,7 @@ switch ($request_method) {
                 $nuevaContrasena = isset($data['nuevaContrasena']) ? trim($data['nuevaContrasena']) : '';
                 $confirmarNuevaContrasena = isset($data['confirmarNuevaContrasena']) ? trim($data['confirmarNuevaContrasena']) : '';
 
-                header('Content-Type: application/json'); 
+                header('Content-Type: application/json; charset=utf-8'); 
 
                 // Validaciones básicas
                 if (empty($usuario) || empty($nuevaContrasena) || empty($confirmarNuevaContrasena)) {

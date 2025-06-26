@@ -1,0 +1,75 @@
+ /* --- ESTILOS PARA LA NUEVA TARJETA DE PERFIL --- */
+
+ /* Variables de color para consistencia (opcional pero recomendado) */
+ :root {
+     --primary-color: #800020;
+     --primary-color-light: #e7f1ff;
+     --body-bg: #f8f9fa;
+     --text-primary: #212529;
+     --text-secondary: #6c757d;
+ }
+
+ /* Estilo para cada "caja" de información */
+ .info-item {
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     background-color: #f8f9fa;
+     /* Un fondo sutil para cada item */
+     padding: 1.25rem;
+     border-radius: 8px;
+     height: 100%;
+     /* Asegura que todos los items en una fila tengan la misma altura */
+ }
+
+ .info-icon {
+     font-size: 1.5rem;
+     color: var(--primary-color);
+     flex-shrink: 0;
+ }
+
+ .info-label {
+     font-size: 0.875rem;
+     color: var(--text-secondary);
+     font-weight: 500;
+     margin-bottom: 0.15rem;
+ }
+
+ .info-value {
+     font-size: 1.05rem;
+     font-weight: 600;
+     color: var(--text-primary);
+ }
+
+ /* Estilo para el item destacado de vacaciones */
+ .info-item-highlight {
+     background: var(--primary-color-light);
+     border: 1px solid var(--primary-color-light);
+     border-radius: 8px;
+     padding: 1.5rem;
+     display: flex;
+     align-items: center;
+     gap: 1.5rem;
+     margin-top: 1rem;
+ }
+
+ .highlight-icon-wrapper {
+     background-color: var(--primary-color);
+     color: white;
+     border-radius: 50%;
+     width: 60px;
+     height: 60px;
+     display: grid;
+     place-items: center;
+     flex-shrink: 0;
+ }
+
+ .highlight-text {
+     flex-grow: 1;
+ }
+
+ .highlight-value {
+     font-size: 1.75rem;
+     font-weight: 700;
+     color: var(--primary-color);
+ }

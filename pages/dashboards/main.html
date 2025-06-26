@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard CREA</title>
+    <title>Dashboard PERMISOS</title>
     <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
 
 
@@ -28,17 +28,17 @@
     <!-- Sidebar -->
     <aside class="sidebar fade-in">
         <div class="sidebar-header">
-            <h2 class="sidebar-logo">CREA</h2>
+            <h2 class="sidebar-logo">PERMISOS</h2>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="#" class="active"><i class="fa fa-home"></i> Inicio</a></li>
-            <li><a href="#"><i class="fa fa-plus"></i> Crear Nuevo Proyecto</a></li>
-            <li><a href="#"><i class="fa fa-folder-open"></i> Ver tus Proyectos</a></li>
-            <li><a href="#"><i class="fa fa-chart-bar"></i> Analíticas</a></li>
-            <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
+            <li><a href="./main.html" class="active"><i class="fa fa-home"></i> Inicio</a></li>
+            <li><a href="#"><i class="fa fa-plus"></i> Crear Nueva Solicitud</a></li>
+            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Ver mis Boletas</a></li>
+            <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
+            <!-- <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
             <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
             <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
-            <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li>
+            <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li> -->
             
             <li>
                <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
@@ -78,7 +78,7 @@
                     
                     <!-- Opciones del menú desplegable -->
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">
+                        <li><a class="dropdown-item" href="../pages/profile/profile.html">
                             <i class="fa fa-user"></i> Perfil
                         </a></li>
                         <li><a class="dropdown-item" href="#">
@@ -103,8 +103,8 @@
             <!-- Tarjeta de Bienvenida -->
             <div class="welcome-card slide-up">
                 <div class="welcome-text">
-                    <h2 class="welcome-title">Bienvenido a CREA</h2>
-                    <p>Administra tus proyectos, realiza seguimiento del progreso y colabora con tu equipo en un solo lugar.</p>
+                    <h2 class="welcome-title">Bienvenido a Permisos</h2>
+                    <p>Administra tus boletas, realiza seguimiento de tus días y gestiona tu tiempo.</p>
                 </div>
             </div>
 
@@ -114,34 +114,34 @@
             <div class="recommended-section fade-in">
                 <h2 class="subsection-title">Recomendado</h2>
                 <div class="recommended-cards">
-                    <!-- Tarjeta: Crear Nuevo Proyecto (con icono en lugar de imagen) -->
+                    <!-- Tarjeta: Crear Nueva Solicitud de Permisos -->
                     <div class="recommended-card slide-up">
                         <div class="card-icon">
                             <i class="fa fa-plus-square"></i>
                         </div>
                         <div class="card-info">
-                            <h3 class="card-title">Crear Nuevo Proyecto</h3>
-                            <p>Comienza a crear algo increíble. Elige entre plantillas o empieza desde cero para tu próximo gran proyecto.</p>
+                            <h3 class="card-title">Crear Nueva Solicitud</h3>
+                            <p>Llena una solicitud de permiso o aviso de faltas.</p>
                         </div>
                         <div class="card-actions">
                             <button class="btn-action" onclick="window.location.href='../pages/projects/new-project.html'">
-                                <i class="fa fa-plus"></i> Añadir Proyecto
+                                <i class="fa fa-plus"></i> Nueva Solicitud
                             </button>
                         </div>
                     </div>
 
-                    <!-- Tarjeta: Ver tus Proyectos (con icono en lugar de imagen) -->
+                    <!-- Tarjeta: Ver tus Permisos -->
                     <div class="recommended-card slide-up">
                         <div class="card-icon">
                             <i class="fa fa-folder-open"></i>
                         </div>
                         <div class="card-info">
-                            <h3 class="card-title">Ver tus Proyectos</h3>
-                            <p>Administra y realiza seguimiento del progreso. Accede a todos tus proyectos en curso y gestiona las tareas de forma eficiente.</p>
+                            <h3 class="card-title">Ver mis Boletas</h3>
+                            <p>Administra y gestiona tus boletas.</p>
                         </div>
                         <div class="card-actions">
-                            <button class="btn-action" onclick="window.location.href='../pages/projects/projects.html'">
-                                <i class="fa fa-eye"></i> Ver Proyectos
+                            <button class="btn-action" onclick="window.location.href='../../pages/ticket/ticket.html'">
+                                <i class="fa fa-eye"></i> Ver Boletas
                               </button>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
             </div>
 
             <!-- Tabla de Proyectos -->
-            <div class="projects-table fade-in">
+            <!-- <div class="projects-table fade-in">
                 <div class="table-header">
                     <h2 class="subsection-title">Resumen de Proyectos</h2>
                 </div>
@@ -189,10 +189,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
+            </div> -->
 
             <!-- Sección "Actividad Reciente" -->
-            <section class="recent-activity fade-in">
+            <!-- <section class="recent-activity fade-in">
                 <h2 class="subsection-title">Actividad Reciente</h2>
                 <div class="activity-list">
                     <div class="activity-item slide-up">
@@ -217,7 +217,7 @@
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> -->
         </section>
 
         <!-- Campana de Notificaciones con degradado -->

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CREA - Mis Proyectos</title>
+  <title>PERMISOS - Mis Boletas</title>
   <link rel="icon" type="image/png" href="../../../assets/img/icons/favicon-16x16.png" />
 
   <!-- Fuentes y estilos -->
@@ -27,14 +27,14 @@
         <h2 class="sidebar-logo">CREA</h2>
     </div>
     <ul class="sidebar-menu">
-        <li><a href="#" class="active"><i class="fa fa-home"></i> Inicio</a></li>
-        <li><a href="#"><i class="fa fa-plus"></i> Crear Nuevo Proyecto</a></li>
-        <li><a href="#"><i class="fa fa-folder-open"></i> Ver tus Proyectos</a></li>
-        <li><a href="#"><i class="fa fa-chart-bar"></i> Analíticas</a></li>
-        <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
+        <li><a href="../../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
+        <li><a href="#"><i class="fa fa-plus"></i> Crear Nueva Solicitud</a></li>
+        <li><a href="#" class="active"><i class="fa fa-folder-open"></i> Ver mis Boletas</a></li>
+        <li><a href="../../pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
+        <!-- <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
         <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
         <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
-        <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li>
+        <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li> -->
         
         <li>
            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
@@ -95,10 +95,9 @@
       <!-- Subbarra con botón y enlace -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="../../dashboards/main.html" class="back-link"><i class="fas fa-arrow-left me-2"></i>Volver</a>
-        <button class="btn-gantt"><i class="fas fa-chart-bar me-2"></i>Crear Gantt</button>
       </div>
   
-      <h2 class="page-title mb-4">Mis Proyectos</h2>
+      <h2 class="page-title mb-4">Mis Boletas</h2>
   
       <!-- Contenedor dinámico de tarjetas -->
       <div id="projects-container" class="row g-4">
@@ -108,7 +107,7 @@
           </div>
           <span class="ms-2">Cargando proyectos...</span>
         </div>
-        <div class="no-projects text-center" id="no-projects-msg">No tienes proyectos creados</div>
+        <div class="no-projects text-center" id="no-projects-msg">No tienes boletas creadas</div>
       </div>
     </div>
 
@@ -131,7 +130,7 @@
    </div>
   
     <!-- Scripts -->
-    <script type="module">
+    <!-- <script type="module">
       import { getProjects } from '../../../assets/js/pages/pages/projects/load-projects.js';
       import { notyf } from '../../../assets/js/plugins/notify.js';
     
@@ -205,7 +204,7 @@
           }
         });
       });
-    </script>
+    </script> -->
   </div>
   <!-- Barra de navegación principal -->
   <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
