@@ -44,7 +44,7 @@ if ($request_method === 'GET') {
 }
 
 // 👉 Lista de acciones que **NO** requieren autenticación
-$acciones_publicas = ['login', 'getUser', 'getUserTicketVacations', 'getUserTicketReplaceTime', 'getUserTicketJustification', 'getUserTicketRequestIGSS', 'getUserTicketOffIGSS', 'getUserOff', 'Boleta', 'getLastTicketVacations', 'getProyectosByFechaInicioFin'];
+$acciones_publicas = ['login', 'getUser', 'getUserTicketVacations', 'getUserTicketReplaceTime', 'getUserTicketJustification', 'getUserTicketRequestIGSS', 'getUserTicketOffIGSS', 'getUserOff', 'Boleta', 'getLastTicket', 'getProyectosByFechaInicioFin'];
 
 // Si la acción no es pública, verificamos si el usuario está logueado
 if (!in_array($quest, $acciones_publicas)) {

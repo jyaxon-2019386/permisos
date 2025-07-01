@@ -201,7 +201,7 @@ switch ($request_method) {
                     }
                     break;
                 
-                case 'getLastTicketVacations': // ÚLTIMA BOLETA VACACIONES
+                case 'getLastTicket': // ÚLTIMA BOLETA VACACIONES
                     $idCreador = isset($_GET['idCreador']) ? trim($_GET['idCreador']) : '';
                     $sql = "SELECT TOP 5 * FROM BoletaEspecial WHERE idCreador = ? ORDER BY fechaSolicitud DESC";
                     $stmt = odbc_prepare($con, $sql);

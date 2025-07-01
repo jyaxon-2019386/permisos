@@ -25,7 +25,7 @@ function logout() {
 async function getLastTicker() {
     const idCreador = sessionStorage.getItem('idUsuario') || '1';
     const url = new URL('/permisos/assets/php/tickets/tickets.php', window.location.origin);
-    url.searchParams.set('quest', 'getLastTicketVacations');
+    url.searchParams.set('quest', 'getLastTicket');
     url.searchParams.set('idCreador', idCreador);
 
     try {
