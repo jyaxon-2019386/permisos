@@ -4,283 +4,195 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard PERMISOS</title>
+    <title>Dashboard PERMISOS - renovado</title>
     <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
 
-
-    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome para iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
-        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Hoja de estilos principal -->
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    
+
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar fade-in">
+    <aside class="sidebar">
         <div class="sidebar-header">
             <h2 class="sidebar-logo">PERMISOS</h2>
         </div>
         <ul class="sidebar-menu">
             <li><a href="./main.html" class="active"><i class="fa fa-home"></i> Inicio</a></li>
-            <li><a href="#"><i class="fa fa-plus"></i> Crear Nueva Solicitud</a></li>
-            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Ver mis Boletas</a></li>
+            <li><a href="#"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
+            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Mis Boletas</a></li>
             <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
-            <!-- <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
-            <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
-            <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
-            <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li> -->
-            
-            <li>
-               <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-               <i class="fa fa-sign-out-alt"></i> Cerrar sesión
-               </a>
-            </li>
         </ul>
+        <div class="sidebar-footer">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
     </aside>
 
-    <!-- Contenido Principal -->
     <div class="main-content">
-        <!-- Topbar con degradado -->
         <header class="topbar slide-up">
 
             <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
                 <i class="fa fa-bars"></i>
             </button>
 
-            <!-- <div class="search-box">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="Buscar..." />
-            </div> -->
-
-            
-            
-            <!-- En la sección del topbar, modifica el contenedor del avatar -->
             <div class="topbar-actions">
                 <i class="fa fa-bell"></i>
                 <!-- Menú desplegable del avatar -->
                 <div class="dropdown">
-                    <img class="dropdown-toggle img-fluid rounded-circle border shadow" 
-                        id="avatar" 
-                        alt="Avatar de usuario" 
-                        style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
-                        data-bs-toggle="dropdown" 
-                        aria-expanded="false">
-                    
+                    <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
+                        alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+
                     <!-- Opciones del menú desplegable -->
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="../pages/profile/profile.html">
-                            <i class="fa fa-user"></i> Perfil
-                        </a></li>
+                        <li><a class="dropdown-item" href="profile.html">
+                                <i class="fa fa-user"></i> Perfil
+                            </a></li>
                         <li><a class="dropdown-item" href="#">
-                            <i class="fa fa-cog"></i> Configuración
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" 
-                            href="#" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#logoutModal">
-                            <i class="fa fa-sign-out-alt"></i> Cerrar sesión
-                        </a></li>
+                                <i class="fa fa-cog"></i> Configuración
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal">
+                                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                            </a></li>
                     </ul>
                 </div>
             </div>
-
         </header>
-        
-        <!-- Sección del Panel de Control -->
+
         <section class="dashboard-section">
 
-            <!-- Tarjeta de Bienvenida -->
-            <div class="welcome-card slide-up">
+            <div class="welcome-card">
                 <div class="welcome-text">
-                    <h2 class="welcome-title">Bienvenido a Permisos</h2>
-                    <p>Administra tus boletas, realiza seguimiento de tus días y gestiona tu tiempo.</p>
+                    <h1 class="welcome-title">Bienvenido de nuevo</h1>
+                    <p>Aquí tienes un resumen de tus actividades y permisos.</p>
                 </div>
             </div>
 
-            
-
-            <!-- Sección "Recomendado" -->
-            <div class="recommended-section fade-in">
-                <h2 class="subsection-title">Recomendado</h2>
+            <div class="recommended-section">
                 <div class="recommended-cards">
-                    <!-- Tarjeta: Crear Nueva Solicitud de Permisos -->
-                    <div class="recommended-card slide-up">
-                        <div class="card-icon">
+                    <div class="recommended-card">
+                        <div class="card-icon create">
                             <i class="fa fa-plus-square"></i>
                         </div>
                         <div class="card-info">
                             <h3 class="card-title">Crear Nueva Solicitud</h3>
-                            <p>Llena una solicitud de permiso o aviso de faltas.</p>
+                            <p>Solicita un nuevo permiso o reporta una falta.</p>
                         </div>
                         <div class="card-actions">
-                            <button class="btn-action" onclick="window.location.href='../pages/projects/new-project.html'">
-                                <i class="fa fa-plus"></i> Nueva Solicitud
+                            <button class="btn-action">
+                                <i class="fa fa-plus"></i> Iniciar
                             </button>
                         </div>
                     </div>
 
-                    <!-- Tarjeta: Ver tus Permisos -->
-                    <div class="recommended-card slide-up">
-                        <div class="card-icon">
+                    <div class="recommended-card">
+                        <div class="card-icon view">
                             <i class="fa fa-folder-open"></i>
                         </div>
                         <div class="card-info">
                             <h3 class="card-title">Ver mis Boletas</h3>
-                            <p>Administra y gestiona tus boletas.</p>
+                            <p>Consulta el historial y estado de tus solicitudes.</p>
                         </div>
                         <div class="card-actions">
-                            <button class="btn-action" onclick="window.location.href='../../pages/ticket/ticket.html'">
-                                <i class="fa fa-eye"></i> Ver Boletas
-                              </button>
+                            <button class="btn-action">
+                                <i class="fa fa-eye"></i> Ver
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabla de Proyectos -->
-            <!-- <div class="projects-table fade-in">
-                <div class="table-header">
-                    <h2 class="subsection-title">Resumen de Proyectos</h2>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre del Proyecto</th>
-                            <th>Estado</th>
-                            <th>Creado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="slide-up">
-                            <td><i class="fa fa-chart-bar"></i> Analíticas</td>
-                            <td><span class="status-badge active">Activo</span></td>
-                            <td>Sep 01, 2023</td>
-                            <td><button class="btn-table"><i class="fa fa-eye"></i></button></td>
-                        </tr>
-                        <tr class="slide-up">
-                            <td><i class="fa fa-clock"></i> Seguimiento de Tiempo</td>
-                            <td><span class="status-badge pending">Pendiente</span></td>
-                            <td>Aug 20, 2023</td>
-                            <td><button class="btn-table"><i class="fa fa-eye"></i></button></td>
-                        </tr>
-                        <tr class="slide-up">
-                            <td><i class="fa fa-users"></i> Equipo</td>
-                            <td><span class="status-badge planning">Planificado</span></td>
-                            <td>Jul 15, 2023</td>
-                            <td><button class="btn-table"><i class="fa fa-eye"></i></button></td>
-                        </tr>
-                        <tr class="slide-up">
-                            <td><i class="fa fa-cog"></i> Configuración</td>
-                            <td><span class="status-badge completed">Completado</span></td>
-                            <td>Jun 10, 2023</td>
-                            <td><button class="btn-table"><i class="fa fa-eye"></i></button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div> -->
+            <div class="recent-tickets-section">
+                <h2 class="subsection-title">Últimas Solicitudes</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="recentTicketsTable">
+                        <thead>
+                            <tr>
+                                <th>ID Boleta</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-            <!-- Sección "Actividad Reciente" -->
-            <!-- <section class="recent-activity fade-in">
-                <h2 class="subsection-title">Actividad Reciente</h2>
-                <div class="activity-list">
-                    <div class="activity-item slide-up">
-                        <div class="activity-icon blue">A</div>
-                        <div class="activity-details">
-                            <p>Alex comentó en rediseño de sitio web</p>
-                            <span class="time">Hace 2 horas</span>
-                        </div>
-                    </div>
-                    <div class="activity-item slide-up">
-                        <div class="activity-icon green">S</div>
-                        <div class="activity-details">
-                            <p>Sarah completó tarea en la Aplicación Móvil</p>
-                            <span class="time">Ayer</span>
-                        </div>
-                    </div>
-                    <div class="activity-item slide-up">
-                        <div class="activity-icon purple">Y</div>
-                        <div class="activity-details">
-                            <p>Has creado una campaña de marketing</p>
-                            <span class="time">Hace 2 días</span>   
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
-            </section> -->
+            </div>
         </section>
+    </div>
 
-        <!-- Campana de Notificaciones con degradado -->
-        <div class="notification-bell fade-in">
-            <i class="fa fa-bell"></i>
+    <div class="modal fade" id="logoutModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cerrar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas cerrar la sesión?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger">Cerrar Sesión</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-           <div class="modal-content">
-              <div class="modal-header">
-                 <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
-                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                 ¿Estás seguro de que deseas cerrar la sesión?
-              </div>
-              <div class="modal-footer">
-                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                 <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
-              </div>
-           </div>
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalLabel">Detalles de la Boleta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalContent">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
         </div>
-     </div>
+    </div>
 
 
-    <!-- JS Core -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- 
-    <script src="../../../assets/js/core/popper.min.js"></script>
-    
-    <script src="../../../assets/js/core/bootstrap.min.js"></script> -->
-    
-    <!-- <script src="../../../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../../../assets/js/plugins/smooth-scrollbar.min.js"></script> -->
-    <!-- <script src="../../../assets/js/plugins/flatpickr.min.js"></script> -->
-    
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        if (document.querySelector('.datetimepicker')) {
-          flatpickr('.datetimepicker', { allowInput: true });
-        }
-      });
 
-      function toggleSidebar(){
-      const sidebar = document.querySelector('.sidebar');
-      const mainContent = document.querySelector('.main-content');
-      // Si el sidebar está oculto, se muestra y se asigna el margen original al contenedor principal.
-      if (getComputedStyle(sidebar).display === 'none') {
-          sidebar.style.display = 'block';
-          // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
-          mainContent.style.marginLeft = "220px"; /* O el valor que uses en tu CSS */
-      } else {
-          // Oculta el sidebar y expande el contenedor principal
-          sidebar.style.display = 'none';
-          mainContent.style.marginLeft = "0";
-      }
-  }
-    </script>
-    
-    <!-- <script src="../../../assets/js/material-dashboard.min.js?v=3.0.5"></script> -->
     <script src="../../assets/js/pages/pages/main/main.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            // Si el sidebar está oculto, se muestra y se asigna el margen original al contenedor principal.
+            if (getComputedStyle(sidebar).display === 'none') {
+                sidebar.style.display = 'block';
+                // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
+                mainContent.style.marginLeft = "220px"; /* O el valor que uses en tu CSS */
+            } else {
+                // Oculta el sidebar y expande el contenedor principal
+                sidebar.style.display = 'none';
+                mainContent.style.marginLeft = "0";
+            }
+        }
+    </script>
 </body>
 
 </html>

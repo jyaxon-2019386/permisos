@@ -23,26 +23,21 @@
 
 <body>
     <!-- Sidebar -->
-    <aside class="sidebar fade-in">
+    <aside class="sidebar">
         <div class="sidebar-header">
             <h2 class="sidebar-logo">PERMISOS</h2>
         </div>
         <ul class="sidebar-menu">
             <li><a href="../../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
-            <li><a href="#"><i class="fa fa-plus"></i> Crear Nueva Solicitud</a></li>
-            <li><a href="../../ticket/ticket.html"><i class="fa fa-folder-open"></i> Ver mis Boletas</a></li>
-            <li><a href="profile.html" class="active"><i class="fa fa-user"></i> Mi Perfil</a></li>
-            <!-- <li><a href="#"><i class="fa fa-clock"></i> Seguimiento de Tiempo</a></li>
-            <li><a href="#"><i class="fa fa-users"></i> Equipo</a></li>
-            <li><a href="#"><i class="fa fa-cog"></i> Configuración</a></li>
-            <li><a href="#"><i class="fa fa-history"></i> Actividad Reciente</a></li> -->
-
-            <li>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                    <i class="fa fa-sign-out-alt"></i> Cerrar sesión
-                </a>
-            </li>
+            <li><a href="#"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
+            <li><a href="../../ticket/ticket.html"><i class="fa fa-folder-open"></i> Mis Boletas</a></li>
+            <li><a href="./profile.html" class="active"><i class="fa fa-user"></i> Mi Perfil</a></li>
         </ul>
+        <div class="sidebar-footer">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
     </aside>
 
     <div class="main-content">
@@ -150,21 +145,21 @@
 
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-           <div class="modal-content">
-              <div class="modal-header">
-                 <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
-                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                 ¿Estás seguro de que deseas cerrar la sesión?
-              </div>
-              <div class="modal-footer">
-                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                 <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
-              </div>
-           </div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas cerrar la sesión?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
         </div>
-     </div>
+    </div>
 
     <script src="../../../assets/js/pages/pages/profile/getUser.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

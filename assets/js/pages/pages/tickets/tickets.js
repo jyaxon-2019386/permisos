@@ -1,7 +1,6 @@
 // Almacena la lista completa de tickets obtenida de la API
 let ticketsData = [];
 
-// --- INICIALIZACIÓN Y EVENTOS ---
 document.addEventListener('DOMContentLoaded', () => {
     // Cargar avatar al inicio
     const avatarURL = sessionStorage.getItem('avatar');
@@ -23,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Cuando cambia el TIPO de boleta, se piden nuevos datos al servidor
     tipoTicketSelect.addEventListener('change', () => {
         const tipo = tipoTicketSelect.value;
-        const idSolicitante = sessionStorage.getItem('idUsuario') || '1';
-        getTickets(tipo, idSolicitante);
+        const idCreador = sessionStorage.getItem('idUsuario') || '1';
+        getTickets(tipo, idCreador);
     });
 
     // 2. Cuando se escribe en los filtros, se aplica el filtro localmente
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fechaFinInput.value = '';
         filtrarYMostrarTickets();
     });
-    
+
     // 4. Listener para los clics en los botones de detalles (delegación de eventos)
     ticketsContainer.addEventListener('click', (event) => {
         const detailsButton = event.target.closest('.btn-details');
@@ -51,19 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Carga inicial de tickets ---
     getTickets(tipoTicketSelect.value, sessionStorage.getItem('idUsuario') || '1');
+    
 });
 
 
 // --- LÓGICA DE DATOS (API) ---
 // Su única responsabilidad es OBTENER los datos del servidor
-async function getTickets(tipo, idSolicitante) {
+async function getTickets(tipo, idCreador) {
     const contenedor = document.getElementById('ticketsContainer');
     mostrarCargando(contenedor);
 
     try {
         const url = new URL(`/permisos/assets/php/tickets/tickets.php`, window.location.origin);
         url.searchParams.set('quest', tipo);
-        url.searchParams.set('idSolicitante', idSolicitante);
+        url.searchParams.set('idCreador', idCreador);
 
         const response = await fetch(url.toString());
         const data = await response.json();
@@ -79,11 +79,10 @@ async function getTickets(tipo, idSolicitante) {
         console.error("Error al obtener tickets:", error);
         mostrarError("Error de conexión al obtener los tickets.");
     }
-    
+
     // Una vez obtenidos los datos, se muestran aplicando los filtros actuales
     filtrarYMostrarTickets();
 }
-
 
 // --- LÓGICA DE FILTRADO LOCAL ---
 // Filtra los datos ya existentes en `ticketsData` y los muestra
@@ -120,7 +119,7 @@ function filtrarYMostrarTickets() {
             return fechaTicket <= fechaFin;
         });
     }
-    
+
     // Mostrar el resultado final en la tabla
     mostrarTickets(ticketsFiltrados);
 }
@@ -136,7 +135,7 @@ function mostrarTickets(tickets) {
         contenedor.innerHTML = '<div class="alert alert-warning text-center">No hay boletas para mostrar con los filtros seleccionados.</div>';
         return;
     }
-    
+
     const table = document.createElement('table');
     table.className = 'table table-hover table-bordered text-center align-middle';
     table.innerHTML = `
@@ -145,7 +144,7 @@ function mostrarTickets(tickets) {
                 <th>ID Boleta</th>
                 <th>Fecha Creación</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th>Detalle</th>
             </tr>
         </thead>
     `;
@@ -158,8 +157,8 @@ function mostrarTickets(tickets) {
             <td>${formatearFecha(ticket.fechaSolicitud) || '-'}</td>
             <td><span class="badge rounded-pill ${clase}">${texto}</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-primary btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
-                    <i class="fa fa-eye"></i>
+                <button class="btn-table-details btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
+                    <i class="fa fa-search"></i>
                 </button>
             </td>
         `;
@@ -169,6 +168,7 @@ function mostrarTickets(tickets) {
     contenedor.appendChild(table);
 }
 
+
 // Función para mostrar detalles en el modal
 function mostrarDetalles(idBoleta) {
     const ticket = ticketsData.find(t => t.idBoleta == idBoleta);
@@ -176,34 +176,46 @@ function mostrarDetalles(idBoleta) {
 
     const modalLabel = document.getElementById('detailsModalLabel');
     const modalContent = document.getElementById('modalContent');
-    
+
     modalLabel.textContent = `Detalles de la Boleta #${ticket.idBoleta}`;
 
     const observaciones = [
-        ticket.observaciones1, 
-        ticket.observaciones2, 
-        ticket.observaciones3, 
+        ticket.observaciones1,
+        ticket.observaciones2,
+        ticket.observaciones3,
         ticket.observaciones4
     ].filter(obs => obs).join('; ');
 
     let fechasSolicitadasHTML = '';
     for (let i = 1; i <= 5; i++) {
-        if (ticket[`fecha${i}`] && !ticket[`fecha${i}`].startsWith('2001-01-01')) {
-            fechasSolicitadasHTML += `<li>${formatearFecha(ticket[`fecha${i}`])}</li>`;
+        const fecha = ticket[`fecha${i}`];
+        if (
+            fecha &&
+            !fecha.startsWith('2001-01-01') &&
+            !fecha.startsWith('2000-01-01') &&
+            !fecha.startsWith('01/01/2000')
+        ) {
+            fechasSolicitadasHTML += `<li>${formatearFecha(fecha)}</li>`;
         }
     }
 
     let fechasReposicionHTML = '';
     for (let i = 1; i <= 5; i++) {
-        if (ticket[`fecha${i}R`] && !ticket[`fecha${i}R`].startsWith('2001-01-01')) {
-            fechasReposicionHTML += `<li>${formatearFecha(ticket[`fecha${i}R`])}</li>`;
+        const fechaR = ticket[`fecha${i}R`];
+        if (
+            fechaR &&
+            !fechaR.startsWith('2001-01-01') &&
+            !fechaR.startsWith('2000-01-01') &&
+            !fechaR.startsWith('01/01/2000')
+        ) {
+            fechasReposicionHTML += `<li>${formatearFecha(fechaR)}</li>`;
         }
     }
-    
+
     modalContent.innerHTML = `
         <h5>Información General</h5>
         <div class="row g-3">
-            <div class="col-md-6"><strong>Solicitante ID:</strong> ${ticket.idSolicitante}</div>
+            <div class="col-md-6"><strong>Solicitante ID:</strong> ${ticket.idCreador}</div>
             <div class="col-md-6"><strong>Fecha Solicitud:</strong> ${formatearFecha(ticket.fechaSolicitud, true)}</div>
             <div class="col-md-6"><strong>Total Horas:</strong> ${ticket.totalH || 'N/A'}</div>
             <div class="col-md-6"><strong>Total Horas Reposición:</strong> ${ticket.totalHR || 'N/A'}</div>
@@ -280,21 +292,23 @@ function formatearFecha(fechaStr, incluirHora = false) {
 
 // --- FUNCIONES DE SESIÓN Y NAVEGACIÓN ---
 function logout() {
-    sessionStorage.clear();
+    sessionStorage.clear('usuario_principal');
+    sessionStorage.clear('avatar');
+    sessionStorage.clear('id_usuario');
     window.location.href = '../authentication/signin/login.html';
 }
 
-function toggleSidebar(){
-      const sidebar = document.querySelector('.sidebar');
-      const mainContent = document.querySelector('.main-content');
-      // Si el sidebar está oculto, se muestra y se asigna el margen original al contenedor principal.
-      if (getComputedStyle(sidebar).display === 'none') {
-          sidebar.style.display = 'block';
-          // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
-          mainContent.style.marginLeft = "220px"; /* O el valor que uses en tu CSS */
-      } else {
-          // Oculta el sidebar y expande el contenedor principal
-          sidebar.style.display = 'none';
-          mainContent.style.marginLeft = "0";
-      }
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    // Si el sidebar está oculto, se muestra y se asigna el margen original al contenedor principal.
+    if (getComputedStyle(sidebar).display === 'none') {
+        sidebar.style.display = 'block';
+        // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
+        mainContent.style.marginLeft = "220px"; /* O el valor que uses en tu CSS */
+    } else {
+        // Oculta el sidebar y expande el contenedor principal
+        sidebar.style.display = 'none';
+        mainContent.style.marginLeft = "0";
+    }
 }
