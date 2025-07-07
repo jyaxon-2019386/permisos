@@ -299,6 +299,24 @@ switch ($request_method) {
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                     u.nombre AS Solicitante, 
+                    u.puesto AS Cargo,
+                    u.idEmpresa AS Empresa,
+                    b.fecha1 AS Fecha1,
+                    b.fecha2 AS Fecha2,
+                    b.fecha3 AS Fecha3,
+                    b.fecha4 AS Fecha4,
+                    b.fecha5 AS Fecha5,
+                    b.fecha1R AS FechaR1,
+                    b.fecha2R AS FechaR2,
+                    b.fecha3R AS FechaR3,
+                    b.fecha4R AS FechaR4,
+                    b.fecha5R AS FechaR5,
+                    b.totalH AS totalHoras,
+                    b.totalH AS totalHorasR,
+                    b.observaciones1,
+                    b.observaciones2,
+                    b.observaciones3,
+                    b.observaciones4,
                     d.nombre AS Departamento, 
                     e.nombre AS Estado, 
                     b.fecha_actualizado AS FechaActualizado
@@ -312,10 +330,8 @@ switch ($request_method) {
                     Departamento d ON u.idDepartamentoP = d.idDepartamento
                 WHERE 
                     b.idEstado IN (4, 9, 11, 12, 13)
-                    
-                ORDER BY b.idBoleta DESC    
-                ;
-
+                ORDER BY 
+                    b.idBoleta DESC;
                 ";
 
                 $stmt = odbc_prepare($con, $sql);
@@ -359,8 +375,27 @@ switch ($request_method) {
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                     u.nombre AS Solicitante, 
+					u.puesto AS Cargo,
+                    u.idEmpresa AS Empresa,
                     d.nombre AS Departamento, 
                     e.nombre AS Estado, 
+					b.fecha1 AS fecha1,
+					b.fecha2 AS fecha2,
+					b.fecha3 AS fecha3,
+					b.fecha4 AS fecha4,
+					b.fecha5 AS fecha5,
+					
+					b.desc1A AS Detalle1,
+					b.desc2A AS Detalle2,
+					b.desc3A AS Detalle3,
+					b.desc4A AS Detalle4,
+					b.desc5A AS Detalle5,
+
+					b.observaciones1 AS observaciones1,
+					b.observaciones2 AS observaciones2,
+					b.observaciones3 AS observaciones3,
+					b.observaciones4 AS observaciones4,
+					b.totalH AS totalHoras,
                     b.fecha_actualizado AS FechaActualizado
                 FROM 
                     BoletaEspecial b
@@ -421,8 +456,18 @@ switch ($request_method) {
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                     u.nombre AS Solicitante, 
+					u.puesto AS Cargo,
                     d.nombre AS Departamento, 
-                    e.nombre AS Estado, 
+                    e.nombre AS Estado,
+					b.fecha1 AS Fecha,
+					b.desc1 AS Detalle,
+					b.horaI1 AS HoraInicio,
+					b.horaF1 AS HoraFinal,
+					b.observaciones1 AS observaciones1,
+					b.observaciones2 AS observaciones2,
+					b.observaciones3 AS observaciones3,
+					b.observaciones4 AS observaciones4,
+					b.totalH as HorasTotal,
                     b.fecha_actualizado AS FechaActualizado
                 FROM 
                     BoletaConsultaIGSS b
@@ -476,30 +521,30 @@ switch ($request_method) {
                     break;
                 case 'getUserTicketOffIGSSRRHH': // BOLETAS REPOSICIÓN DE TIEMPO
                     $sql = "SELECT 
-    b.idBoleta, 
-    CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
-    u.nombre AS Solicitante,
-	u.puesto AS Cargo,
-	u.idEmpresa AS Empresa,
-    d.nombre AS Departamento, 
-    e.nombre AS Estado, 
-	b.fechaInicio AS fechaInicio,
-	b.fechaFinal AS fechaFinal,
-	b.totalD as TotalDias,
-    b.fecha_actualizado AS FechaActualizado
-FROM 
-    BoletaSuspencionIGSS b
-INNER JOIN 
-    Estado e ON b.idEstado = e.idEstado
-INNER JOIN 
-    Usuario u ON b.idSolicitante = u.idUsuario 
-	
-INNER JOIN 
-    Departamento d ON u.idDepartamentoP = d.idDepartamento
-WHERE 
-    b.idEstado IN (4, 9, 11, 12, 13)
-
+                    b.idBoleta, 
+                    CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
+                    u.nombre AS Solicitante,
+                    u.puesto AS Cargo,
+                    u.idEmpresa AS Empresa,
+                    d.nombre AS Departamento, 
+                    e.nombre AS Estado, 
+                    b.fechaInicio AS fechaInicio,
+                    b.fechaFinal AS fechaFinal,
+                    b.totalD as TotalDias,
+                    b.fecha_actualizado AS FechaActualizado
+                FROM 
+                    BoletaSuspencionIGSS b
+                INNER JOIN 
+                    Estado e ON b.idEstado = e.idEstado
+                INNER JOIN 
+                    Usuario u ON b.idSolicitante = u.idUsuario 
                     
+                INNER JOIN 
+                    Departamento d ON u.idDepartamentoP = d.idDepartamento
+                WHERE 
+                    b.idEstado IN (4, 9, 11, 12, 13)
+
+                                    
                 ORDER BY b.idBoleta DESC;
                 ";
 
