@@ -323,6 +323,15 @@ body {
     color: #41464b !important;
 }
 
+.bg-estado-otro {
+    background-color: #0dcaf0 !important; /* celeste */
+    color: #fff !important;
+}
+.bg-estado-anulado {
+    background-color: #6c757d !important; /* gris */
+    color: #fff !important;
+}
+
 .btn-table-details {
     background: none;
     border: 1px solid #ced4da;

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Mis Boletas</title>
+    <title>Boletas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
@@ -28,7 +28,7 @@
         <ul class="sidebar-menu">
             <li><a href="../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
             <li><a href="#"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
-            <li><a href="../ticket/ticket.html" class="active"><i class="fa fa-folder-open"></i> Mis Boletas</a></li>
+            <li><a href="../ticket/ticket.html" class="active"><i class="fa fa-folder-open"></i> Boletas</a></li>
             <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
         </ul>
         <div class="sidebar-footer">
@@ -45,23 +45,13 @@
                 <i class="fa fa-bars"></i>
             </button>
 
-            <!-- <div class="search-box">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="Buscar..." />
-            </div> -->
-
-
-
-            <!-- En la sección del topbar, modifica el contenedor del avatar -->
             <div class="topbar-actions">
                 <i class="fa fa-bell"></i>
-                <!-- Menú desplegable del avatar -->
                 <div class="dropdown">
                     <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
                         alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
                         data-bs-toggle="dropdown" aria-expanded="false">
 
-                    <!-- Opciones del menú desplegable -->
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="../pages/profile/profile.html">
                                 <i class="fa fa-user"></i> Perfil
@@ -83,7 +73,7 @@
         </header>
 
         <main class="container-fluid p-4">
-            <h2 class="mb-4"><strong>Mis Boletas</strong></h2>
+            <h2 class="mb-4"><strong>Boletas</strong></h2>
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center"><i class="fa fa-filter me-2"></i>Filtros</div>
@@ -95,12 +85,12 @@
                         <div class="col-md-3">
                             <label for="tipoTicket" class="form-label">Tipo de Boleta</label>
                             <select id="tipoTicket" class="form-select">
-                                <option value="getUserTicketVacations">Vacaciones</option>
-                                <option value="getUserTicketReplaceTime">Reposición de Tiempo</option>
-                                <option value="getUserTicketJustification">Falta Justificada</option>
-                                <option value="getUserTicketRequestIGSS">Consulta IGSS</option>
-                                <option value="getUserTicketOffIGSS">Suspensión IGSS</option>
-                                <option value="getUserOff">Sanción</option>
+                                <option value="getTicketVacationsRRHH">Vacaciones</option>
+                                <option value="getTicketReplaceTimeRRHH">Reposición de Tiempo</option>
+                                <option value="getTicketJustificationRRHH">Falta Justificada</option>
+                                <option value="getTicketRequestIGSSRRHH">Consulta IGSS</option>
+                                <option value="getUserTicketOffIGSSRRHH">Suspensión IGSS</option>
+                                <option value="getTicketOffRRHH">Sanción</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -134,11 +124,10 @@
                         </div>
                         <div class="modal-body">
                             <div id="modalContent">
-                            </div>
+                                </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -163,6 +152,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="../../assets/js/pages/pages/tickets/tickets.js"></script>
 </body>
 
