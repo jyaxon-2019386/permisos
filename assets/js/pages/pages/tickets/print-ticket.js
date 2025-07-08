@@ -1,9 +1,24 @@
-
 /**
  * Formatea una fecha y filtra las que son placeholders (ej. '2000-01-01').
  * @param {string} dateString - La fecha en formato string.
  * @returns {string|null} - La fecha formateada como DD/MM/YYYY o null si es inválida.
  */
+function formatearFecha(fechaStr, incluirHora = false) {
+    if (!fechaStr) return '-';
+    // Asegurarse de que la fecha sea parseable, incluso con formato ISO sin 'Z'
+    const fecha = new Date(fechaStr.replace(' ', 'T'));
+    if (isNaN(fecha.getTime())) return fechaStr;
+
+    const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    let fechaFormateada = fecha.toLocaleDateString('es-GT', opcionesFecha);
+
+    if (incluirHora) {
+        const opcionesHora = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }; // Añadido seconds
+        fechaFormateada += ' ' + fecha.toLocaleTimeString('es-GT', opcionesHora);
+    }
+    return fechaFormateada;
+}
+
 function formatAndFilterDate(dateString) {
     if (!dateString || dateString.startsWith('2000-01-01')) {
         return null;
@@ -18,6 +33,37 @@ function formatAndFilterDate(dateString) {
     } catch (e) {
         return null;
     }
+}
+
+/**
+ * Obtiene la ruta de la firma del jefe inmediato según el departamento.
+ * @param {string} departamento - El nombre del departamento.
+ * @returns {string} - La ruta de la imagen de la firma o una cadena vacía si no se encuentra.
+ */
+function getFirmaJefe(departamento) {
+    const firmas = {
+        'Recursos Humanos': { src: '../../assets/img/firmas/rrhh.png', style: 'max-width: 140px; height: auto;' }, 
+        'Sistemas': { src: '../../assets/img/firmas/sistemas.png' },     
+        'Comercialización UNHESA': { src: '../../assets/img/firmas/unhesa.png', style: 'max-width: 65px; height: auto;' }, // Antonio Jolón
+        'Logística': { src: '../../assets/img/firmas/logistica.png', style: 'max-width: 300px; height: auto;' }, 
+        'Investigación y Desarrollo': { src: '../../assets/img/firmas/id.png', style: 'max-width: 85px; height: auto;' },
+        'Compras': { src: '../../assets/img/firmas/compras.png', style: 'max-width: 120px; height: auto;' },
+        'Planificación': { src: '../../assets/img/firmas/planificacion.png' }, // Juan Carlos Monterroso 
+        'Producción': { src: '../../assets/img/firmas/planificacion.png' }, // Uso planificacion.png porque es el mismo jefe.
+        'Mercadeo': { src: '../../assets/img/firmas/unhesa.png', style: 'max-width: 65px; height: auto;' }, // Uso unhesa.png porque es el mismo jefe.
+        'Mantenimiento': { src: '../../assets/img/firmas/planificacion.png' }, // Juan Carlos Monterroso 
+        'Gestión de Calidad': { src: '../../assets/img/firmas/calidad.png' },
+        'Gerencias': { src: '../../assets/img/firmas/gerencias.png' },
+        'Finanzas': { src: '../../assets/img/firmas/finanzas.png', style: 'max-width: 130px; height: auto;' },
+        'Contabilidad': { src: '../../assets/img/firmas/contabilidad.png', style: 'max-width: 300px; height: auto;' },
+        'Comercialización PROQUIMA': { src: '../../assets/img/firmas/proquima.png', style: 'max-width: 130px; height: auto;' }, 
+        'Administración': { src: '../../assets/img/firmas/administracion.png', style: 'max-width: 135px; height: auto;' },
+        // Puedo agregar más departamentos y sus firmas aquí
+        
+
+    };
+
+    return firmas[departamento] || { src: '' };
 }
 
 /**
@@ -165,6 +211,14 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
             break;
     }
 
+    // Obtener la firma del jefe inmediato
+    const firmaInfo = getFirmaJefe(departamento); // Obtiene el objeto con src y style
+    const defaultImgStyle = "max-width: 150px; height: auto; display: block; margin: 0 auto;"; // Estilo por defecto
+    const customImgStyle = firmaInfo.style || defaultImgStyle; // Usa el estilo específico o el por defecto
+
+    const firmaJefeHTML = firmaInfo.src ? `<img src="${firmaInfo.src}" alt="Firma del Jefe Inmediato" style="${customImgStyle}">` : '';
+
+
     return `
         <div style="max-width: 800px; margin: auto; font-family: 'Poppins', sans-serif; border: 1px solid #ccc; border-radius: 8px; padding: 20px; font-size: 12px;">
             <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 2px solid #0056b3;">
@@ -182,7 +236,6 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
                     <p style="margin: 5px 0;"><strong>Puesto:</strong> ${puesto}</p>
                     <p style="margin: 5px 0;"><strong>Departamento:</strong> ${departamento}</p>
                     <p style="margin: 5px 0;"><strong>Empresa:</strong> ${nombreEmpresa}</p>
-                    <hr style="margin: 12px 0;">
                     <p style="margin: 5px 0;"><strong>Fecha de Solicitud:</strong> ${fechaSolicitud}</p>
                     <p style="margin: 5px 0;"><strong>Estado:</strong> <span style="font-weight: 600;">${estado}</span></p>
                 </div>
@@ -196,20 +249,24 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
                  <p style="margin: 5px 0; font-size: 12px; min-height: 40px;">${observaciones || 'Sin observaciones.'}</p>
             </div>
 
-            <footer style="margin-top: 40px; display: flex; justify-content: space-around; align-items: center; padding-top: 15px; border-top: 1px solid #ccc;">
-                <div style="text-align: center;">
-                    <div style="border-bottom: 1px solid #333; width: 200px; margin-bottom: 8px;"></div>
+            <footer style="margin-top: 40px; display: flex; justify-content: space-around; align-items: flex-end; padding-top: 15px; border-top: 1px solid #ccc;">
+                <div style="text-align: center; width: 45%;">
+                    <div style="height: 70px; display: flex; align-items: flex-end; justify-content: center;">
+                       ${firmaJefeHTML}
+                    </div>
+                    <div style="border-bottom: 1px solid #333; width: 100%; margin: 0 auto 8px auto;"></div>
                     <p style="margin: 0; font-weight: 600; color: #333; font-size: 11px;">Firma del Jefe Inmediato</p>
                 </div>
-                <div style="text-align: center;">
-                    <div style="border-bottom: 1px solid #333; width: 200px; margin-bottom: 8px;"></div>
+                <div style="text-align: center; width: 45%;">
+                    <div style="height: 70px; display: flex; align-items: flex-end; justify-content: center;">
+                       </div>
+                    <div style="border-bottom: 1px solid #333; width: 100%; margin: 0 auto 8px auto;"></div>
                     <p style="margin: 0; font-weight: 600; color: #333; font-size: 11px;">Firma del Colaborador</p>
                 </div>
             </footer>
         </div>
     `;
 }
-
 
 /**
  * Genera el HTML para la vista rápida dentro del modal.
@@ -346,11 +403,10 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
             ${camposDinamicosHTML}
             <hr class="my-2">
             <div class="col-12"><strong>Observaciones:</strong> ${observaciones || 'Sin observaciones.'}</div>
-            <div class="col-12"><strong>Última Actualización:</strong> ${ticket.FechaActualizado || '-'}</div>
+            <div class="col-md-6"><strong>Última Actualización:</strong> ${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</div>
         </div>
     `;
 }
-
 
 /**
  * Imprime el detalle de una boleta abriendo una nueva ventana.

@@ -232,7 +232,13 @@ switch ($request_method) {
                     }
                     break;
 
-                case 'getTicketVacationsRRHH': // BOLETAS VACACIONES
+                case 'getTicketVacationsRRHH':
+                
+                    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+                    $offset = ($page - 1) * $limit;
+
+                    // Consulta principal paginada
                     $sql = "SELECT 
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
@@ -264,37 +270,43 @@ switch ($request_method) {
                 WHERE 
                     b.idEstado IN (4, 9, 11, 12, 13)
                 ORDER BY b.idBoleta DESC
-                ;
-                ";
-                    $stmt = odbc_prepare($con, $sql);
+                    OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY";
 
+                    $stmt = odbc_prepare($con, $sql);
                     $exec = odbc_execute($stmt);
                     $tickets = [];
-                    if($exec){
-                        while($row = odbc_fetch_array($stmt)){
-                            $row = array_map(function($val){
-                                return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
-                            }, $row);
+
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
                             $tickets[] = $row;
                         }
                     }
-                    if (!empty($tickets)) {
-                        http_response_code(200);
-                        echo json_encode([
-                            "success" => true,
-                            "message" => "Boletas encontradas",
-                            "my tickets" => $tickets
-                        ]);
-                    } else {
-                        http_response_code(400);
-                        echo json_encode([
-                            "success" => false,
-                            "error" => "Boletas no encontradas"
-                        ]);
-                    }
+
+                    // Obtener el total de boletas
+                    $countQuery = "SELECT COUNT(*) AS total FROM BoletaVacaciones WHERE idEstado IN (4, 9, 11, 12, 13)";
+                    $countResult = odbc_exec($con, $countQuery);
+                    $totalRows = ($countResult && odbc_fetch_row($countResult)) ? intval(odbc_result($countResult, 'total')) : 0;
+                    $totalPaginas = ceil($totalRows / $limit);
+
+                    http_response_code(!empty($tickets) ? 200 : 404);
+                    echo json_encode([
+                        "success" => !empty($tickets),
+                        "message" => !empty($tickets) ? "Boletas encontradas" : "Boletas no encontradas",
+                        "boletas" => $tickets,
+                        "paginaActual" => $page,
+                        "totalPaginas" => $totalPaginas,
+                        "totalBoletas" => $totalRows
+                    ]);
                     break;
 
-                case 'getTicketReplaceTimeRRHH': // BOLETAS REPOSICIÓN DE TIEMPO
+
+                case 'getTicketReplaceTimeRRHH':
+
+                    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+                    $offset = ($page - 1) * $limit;
+
                     $sql = "SELECT 
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
@@ -331,46 +343,43 @@ switch ($request_method) {
                 WHERE 
                     b.idEstado IN (4, 9, 11, 12, 13)
                 ORDER BY 
-                    b.idBoleta DESC;
-                ";
+                    b.idBoleta DESC
+                    OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY;";
 
-                $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt);
+                    $stmt = odbc_prepare($con, $sql);
+                    $exec = odbc_execute($stmt);
+                    $tickets = [];
 
-                $tickets = [];
-
-                if ($exec) {
-                    while ($row = odbc_fetch_array($stmt)) {
-                        // Convertir a UTF-8 y formatear fechas si hace falta
-                        $row = array_map(function ($val) {
-                            return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
-                        }, $row);
-
-                        // Si querés dar formato a fechaSolicitud:
-                        if (!empty($row['fechaSolicitud'])) {
-                            $row['fechaSolicitud'] = date("d/m/Y", strtotime($row['fechaSolicitud']));
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
+                            $tickets[] = $row;
                         }
-
-                        $tickets[] = $row;
                     }
-                }
 
-                if (!empty($tickets)) {
-                    http_response_code(200);
+                    // Obtener el total de boletas
+                    $countQuery = "SELECT COUNT(*) AS total FROM BoletaReposicion WHERE idEstado IN (4, 9, 11, 12, 13)";
+                    $countResult = odbc_exec($con, $countQuery);
+                    $totalRows = ($countResult && odbc_fetch_row($countResult)) ? intval(odbc_result($countResult, 'total')) : 0;
+                    $totalPaginas = ceil($totalRows / $limit);
+
+                    http_response_code(!empty($tickets) ? 200 : 404);
                     echo json_encode([
-                        "success" => true,
-                        "message" => "Boletas encontradas",
-                        "boletas" => $tickets
+                        "success" => !empty($tickets),
+                        "message" => !empty($tickets) ? "Boletas encontradas" : "Boletas no encontradas",
+                        "boletas" => $tickets,
+                        "paginaActual" => $page,
+                        "totalPaginas" => $totalPaginas,
+                        "totalBoletas" => $totalRows
                     ]);
-                } else {
-                    http_response_code(404);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "No se encontraron boletas"
-                    ]);
-                }
                     break;
-                case 'getTicketJustificationRRHH': // BOLETAS REPOSICIÓN DE TIEMPO
+
+                case 'getTicketJustificationRRHH': // BOLETAS JUSTIFICACION / ESPECIAL
+
+                    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+                    $offset = ($page - 1) * $limit;
+
                     $sql = "SELECT 
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
@@ -409,54 +418,49 @@ switch ($request_method) {
                     b.idEstado IN (4, 9, 11, 12, 13)
                     
                 ORDER BY b.idBoleta DESC
-                ;
+                    OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY;";
 
+                    $stmt = odbc_prepare($con, $sql);
+                    $exec = odbc_execute($stmt);
+                    $tickets = [];
 
-                ";
-
-                $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt);
-
-                $tickets = [];
-
-                if ($exec) {
-                    while ($row = odbc_fetch_array($stmt)) {
-                        // Convertir a UTF-8 y formatear fechas si hace falta
-                        $row = array_map(function ($val) {
-                            return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
-                        }, $row);
-
-                        // Si querés dar formato a fechaSolicitud:
-                        if (!empty($row['fechaSolicitud'])) {
-                            $row['fechaSolicitud'] = date("d/m/Y", strtotime($row['fechaSolicitud']));
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
+                            $tickets[] = $row;
                         }
-
-                        $tickets[] = $row;
                     }
-                }
 
-                if (!empty($tickets)) {
-                    http_response_code(200);
+                    // Obtener el total de boletas
+                    $countQuery = "SELECT COUNT(*) AS total FROM BoletaEspecial WHERE idEstado IN (4, 9, 11, 12, 13)";
+                    $countResult = odbc_exec($con, $countQuery);
+                    $totalRows = ($countResult && odbc_fetch_row($countResult)) ? intval(odbc_result($countResult, 'total')) : 0;
+                    $totalPaginas = ceil($totalRows / $limit);
+
+                    http_response_code(!empty($tickets) ? 200 : 404);
                     echo json_encode([
-                        "success" => true,
-                        "message" => "Boletas encontradas",
-                        "boletas" => $tickets
+                        "success" => !empty($tickets),
+                        "message" => !empty($tickets) ? "Boletas encontradas" : "Boletas no encontradas",
+                        "boletas" => $tickets,
+                        "paginaActual" => $page,
+                        "totalPaginas" => $totalPaginas,
+                        "totalBoletas" => $totalRows
                     ]);
-                } else {
-                    http_response_code(404);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "No se encontraron boletas"
-                    ]);
-                }
                     break;
+
                 
-                case 'getTicketRequestIGSSRRHH': // BOLETAS REPOSICIÓN DE TIEMPO
+                case 'getTicketRequestIGSSRRHH':
+
+                    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+                    $offset = ($page - 1) * $limit;
+
                     $sql = "SELECT 
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                     u.nombre AS Solicitante, 
 					u.puesto AS Cargo,
+                    u.idEmpresa AS Empresa,
                     d.nombre AS Departamento, 
                     e.nombre AS Estado,
 					b.fecha1 AS Fecha,
@@ -480,46 +484,44 @@ switch ($request_method) {
                 WHERE 
                     b.idEstado IN (4, 9, 11, 12, 13)
                     
-                ORDER BY b.idBoleta DESC;
-                ";
+                ORDER BY b.idBoleta DESC
+                    OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY;";
+                     
 
-                $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt);
+                    $stmt = odbc_prepare($con, $sql);
+                    $exec = odbc_execute($stmt);
+                    $tickets = [];
 
-                $tickets = [];
-
-                if ($exec) {
-                    while ($row = odbc_fetch_array($stmt)) {
-                        // Convertir a UTF-8 y formatear fechas si hace falta
-                        $row = array_map(function ($val) {
-                            return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
-                        }, $row);
-
-                        // Si querés dar formato a fechaSolicitud:
-                        if (!empty($row['fechaSolicitud'])) {
-                            $row['fechaSolicitud'] = date("d/m/Y", strtotime($row['fechaSolicitud']));
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
+                            $tickets[] = $row;
                         }
-
-                        $tickets[] = $row;
                     }
-                }
 
-                if (!empty($tickets)) {
-                    http_response_code(200);
+                    // Obtener el total de boletas
+                    $countQuery = "SELECT COUNT(*) AS total FROM BoletaConsultaIGSS WHERE idEstado IN (4, 9, 11, 12, 13)";
+                    $countResult = odbc_exec($con, $countQuery);
+                    $totalRows = ($countResult && odbc_fetch_row($countResult)) ? intval(odbc_result($countResult, 'total')) : 0;
+                    $totalPaginas = ceil($totalRows / $limit);
+
+                    http_response_code(!empty($tickets) ? 200 : 404);
                     echo json_encode([
-                        "success" => true,
-                        "message" => "Boletas encontradas",
-                        "boletas" => $tickets
+                        "success" => !empty($tickets),
+                        "message" => !empty($tickets) ? "Boletas encontradas" : "Boletas no encontradas",
+                        "boletas" => $tickets,
+                        "paginaActual" => $page,
+                        "totalPaginas" => $totalPaginas,
+                        "totalBoletas" => $totalRows
                     ]);
-                } else {
-                    http_response_code(404);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "No se encontraron boletas"
-                    ]);
-                }
                     break;
-                case 'getUserTicketOffIGSSRRHH': // BOLETAS REPOSICIÓN DE TIEMPO
+
+                case 'getUserTicketOffIGSSRRHH':
+
+                    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+                    $offset = ($page - 1) * $limit;
+
                     $sql = "SELECT 
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
@@ -545,51 +547,50 @@ switch ($request_method) {
                     b.idEstado IN (4, 9, 11, 12, 13)
 
                                     
-                ORDER BY b.idBoleta DESC;
-                ";
+                ORDER BY b.idBoleta DESC
+                    OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY;";
 
-                $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt);
+                    $stmt = odbc_prepare($con, $sql);
+                    $exec = odbc_execute($stmt);
+                    $tickets = [];
 
-                $tickets = [];
-
-                if ($exec) {
-                    while ($row = odbc_fetch_array($stmt)) {
-                        // Convertir a UTF-8 y formatear fechas si hace falta
-                        $row = array_map(function ($val) {
-                            return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
-                        }, $row);
-
-                        // Si querés dar formato a fechaSolicitud:
-                        if (!empty($row['fechaSolicitud'])) {
-                            $row['fechaSolicitud'] = date("d/m/Y", strtotime($row['fechaSolicitud']));
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
+                            $tickets[] = $row;
                         }
-
-                        $tickets[] = $row;
                     }
-                }
 
-                if (!empty($tickets)) {
-                    http_response_code(200);
+                    // Obtener el total de boletas
+                    $countQuery = "SELECT COUNT(*) AS total FROM BoletaSuspencionIGSS WHERE idEstado IN (4, 9, 11, 12, 13)";
+                    $countResult = odbc_exec($con, $countQuery);
+                    $totalRows = ($countResult && odbc_fetch_row($countResult)) ? intval(odbc_result($countResult, 'total')) : 0;
+                    $totalPaginas = ceil($totalRows / $limit);
+
+                    http_response_code(!empty($tickets) ? 200 : 404);
                     echo json_encode([
-                        "success" => true,
-                        "message" => "Boletas encontradas",
-                        "boletas" => $tickets
+                        "success" => !empty($tickets),
+                        "message" => !empty($tickets) ? "Boletas encontradas" : "Boletas no encontradas",
+                        "boletas" => $tickets,
+                        "paginaActual" => $page,
+                        "totalPaginas" => $totalPaginas,
+                        "totalBoletas" => $totalRows
                     ]);
-                } else {
-                    http_response_code(404);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "No se encontraron boletas"
-                    ]);
-                }
                     break;
-                case 'getTicketOffRRHH': // BOLETAS SANCION
+
+                case 'getTicketOffRRHH':
+
+                    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+                    $offset = ($page - 1) * $limit;
+
                     $sql = "SELECT 
                     b.idBoleta,
                     b.tipo AS Tipo,
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion,
                     u.nombre AS Solicitante,
+                    u.puesto AS Cargo,
+                    u.idEmpresa AS Empresa,
                     e.nombre AS Estado,
                     d.nombre AS Departamento,
                     b.fecha_actualizado AS FechaActualizado
@@ -604,45 +605,37 @@ switch ($request_method) {
                 WHERE 
                     b.idEstado IN (4, 9, 11, 12, 13)
                     
-                ORDER BY b.idBoleta DESC;
-                ";
+                ORDER BY b.idBoleta DESC
+                    OFFSET $offset ROWS FETCH NEXT $limit ROWS ONLY;";
 
-                $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt);
+                    $stmt = odbc_prepare($con, $sql);
+                    $exec = odbc_execute($stmt);
+                    $tickets = [];
 
-                $tickets = [];
-
-                if ($exec) {
-                    while ($row = odbc_fetch_array($stmt)) {
-                        // Convertir a UTF-8 y formatear fechas si hace falta
-                        $row = array_map(function ($val) {
-                            return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
-                        }, $row);
-
-                        // Si querés dar formato a fechaSolicitud:
-                        if (!empty($row['fechaSolicitud'])) {
-                            $row['fechaSolicitud'] = date("d/m/Y", strtotime($row['fechaSolicitud']));
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
+                            $tickets[] = $row;
                         }
-
-                        $tickets[] = $row;
                     }
-                }
 
-                if (!empty($tickets)) {
-                    http_response_code(200);
+                    // Obtener el total de boletas
+                    $countQuery = "SELECT COUNT(*) AS total FROM BoletaSancion WHERE idEstado IN (4, 9, 11, 12, 13)";
+                    $countResult = odbc_exec($con, $countQuery);
+                    $totalRows = ($countResult && odbc_fetch_row($countResult)) ? intval(odbc_result($countResult, 'total')) : 0;
+                    $totalPaginas = ceil($totalRows / $limit);
+
+                    http_response_code(!empty($tickets) ? 200 : 404);
                     echo json_encode([
-                        "success" => true,
-                        "message" => "Boletas encontradas",
-                        "boletas" => $tickets
+                        "success" => !empty($tickets),
+                        "message" => !empty($tickets) ? "Boletas encontradas" : "Boletas no encontradas",
+                        "boletas" => $tickets,
+                        "paginaActual" => $page,
+                        "totalPaginas" => $totalPaginas,
+                        "totalBoletas" => $totalRows
                     ]);
-                } else {
-                    http_response_code(404);
-                    echo json_encode([
-                        "success" => false,
-                        "error" => "No se encontraron boletas"
-                    ]);
-                }
-                    break;  
+                    break;
+  
 
                     default:
                         header("HTTP/1.1 400 Bad Request");

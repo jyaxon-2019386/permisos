@@ -1,6 +1,13 @@
 // Almacena la lista completa de tickets obtenida de la API
 let ticketsData = [];
 
+// Variables de paginación y ordenamiento
+let currentPage = 1;
+let pageSize = 10;
+let totalPages = 1;
+let currentSortColumn = null; // Columna actualmente ordenada
+let currentSortDirection = 'asc'; // Dirección de ordenamiento: 'asc' o 'desc'
+
 document.addEventListener('DOMContentLoaded', () => {
     // Cargar avatar al inicio
     const avatarURL = sessionStorage.getItem('avatar');
@@ -22,8 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Cuando cambia el TIPO de boleta, se piden nuevos datos al servidor
     tipoTicketSelect.addEventListener('change', () => {
         const tipo = tipoTicketSelect.value;
-        const idCreador = sessionStorage.getItem('idUsuario') || '1';
-        getTickets(tipo, idCreador);
+        // Reinicia paginación y ordenamiento al cambiar el tipo de ticket
+        currentPage = 1;
+        currentSortColumn = null;
+        currentSortDirection = 'asc';
+        getTickets(tipo, currentPage);
     });
 
     // 2. Cuando se escribe en los filtros, se aplica el filtro localmente
@@ -36,6 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
         idBoletaInput.value = '';
         fechaInicioInput.value = '';
         fechaFinInput.value = '';
+        // Reinicia ordenamiento al limpiar filtros
+        currentSortColumn = null;
+        currentSortDirection = 'asc';
         filtrarYMostrarTickets();
     });
 
@@ -58,26 +71,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Ya no cargar boletas por default ---
-    // El usuario debe elegir el tipo de boleta primero
+    // Listener para ordenar columnas (delegación de eventos en thead)
+    ticketsContainer.addEventListener('click', (event) => {
+        const th = event.target.closest('th[data-sort-by]');
+        if (th) {
+            const column = th.dataset.sortBy;
+            sortTickets(column);
+        }
+    });
 });
 
 
 // --- LÓGICA DE DATOS (API) ---
 // Su única responsabilidad es OBTENER los datos del servidor
-async function getTickets(tipo) {
+async function getTickets(tipo, pagina = 1) {
     const contenedor = document.getElementById('ticketsContainer');
     mostrarCargando(contenedor);
 
     try {
         const url = new URL(`/permisos/assets/php/tickets/tickets.php`, window.location.origin);
         url.searchParams.set('quest', tipo);
+        url.searchParams.set('page', pagina); // ← usa la página recibida
+        url.searchParams.set('limit', 10);
 
         const response = await fetch(url.toString());
         const data = await response.json();
 
-        if (response.ok && data.success && (data["my tickets"] || data["boletas"])) {
-            ticketsData = data["my tickets"] || data["boletas"];
+        if (response.ok && data.success && (data.boletas || data["my tickets"])) {
+            ticketsData = data.boletas || data["my tickets"];
+            currentPage = data.paginaActual || pagina; // ← usa el backend o la que enviaste
+            totalPages = data.totalPaginas || 1;
+
+            // Después de obtener los datos, aplica el filtro y el ordenamiento actual
+            filtrarYMostrarTickets();
+            mostrarPaginacion(totalPages); // Se llama desde filtrarYMostrarTickets también, pero aquí asegura que se vea
         } else {
             ticketsData = [];
             mostrarError(data.error || data.message || "No se encontraron tickets.");
@@ -87,18 +114,11 @@ async function getTickets(tipo) {
         console.error("Error al obtener tickets:", error);
         mostrarError("Error de conexión al obtener los tickets.");
     }
-
-    // Una vez obtenidos los datos, se muestran aplicando los filtros actuales
-    filtrarYMostrarTickets();
 }
 
-// --- LÓGICA DE FILTRADO LOCAL ---
-// Filtra los datos ya existentes en `ticketsData` y los muestra
-// Variables de paginación
-let currentPage = 1;
-let pageSize = 10;
-let totalPages = 1;
 
+// --- LÓGICA DE FILTRADO LOCAL ---
+// Filtra los datos ya existentes en `ticketsData`, los ordena y los muestra
 function filtrarYMostrarTickets() {
     // Obtener los valores actuales de los filtros
     const idBoletaValue = document.getElementById('idBoletaFilter').value;
@@ -119,7 +139,10 @@ function filtrarYMostrarTickets() {
     if (fechaInicioValue) {
         const fechaInicio = new Date(fechaInicioValue + 'T00:00:00');
         ticketsFiltrados = ticketsFiltrados.filter(ticket => {
-            const fechaTicket = new Date(ticket.fechaSolicitud);
+            // Usa FechaDeCreacion o fechaSolicitud para la comparación
+            const fechaTicketStr = ticket.FechaDeCreacion || ticket.fechaSolicitud;
+            if (!fechaTicketStr) return false; // Si no hay fecha, no incluir
+            const fechaTicket = new Date(fechaTicketStr.replace(' ', 'T'));
             return fechaTicket >= fechaInicio;
         });
     }
@@ -128,8 +151,40 @@ function filtrarYMostrarTickets() {
     if (fechaFinValue) {
         const fechaFin = new Date(fechaFinValue + 'T23:59:59');
         ticketsFiltrados = ticketsFiltrados.filter(ticket => {
-            const fechaTicket = new Date(ticket.fechaSolicitud);
+            // Usa FechaDeCreacion o fechaSolicitud para la comparación
+            const fechaTicketStr = ticket.FechaDeCreacion || ticket.fechaSolicitud;
+            if (!fechaTicketStr) return false; // Si no hay fecha, no incluir
+            const fechaTicket = new Date(fechaTicketStr.replace(' ', 'T'));
             return fechaTicket <= fechaFin;
+        });
+    }
+
+    // 4. Aplicar ordenamiento
+    if (currentSortColumn) {
+        ticketsFiltrados.sort((a, b) => {
+            let valA = a[currentSortColumn];
+            let valB = b[currentSortColumn];
+
+            // Manejo específico para fechas si la columna es de fecha
+            if (currentSortColumn === 'FechaDeCreacion' || currentSortColumn === 'FechaActualizado') {
+                valA = new Date((a.FechaDeCreacion || a.fechaSolicitud || '').replace(' ', 'T'));
+                valB = new Date((b.FechaDeCreacion || b.fechaSolicitud || '').replace(' ', 'T'));
+            } else if (currentSortColumn === 'idBoleta') {
+                valA = parseInt(a.idBoleta.replace('B-', ''), 10); // Asegura comparación numérica para ID
+                valB = parseInt(b.idBoleta.replace('B-', ''), 10);
+            }
+            // Asegura que los valores sean cadenas para la comparación localeCompare, si no son números o fechas
+            if (typeof valA === 'string' && typeof valB === 'string') {
+                return currentSortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            }
+            // Para números o fechas
+            if (valA < valB) {
+                return currentSortDirection === 'asc' ? -1 : 1;
+            }
+            if (valA > valB) {
+                return currentSortDirection === 'asc' ? 1 : -1;
+            }
+            return 0;
         });
     }
 
@@ -146,14 +201,29 @@ function filtrarYMostrarTickets() {
     mostrarPaginacion(totalPages);
 }
 
-function mostrarPaginacion(totalPages) {
-    let paginacionContainer = document.getElementById('paginacionContainer');
-    if (!paginacionContainer) {
-        paginacionContainer = document.createElement('div');
-        paginacionContainer.id = 'paginacionContainer';
-        paginacionContainer.className = 'd-flex justify-content-center my-3';
-        document.getElementById('ticketsContainer').parentElement.appendChild(paginacionContainer);
+// Nueva función para ordenar los tickets
+function sortTickets(column) {
+    if (currentSortColumn === column) {
+        // Si ya está ordenado por esta columna, invierte la dirección
+        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        // Si es una nueva columna, ordena ascendente por defecto
+        currentSortColumn = column;
+        currentSortDirection = 'asc';
     }
+    currentPage = 1; // Reinicia la paginación al ordenar
+    filtrarYMostrarTickets(); // Vuelve a filtrar y mostrar con el nuevo orden
+}
+
+
+function mostrarPaginacion(totalPages) {
+    const paginacionContainer = document.getElementById('paginacionContainer') || (() => {
+        const container = document.createElement('div');
+        container.id = 'paginacionContainer';
+        container.className = 'd-flex justify-content-center my-3';
+        document.getElementById('ticketsContainer').parentElement.appendChild(container);
+        return container;
+    })();
 
     paginacionContainer.innerHTML = '';
     if (totalPages <= 1) return;
@@ -161,7 +231,6 @@ function mostrarPaginacion(totalPages) {
     const ul = document.createElement('ul');
     ul.className = 'pagination pagination-sm';
 
-    // Limitar cantidad de botones visibles
     const maxVisible = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = startPage + maxVisible - 1;
@@ -182,17 +251,18 @@ function mostrarPaginacion(totalPages) {
             e.preventDefault();
             if (!isDisabled && currentPage !== page) {
                 currentPage = page;
-                filtrarYMostrarTickets();
+                // Al hacer clic en un botón de paginación, siempre se debe recargar desde el backend
+                // ya que el filtrado y ordenamiento local solo aplican a la página actual de `ticketsData`
+                const tipo = document.getElementById('tipoTicket').value;
+                getTickets(tipo, page); // 🔁 Recarga la página desde el backend
             }
         };
         li.appendChild(a);
         return li;
     };
 
-    // Botón «Anterior»
     ul.appendChild(createPageButton(currentPage - 1, '«', false, currentPage === 1));
 
-    // Primera página y puntos suspensivos
     if (startPage > 1) {
         ul.appendChild(createPageButton(1));
         if (startPage > 2) {
@@ -203,12 +273,10 @@ function mostrarPaginacion(totalPages) {
         }
     }
 
-    // Páginas visibles
     for (let i = startPage; i <= endPage; i++) {
         ul.appendChild(createPageButton(i, null, i === currentPage));
     }
 
-    // Última página y puntos suspensivos
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             const li = document.createElement('li');
@@ -219,7 +287,6 @@ function mostrarPaginacion(totalPages) {
         ul.appendChild(createPageButton(totalPages));
     }
 
-    // Botón «Siguiente»
     ul.appendChild(createPageButton(currentPage + 1, '»', false, currentPage === totalPages));
 
     paginacionContainer.appendChild(ul);
@@ -230,9 +297,11 @@ function mostrarPaginacion(totalPages) {
 [idBoletaInput, fechaInicioInput, fechaFinInput].forEach(input => {
     input.addEventListener('input', () => {
         currentPage = 1;
+        filtrarYMostrarTickets();
     });
     input.addEventListener('change', () => {
         currentPage = 1;
+        filtrarYMostrarTickets();
     });
 });
 
@@ -257,13 +326,13 @@ function mostrarTickets(tickets) {
     table.innerHTML = `
         <thead class="table-light">
             <tr>
-                <th>ID Boleta</th>
-                <th>Fecha Creación</th>
-                <th>Solicitante</th>
-                <th>Departamento</th>
-                <th>Estado</th>
-                <th>Fecha Actualizado</th>
-                ${esSancion ? '<th>Tipo de Sanción</th>' : ''}
+                <th data-sort-by="idBoleta" class="${currentSortColumn === 'idBoleta' ? currentSortDirection : ''}">ID Boleta <i class="fa fa-${currentSortColumn === 'idBoleta' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>
+                <th data-sort-by="FechaDeCreacion" class="${currentSortColumn === 'FechaDeCreacion' ? currentSortDirection : ''}">Fecha Creación <i class="fa fa-${currentSortColumn === 'FechaDeCreacion' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>
+                <th data-sort-by="Solicitante" class="${currentSortColumn === 'Solicitante' ? currentSortDirection : ''}">Solicitante <i class="fa fa-${currentSortColumn === 'Solicitante' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>
+                <th data-sort-by="Departamento" class="${currentSortColumn === 'Departamento' ? currentSortDirection : ''}">Departamento <i class="fa fa-${currentSortColumn === 'Departamento' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>
+                <th data-sort-by="Estado" class="${currentSortColumn === 'Estado' ? currentSortDirection : ''}">Estado <i class="fa fa-${currentSortColumn === 'Estado' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>
+                <th data-sort-by="FechaActualizado" class="${currentSortColumn === 'FechaActualizado' ? currentSortDirection : ''}">Fecha Actualizado <i class="fa fa-${currentSortColumn === 'FechaActualizado' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>
+                ${esSancion ? `<th data-sort-by="Tipo" class="${currentSortColumn === 'Tipo' ? currentSortDirection : ''}">Tipo de Sanción <i class="fa fa-${currentSortColumn === 'Tipo' ? (currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc') : 'sort'}"></i></th>` : ''}
                 <th>Detalle</th>
             </tr>
         </thead>
@@ -280,7 +349,7 @@ function mostrarTickets(tickets) {
             <td>${ticket.Solicitante || '-'}</td>
             <td>${ticket.Departamento || '-'}</td>
             <td><span class="badge rounded-pill ${clase}">${estado}</span></td>
-            <td>${ticket.FechaActualizado || ticket.fecha_actualizado || 'Sin Actualización'}</td>
+            <td>${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</td>
             ${esSancion ? `<td>${ticket.Tipo || ticket.tipoSancion || '-'}</td>` : ''}
             <td>
             <button class="btn btn-sm btn-outline-primary btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
@@ -389,7 +458,7 @@ function mostrarDetalles(idBoleta) {
             <div class="col-md-6"><strong>Departamento:</strong> ${ticket.Departamento || '-'}</div>
             <div class="col-md-6"><strong>Fecha Creación:</strong> ${ticket.FechaDeCreacion || ticket.fechaSolicitud || '-'}</div>
             <div class="col-md-6"><strong>Estado:</strong> ${ticket.Estado || (getEstado(ticket.idEstado)?.texto || '-')}</div>
-            <div class="col-md-6"><strong>Fecha Actualizado:</strong> ${ticket.FechaActualizado || ticket.fecha_actualizado || 'Sin Actualización'}</div>
+            <div class="col-md-6"><strong>Fecha Actualizado:</strong> ${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</div>
             ${esSancion ? `<div class='col-md-6'><strong>Tipo de Sanción:</strong> ${ticket.Tipo || ticket.tipoSancion || '-'}</div>` : ''}
             <div class="col-12"><strong>Observaciones:</strong> ${observaciones || 'Sin observaciones.'}</div>
         </div>
@@ -460,14 +529,15 @@ function getEstadoPorTexto(texto) {
 
 function formatearFecha(fechaStr, incluirHora = false) {
     if (!fechaStr) return '-';
-    const fecha = new Date(fechaStr);
+    // Asegurarse de que la fecha sea parseable, incluso con formato ISO sin 'Z'
+    const fecha = new Date(fechaStr.replace(' ', 'T'));
     if (isNaN(fecha.getTime())) return fechaStr;
 
     const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
     let fechaFormateada = fecha.toLocaleDateString('es-GT', opcionesFecha);
 
     if (incluirHora) {
-        const opcionesHora = { hour: '2-digit', minute: '2-digit', hour12: true };
+        const opcionesHora = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }; // Añadido seconds
         fechaFormateada += ' ' + fecha.toLocaleTimeString('es-GT', opcionesHora);
     }
     return fechaFormateada;
@@ -488,22 +558,19 @@ function toggleSidebar() {
     if (getComputedStyle(sidebar).display === 'none') {
         sidebar.style.display = 'block';
         // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
-        mainContent.style.marginLeft = "220px"; /* O el valor que uses en tu CSS */
+        mainContent.style.marginLeft = "220px"; /* O el valor que usas en tu CSS */
     } else {
         // Oculta el sidebar y expande el contenedor principal
         sidebar.style.display = 'none';
         mainContent.style.marginLeft = "0";
     }
 }
-            
+
 /**
  * Mapea el valor del tipo de boleta a un título descriptivo.
  * @param {string} tipoTicket - El valor del select 'tipoTicket'.
  * @returns {string} - El título correspondiente a la boleta.
- *  * @param {number} idEmpresa - El ID de la empresa (ej. 1, 2, 3).
-
  */
-
 function obtenerTituloBoleta(tipoTicket) {
     const titulos = {
         'getTicketVacationsRRHH': 'Boleta de Vacaciones',
@@ -513,6 +580,5 @@ function obtenerTituloBoleta(tipoTicket) {
         'getUserTicketOffIGSSRRHH': 'Boleta de Suspensión IGSS',
         'getTicketOffRRHH': 'Boleta de Sanción'
     };
-    return titulos[tipoTicket] || 'Boleta de Permiso';
+    return titulos[tipoTicket] || 'Boleta de Usuario';
 }
-

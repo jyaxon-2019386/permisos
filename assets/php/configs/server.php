@@ -14,15 +14,15 @@ $hoy = date("Y-m-d");
 // mysqli_select_db($con, "crea");
 // $con->set_charset("utf8");
 
-// $dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
-// $data_source = 'zzzz';
-// $user = 'sa';
-// $password = 'Empres@s0425';
-
-$dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos";
+$dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
 $data_source = 'zzzz';
-$user = 'admin';
-$password = '1215';
+$user = 'sa';
+$password = 'Empres@s0425';
+
+// $dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos";
+// $data_source = 'zzzz';
+// $user = 'admin';
+// $password = '1215';
 
 // Connect to the data source and get a handle for that connection.
 
