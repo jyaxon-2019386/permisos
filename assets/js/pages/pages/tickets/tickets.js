@@ -283,16 +283,16 @@ function mostrarTickets(tickets) {
             <td>${ticket.FechaActualizado || ticket.fecha_actualizado || 'Sin Actualización'}</td>
             ${esSancion ? `<td>${ticket.Tipo || ticket.tipoSancion || '-'}</td>` : ''}
             <td>
-                <button class="btn-table-details btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
-                    <i class="fa fa-search"></i>
-                </button>
-                <button class="btn-table-print btn-print ms-1" data-id="${ticket.idBoleta}" title="Imprimir Detalle">
-                    <i class="fa fa-print"></i>
-                </button>
-                <button class="btn-table-pdf btn-pdf ms-1" data-id="${ticket.idBoleta}" title="Exportar Detalle PDF">
-                    <i class="fa fa-file-pdf"></i>
-                </button>
-            </td>
+            <button class="btn btn-sm btn-outline-primary btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
+                <i class="fa fa-search"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary btn-print ms-1" data-id="${ticket.idBoleta}" title="Imprimir Detalle">
+                <i class="fa fa-print"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-pdf ms-1" data-id="${ticket.idBoleta}" title="Exportar Detalle PDF">
+                <i class="fa fa-file-pdf"></i>
+            </button>
+        </td>
         `;
         tbody.appendChild(row);
     });

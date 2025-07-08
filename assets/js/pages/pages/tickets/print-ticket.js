@@ -1,29 +1,3 @@
-/**
- * =================================================================================
- * CONSULTAS SQL DE REFERENCIA
- * =================================================================================
- * Se añaden las consultas para los diferentes tipos de boletas.
- * ---------------------------------------------------------------------------------
- *
- * -- CONSULTA PARA BOLETAS DE SANCIÓN --
- * SELECT b.idBoleta, b.tipo AS Tipo, ... FROM BoletaSancion b ...
- *
- * -- CONSULTA PARA SUSPENSIÓN IGSS --
- * SELECT b.idBoleta, b.fechaInicio, b.fechaFinal, b.totalD as TotalDias, ... FROM BoletaSuspencionIGSS b ...
- *
- * -- CONSULTA PARA CONSULTA IGSS --
- * SELECT b.idBoleta, b.fecha1 AS Fecha, b.desc1 AS Detalle, b.horaI1, b.horaF1, b.totalH as HorasTotal, ... FROM BoletaConsultaIGSS b ...
- *
- * -- CONSULTA PARA BOLETAS ESPECIALES / JUSTIFICACIONES --
- * SELECT b.idBoleta, b.fecha1, b.desc1A AS Detalle1, b.totalH, ... FROM BoletaEspecial b ...
- *
- * -- CONSULTA PARA BOLETAS DE VACACIONES --
- * SELECT b.idBoleta, b.fecha1, b.desc1 AS Detalle1, b.totalD AS TotalDias, ... FROM BoletaVacaciones b ...
- *
- * -- CONSULTA PARA BOLETAS DE REPOSICIÓN --
- * SELECT b.idBoleta, b.fecha1, b.fecha1R, b.totalH, b.totalHR, ... FROM BoletaReposicion b ...
- *
- */
 
 /**
  * Formatea una fecha y filtra las que son placeholders (ej. '2000-01-01').
@@ -254,18 +228,18 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
     let camposDinamicosHTML = '';
 
     switch (tipoTicket) {
-        case 'getTicketSanctionRRHH':
+        case 'getTicketOffRRHH':
             camposDinamicosHTML = `<div class="col-12"><strong>Tipo de Sanción:</strong> ${ticket.Tipo || 'No especificado'}</div>`;
             break;
 
-        case 'getTicketIGSSSuspensionRRHH':
+        case 'getUserTicketOffIGSSRRHH':
              camposDinamicosHTML = `
                 <div class="col-md-6"><strong>Fecha Inicio:</strong> ${formatAndFilterDate(ticket.fechaInicio) || 'N/A'}</div>
                 <div class="col-md-6"><strong>Fecha Final:</strong> ${formatAndFilterDate(ticket.fechaFinal) || 'N/A'}</div>
                 <div class="col-12"><strong>Total de Días:</strong> ${ticket.TotalDias || '0'}</div>`;
             break;
 
-        case 'getTicketIGSSAppointmentRRHH':
+        case 'getTicketRequestIGSSRRHH':
             camposDinamicosHTML = `
                 <div class="col-md-6"><strong>Fecha:</strong> ${formatAndFilterDate(ticket.Fecha) || 'N/A'}</div>
                 <div class="col-md-6"><strong>Detalle:</strong> ${ticket.Detalle || 'N/A'}</div>
@@ -275,7 +249,6 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
             break;
 
         case 'getTicketJustificationRRHH':
-        case 'getTicketSpecialRRHH':
             const specialDays = [];
             for (let i = 1; i <= 5; i++) {
                 const date = formatAndFilterDate(ticket[`fecha${i}`]);
@@ -302,7 +275,7 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
                 <div class="col-12 mt-3"><strong>Total de Horas:</strong> ${ticket.totalHoras || '0'}</div>`;
             break;
 
-        case 'getTicketVacationRRHH':
+        case 'getTicketVacationsRRHH':
             const vacationDays = [];
             for (let i = 1; i <= 5; i++) {
                 const date = formatAndFilterDate(ticket[`Fecha${i}`]);
@@ -329,7 +302,7 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
                 <div class="col-12 mt-3"><strong>Total de Días Solicitados:</strong> ${ticket.TotalDias || '0'}</div>`;
             break;
 
-        case 'getTicketReplacementRRHH':
+        case 'getTicketReplaceTimeRRHH':
             const fechasAReponer = [ticket.Fecha1, ticket.Fecha2, ticket.Fecha3, ticket.Fecha4, ticket.Fecha5].map(formatAndFilterDate).filter(Boolean);
             const fechasReposicion = [ticket.FechaR1, ticket.FechaR2, ticket.FechaR3, ticket.FechaR4, ticket.FechaR5].map(formatAndFilterDate).filter(Boolean);
             let fechasHTML = '<div class="col-12"><p class="text-center">No hay fechas para mostrar.</p></div>';
@@ -461,7 +434,7 @@ function mostrarDetalles(idBoleta) {
     modalFooter.innerHTML = `
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="button" class="btn btn-primary" onclick="imprimirDetalleBoleta(${idBoleta})"><i class="fa fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-success" onclick="exportarDetallePDF(${idBoleta})"><i class="fa fa-file-pdf"></i> Exportar a PDF</button>
+        <button type="button" class="btn btn-danger onclick="exportarDetallePDF(${idBoleta})"><i class="fa fa-file-pdf"></i> Exportar a PDF</button>
     `;
 
     const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
