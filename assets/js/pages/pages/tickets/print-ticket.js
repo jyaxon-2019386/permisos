@@ -108,7 +108,7 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
              rightColumnHTML = `
                 <h4 style="margin-top:0; margin-bottom: 10px; font-size: 14px; color: #333;">Detalle de Consulta</h4>
                 <p style="margin: 5px 0;"><strong>Fecha:</strong> ${formatAndFilterDate(ticket.Fecha) || 'N/A'}</p>
-                <p style="margin: 5px 0;"><strong>Detalle:</strong> ${ticket.Detalle || 'N/A'}</p>
+                <div class="col-md-6"><strong>Detalle:</strong> ${ticket.Detalles || 'Boleta de Consulta de IGSS'}</div>
                 <p style="margin: 5px 0;"><strong>Hora Inicio:</strong> ${ticket.HoraInicio || 'N/A'}</p>
                 <p style="margin: 5px 0;"><strong>Hora Final:</strong> ${ticket.HoraFinal || 'N/A'}</p>
                 <p style="margin-top: 15px; font-size: 14px;"><strong>Total de Horas:</strong> ${ticket.HorasTotal || '0'}</p>`;
@@ -126,7 +126,7 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
             let specialRows = specialDays.map(day => `
                 <tr>
                     <td style="padding: 4px 8px; border: 1px solid #ddd;">${day.date}</td>
-                    <td style="padding: 4px 8px; border: 1px solid #ddd;">${day.detail}</td>
+                    <td style="padding: 4px 8px; border: 1px solid #ddd;">${day.details || 'Boleta de Falta Justificada Especial'}</td>
                 </tr>`).join('');
             if (!specialRows) specialRows = '<tr><td colspan="2" style="padding: 5px; text-align: center;">No hay fechas.</td></tr>';
 
@@ -222,7 +222,7 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
     return `
         <div style="max-width: 800px; margin: auto; font-family: 'Poppins', sans-serif; border: 1px solid #ccc; border-radius: 8px; padding: 20px; font-size: 12px;">
             <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 2px solid #0056b3;">
-                <img src="../../assets/img/logo-ct.png" alt="Logo de la Empresa" style="width: 120px; height: auto;">
+                <img src="../../assets/img/logos/econsa.webp" alt="Logo de la Empresa" style="width: 120px; height: auto;">
                 <div style="text-align: right;">
                     <h2 style="color: #0056b3; margin: 0; font-size: 20px; font-weight: 700;">${tituloBoleta}</h2>
                     <p style="color: #555; margin: 4px 0 0; font-size: 16px;">#${ticket.idBoleta || 'N/A'}</p>
@@ -299,7 +299,7 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
         case 'getTicketRequestIGSSRRHH':
             camposDinamicosHTML = `
                 <div class="col-md-6"><strong>Fecha:</strong> ${formatAndFilterDate(ticket.Fecha) || 'N/A'}</div>
-                <div class="col-md-6"><strong>Detalle:</strong> ${ticket.Detalle || 'N/A'}</div>
+                <div class="col-md-6"><strong>Detalle:</strong> ${ticket.Detalles || 'Boleta de Consulta de IGSS'}</div>
                 <div class="col-md-6"><strong>Hora Inicio:</strong> ${ticket.HoraInicio || 'N/A'}</div>
                 <div class="col-md-6"><strong>Hora Final:</strong> ${ticket.HoraFinal || 'N/A'}</div>
                 <div class="col-12"><strong>Total de Horas:</strong> ${ticket.HorasTotal || '0'}</div>`;
@@ -311,7 +311,7 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
                 const date = formatAndFilterDate(ticket[`fecha${i}`]);
                 const detail = ticket[`Detalle${i}`];
                 if (date) {
-                    specialDays.push({ date, detail: detail || 'Día completo' });
+                    specialDays.push({ date, detail: detail || 'Boleta de Falta Justificada Especial' });
                 }
             }
             let specialHTML = '<div class="col-12"><p class="text-center">No hay fechas para mostrar.</p></div>';
@@ -319,7 +319,7 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
                 let rowsHTML = specialDays.map(day => `
                     <div class="row">
                         <div class="col-6 text-center border-end py-1">${day.date}</div>
-                        <div class="col-6 text-center py-1">${day.detail}</div>
+                        <div class="col-6 text-center py-1">${day.details || 'Boleta de Falta Justificada Especial'}</div>
                     </div>`).join('');
                 specialHTML = `
                     <div class="col-12">
@@ -460,6 +460,7 @@ function exportarDetallePDF(idBoleta) {
     html2pdf().from(elemento).set(opciones).save();
 }
 
+
 /**
  * Utilidad para obtener el nombre de la empresa a partir de su ID.
  * @param {number | string} idEmpresa - El ID de la empresa.
@@ -490,7 +491,7 @@ function mostrarDetalles(idBoleta) {
     modalFooter.innerHTML = `
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="button" class="btn btn-primary" onclick="imprimirDetalleBoleta(${idBoleta})"><i class="fa fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-danger onclick="exportarDetallePDF(${idBoleta})"><i class="fa fa-file-pdf"></i> Exportar a PDF</button>
+<button type="button" class="btn btn-danger" onclick="exportarDetallePDF(${idBoleta})"><i class="fa fa-file-pdf"></i> Exportar a PDF</button>
     `;
 
     const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));

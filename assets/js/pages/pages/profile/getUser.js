@@ -6,7 +6,7 @@ async function getUser() {
             return;
         }
 
-        const response = await fetch(`http://localhost/permisos/assets/php/auth/auth.php?quest=getUser&idUsuario=${encodeURIComponent(idUsuario)}`, {
+        const response = await fetch(`http://192.168.1.7:81/permisos/assets/php/auth/auth.php?quest=getUser&idUsuario=${encodeURIComponent(idUsuario)}`, {
             method: 'GET'
         });
 
@@ -86,7 +86,7 @@ function logout() {
     sessionStorage.clear('usuario_principal');
     sessionStorage.clear('avatar');
     sessionStorage.clear('id_usuario');
-    window.location.href = '../authentication/signin/login.html';
+    window.location.href = '../../authentication/signin/login.html';
 }
 
 // Llama directamente a getUser cuando cargue la página

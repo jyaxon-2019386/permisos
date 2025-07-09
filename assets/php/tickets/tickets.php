@@ -635,6 +635,114 @@ switch ($request_method) {
                         "totalBoletas" => $totalRows
                     ]);
                     break;
+
+                    case 'getTicketById':
+            $idBoleta = isset($_GET['idBoleta']) ? intval($_GET['idBoleta']) : 0;
+
+                    $sql = "SELECT 
+                                b.idBoleta, 
+                                CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
+                                u.nombre AS Solicitante, 
+                                d.nombre AS Departamento, 
+                                e.nombre AS Estado,
+                                u.puesto AS Puesto,
+                                u.idEmpresa AS Empresa,
+                                b.totalD AS TotalDias,
+                                b.fecha1 AS Fecha1,
+                                b.fecha2 AS Fecha2,
+                                b.fecha3 AS Fecha3,
+                                b.fecha4 AS Fecha4,
+                                b.fecha5 AS Fecha5,
+                                b.desc1 AS Detalle1,
+                                b.desc2 AS Detalle2,
+                                b.desc3 AS Detalle3,
+                                b.desc4 AS Detalle4,
+                                b.desc5 AS Detalle5,
+                                b.fecha_actualizado AS FechaActualizado
+                            FROM BoletaVacaciones b
+                            INNER JOIN Estado e ON b.idEstado = e.idEstado
+                            INNER JOIN Usuario u ON b.idSolicitante = u.idUsuario
+                            INNER JOIN Departamento d ON u.idDepartamentoP = d.idDepartamento
+                            WHERE b.idBoleta = ?";
+
+                    $stmt = odbc_prepare($con, $sql);
+                    $exec = odbc_execute($stmt, [$idBoleta]);
+                    $ticket = [];
+
+                    if ($exec && odbc_fetch_row($stmt)) {
+                        for ($i = 1; $i <= odbc_num_fields($stmt); $i++) {
+                            $field = odbc_field_name($stmt, $i);
+                            $ticket[$field] = mb_convert_encoding(odbc_result($stmt, $i), 'UTF-8', 'Windows-1252');
+                        }
+                    }
+
+                    http_response_code(!empty($ticket) ? 200 : 404);
+                    echo json_encode([
+                        "success" => !empty($ticket),
+                        "message" => !empty($ticket) ? "Boleta encontrada" : "Boleta no encontrada",
+                        "boleta" => $ticket
+                    ]);
+                    break;
+
+                case 'getBoletasPorFecha':
+    $fechaInicio = $_GET['fechaInicio'] ?? null;
+    $fechaFin = $_GET['fechaFin'] ?? null;
+
+    if ($fechaInicio && $fechaFin) {
+        try {
+            // Formatear las fechas al formato YYYY-MM-DD
+            $fechaInicioFormat = date('Y-m-d', strtotime(str_replace('/', '-', $fechaInicio)));
+            $fechaFinFormat = date('Y-m-d', strtotime(str_replace('/', '-', $fechaFin)));
+
+            $sql = "
+                SELECT 
+                    b.idBoleta, 
+                    CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreación, 
+                    u.nombre AS Solicitante,
+                    d.nombre AS Departamento, 
+                    e.nombre AS Estado, 
+                    b.fecha_actualizado AS [Fecha Actualizado]
+                FROM BoletaVacaciones b
+                INNER JOIN Estado e ON b.idEstado = e.idEstado
+                INNER JOIN Usuario u ON b.idSolicitante = u.idUsuario
+                INNER JOIN Departamento d ON u.idDepartamentoP = d.idDepartamento
+                WHERE 
+                    TRY_CONVERT(DATE, b.fechaSolicitud, 103) BETWEEN ? AND ?
+                    AND b.idEstado IN (4, 9, 11, 12, 13)
+            ";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$fechaInicioFormat, $fechaFinFormat]);
+            $boletas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($boletas) {
+                echo json_encode([
+                    'success' => true,
+                    'boletas' => $boletas
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se encontraron boletas en ese rango de fechas.'
+                ]);
+            }
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al buscar boletas por fecha.',
+                'error' => $e->getMessage()
+            ]);
+        }
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Debe proporcionar fechaInicio y fechaFin.'
+        ]);
+    }
+    break;
+
+
   
 
                     default:

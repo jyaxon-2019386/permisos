@@ -1,9 +1,10 @@
 // Almacena la lista completa de tickets obtenida de la API
 let ticketsData = [];
+const usaPaginacionBackend = true;
 
 // Variables de paginación y ordenamiento
 let currentPage = 1;
-let pageSize = 10;
+let pageSize = 50;
 let totalPages = 1;
 let currentSortColumn = null; // Columna actualmente ordenada
 let currentSortDirection = 'asc'; // Dirección de ordenamiento: 'asc' o 'desc'
@@ -21,10 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const tipoTicketSelect = document.getElementById('tipoTicket');
     const fechaInicioInput = document.getElementById('fechaInicio');
     const fechaFinInput = document.getElementById('fechaFin');
+    const departamentoSelect = document.getElementById('departamentoFilter'); // Nuevo filtro
     const btnLimpiar = document.getElementById('btnLimpiarFiltros');
     const ticketsContainer = document.getElementById('ticketsContainer');
 
-    // --- Lógica de eventos separada ---
+    // Inicializar datos al cargar la página
+    const tipoInicial = tipoTicketSelect.value;
+    getTickets(tipoInicial, 1);
+
+    // --- EVENTOS ---
 
     // 1. Cuando cambia el TIPO de boleta, se piden nuevos datos al servidor
     tipoTicketSelect.addEventListener('change', () => {
@@ -36,23 +42,48 @@ document.addEventListener('DOMContentLoaded', () => {
         getTickets(tipo, currentPage);
     });
 
-    // 2. Cuando se escribe en los filtros, se aplica el filtro localmente
-    idBoletaInput.addEventListener('input', filtrarYMostrarTickets);
-    fechaInicioInput.addEventListener('change', filtrarYMostrarTickets);
-    fechaFinInput.addEventListener('change', filtrarYMostrarTickets);
+    // 2. Filtro por ID con búsqueda exacta en el backend
+    idBoletaInput.addEventListener('input', debounce(() => {
+    currentPage = 1;
+    filtrarYMostrarTickets();
+}, 500));
 
-    // 3. El botón Limpiar resetea los campos y aplica el filtro local
+    // 3. Filtros de fecha - aplicar filtrado local cuando cambian
+    fechaInicioInput.addEventListener('change', () => {
+        currentPage = 1;
+        filtrarYMostrarTickets();
+    });
+
+    fechaFinInput.addEventListener('change', () => {
+        currentPage = 1;
+        filtrarYMostrarTickets();
+    });
+
+    // 4. Filtro por departamento - aplicar filtrado local
+    if (departamentoSelect) {
+        departamentoSelect.addEventListener('change', () => {
+            currentPage = 1;
+            filtrarYMostrarTickets();
+        });
+    }
+
+    // 5. El botón Limpiar resetea los campos y aplica el filtro local
     btnLimpiar.addEventListener('click', () => {
         idBoletaInput.value = '';
         fechaInicioInput.value = '';
         fechaFinInput.value = '';
+        if (departamentoSelect) departamentoSelect.value = '';
+        
         // Reinicia ordenamiento al limpiar filtros
         currentSortColumn = null;
         currentSortDirection = 'asc';
-        filtrarYMostrarTickets();
+        
+        // Recargar datos desde el backend
+        const tipo = tipoTicketSelect.value;
+        getTickets(tipo, 1);
     });
 
-    // 4. Listener para los clics en los botones de detalles (delegación de eventos)
+    // 6. Listener para los clics en los botones de detalles (delegación de eventos)
     ticketsContainer.addEventListener('click', (event) => {
         const detailsButton = event.target.closest('.btn-details');
         if (detailsButton) {
@@ -71,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Listener para ordenar columnas (delegación de eventos en thead)
+    // 7. Listener para ordenar columnas (delegación de eventos en thead)
     ticketsContainer.addEventListener('click', (event) => {
         const th = event.target.closest('th[data-sort-by]');
         if (th) {
@@ -81,9 +112,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Función debounce para evitar múltiples llamadas
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
 // --- LÓGICA DE DATOS (API) ---
-// Su única responsabilidad es OBTENER los datos del servidor
 async function getTickets(tipo, pagina = 1) {
     const contenedor = document.getElementById('ticketsContainer');
     mostrarCargando(contenedor);
@@ -91,20 +133,22 @@ async function getTickets(tipo, pagina = 1) {
     try {
         const url = new URL(`/permisos/assets/php/tickets/tickets.php`, window.location.origin);
         url.searchParams.set('quest', tipo);
-        url.searchParams.set('page', pagina); // ← usa la página recibida
-        url.searchParams.set('limit', 10);
+        url.searchParams.set('page', pagina);
+        url.searchParams.set('limit', pageSize);
 
         const response = await fetch(url.toString());
         const data = await response.json();
 
         if (response.ok && data.success && (data.boletas || data["my tickets"])) {
             ticketsData = data.boletas || data["my tickets"];
-            currentPage = data.paginaActual || pagina; // ← usa el backend o la que enviaste
+            currentPage = data.paginaActual || pagina;
             totalPages = data.totalPaginas || 1;
 
-            // Después de obtener los datos, aplica el filtro y el ordenamiento actual
+            // Después de obtener los datos, poblar el filtro de departamentos
+            poblarFiltroDepartamentos();
+            
+            // Aplicar filtros locales y mostrar
             filtrarYMostrarTickets();
-            mostrarPaginacion(totalPages); // Se llama desde filtrarYMostrarTickets también, pero aquí asegura que se vea
         } else {
             ticketsData = [];
             mostrarError(data.error || data.message || "No se encontraron tickets.");
@@ -117,88 +161,157 @@ async function getTickets(tipo, pagina = 1) {
 }
 
 
+// Función para poblar el filtro de departamentos
+function poblarFiltroDepartamentos() {
+    const departamentoSelect = document.getElementById('departamentoFilter');
+    if (!departamentoSelect) return;
+
+    // Obtener departamentos únicos de los datos
+    const departamentos = [...new Set(ticketsData.map(ticket => ticket.Departamento).filter(dept => dept))];
+    departamentos.sort();
+
+    // Limpiar opciones existentes (excepto la primera)
+    departamentoSelect.innerHTML = '<option value="">Todos los departamentos</option>';
+
+    // Agregar opciones de departamentos
+    departamentos.forEach(departamento => {
+        const option = document.createElement('option');
+        option.value = departamento;
+        option.textContent = departamento;
+        departamentoSelect.appendChild(option);
+    });
+}
+
 // --- LÓGICA DE FILTRADO LOCAL ---
-// Filtra los datos ya existentes en `ticketsData`, los ordena y los muestra
 function filtrarYMostrarTickets() {
-    // Obtener los valores actuales de los filtros
-    const idBoletaValue = document.getElementById('idBoletaFilter').value;
+    // Si usa paginación backend y no hay filtros locales activos, mostrar directamente
+    if (usaPaginacionBackend && !hayFiltrosLocalesActivos()) {
+        mostrarTickets(ticketsData);
+        mostrarPaginacion(totalPages);
+        return;
+    }
+
+    // Aplicar filtros locales
+    const idBoletaValue = document.getElementById('idBoletaFilter').value.trim();
     const fechaInicioValue = document.getElementById('fechaInicio').value;
     const fechaFinValue = document.getElementById('fechaFin').value;
+    const departamentoValue = document.getElementById('departamentoFilter')?.value || '';
 
-    // Empezar con la lista completa
     let ticketsFiltrados = [...ticketsData];
 
-    // 1. Filtrar por ID de Boleta
+    // Filtro por ID (búsqueda por coincidencia)
     if (idBoletaValue) {
         ticketsFiltrados = ticketsFiltrados.filter(ticket =>
-            ticket.idBoleta.includes(idBoletaValue)
+            ticket.idBoleta && ticket.idBoleta.toString().includes(idBoletaValue)
         );
     }
 
-    // 2. Filtrar por Fecha de Inicio
+    // Filtro por departamento
+    if (departamentoValue) {
+        ticketsFiltrados = ticketsFiltrados.filter(ticket =>
+            ticket.Departamento && ticket.Departamento.toLowerCase().includes(departamentoValue.toLowerCase())
+        );
+    }
+
+    // Filtro por fecha de inicio
     if (fechaInicioValue) {
-        const fechaInicio = new Date(fechaInicioValue + 'T00:00:00');
+        const fechaInicio = new Date(fechaInicioValue);
+        fechaInicio.setHours(0, 0, 0, 0); // Inicio del día
+        
         ticketsFiltrados = ticketsFiltrados.filter(ticket => {
-            // Usa FechaDeCreacion o fechaSolicitud para la comparación
             const fechaTicketStr = ticket.FechaDeCreacion || ticket.fechaSolicitud;
-            if (!fechaTicketStr) return false; // Si no hay fecha, no incluir
-            const fechaTicket = new Date(fechaTicketStr.replace(' ', 'T'));
-            return fechaTicket >= fechaInicio;
+            if (!fechaTicketStr) return false;
+            
+            try {
+                const fechaTicket = new Date(fechaTicketStr.replace(' ', 'T'));
+                fechaTicket.setHours(0, 0, 0, 0); // Inicio del día
+                return !isNaN(fechaTicket.getTime()) && fechaTicket >= fechaInicio;
+            } catch (error) {
+                console.warn('Error al parsear fecha:', fechaTicketStr, error);
+                return false;
+            }
         });
     }
 
-    // 3. Filtrar por Fecha de Fin
+    // Filtro por fecha de fin
     if (fechaFinValue) {
-        const fechaFin = new Date(fechaFinValue + 'T23:59:59');
+        const fechaFin = new Date(fechaFinValue);
+        fechaFin.setHours(23, 59, 59, 999); // Final del día
+        
         ticketsFiltrados = ticketsFiltrados.filter(ticket => {
-            // Usa FechaDeCreacion o fechaSolicitud para la comparación
             const fechaTicketStr = ticket.FechaDeCreacion || ticket.fechaSolicitud;
-            if (!fechaTicketStr) return false; // Si no hay fecha, no incluir
-            const fechaTicket = new Date(fechaTicketStr.replace(' ', 'T'));
-            return fechaTicket <= fechaFin;
+            if (!fechaTicketStr) return false;
+            
+            try {
+                const fechaTicket = new Date(fechaTicketStr.replace(' ', 'T'));
+                return !isNaN(fechaTicket.getTime()) && fechaTicket <= fechaFin;
+            } catch (error) {
+                console.warn('Error al parsear fecha:', fechaTicketStr, error);
+                return false;
+            }
         });
     }
 
-    // 4. Aplicar ordenamiento
+    // Aplicar ordenamiento si está activo
     if (currentSortColumn) {
         ticketsFiltrados.sort((a, b) => {
             let valA = a[currentSortColumn];
             let valB = b[currentSortColumn];
 
-            // Manejo específico para fechas si la columna es de fecha
+            // Manejo especial para fechas
             if (currentSortColumn === 'FechaDeCreacion' || currentSortColumn === 'FechaActualizado') {
-                valA = new Date((a.FechaDeCreacion || a.fechaSolicitud || '').replace(' ', 'T'));
-                valB = new Date((b.FechaDeCreacion || b.fechaSolicitud || '').replace(' ', 'T'));
-            } else if (currentSortColumn === 'idBoleta') {
-                valA = parseInt(a.idBoleta.replace('B-', ''), 10); // Asegura comparación numérica para ID
-                valB = parseInt(b.idBoleta.replace('B-', ''), 10);
+                const fechaA = new Date((a.FechaDeCreacion || a.fechaSolicitud || '').replace(' ', 'T'));
+                const fechaB = new Date((b.FechaDeCreacion || b.fechaSolicitud || '').replace(' ', 'T'));
+                valA = isNaN(fechaA.getTime()) ? new Date(0) : fechaA;
+                valB = isNaN(fechaB.getTime()) ? new Date(0) : fechaB;
+            } 
+            // Manejo especial para ID de boleta
+            else if (currentSortColumn === 'idBoleta') {
+                valA = parseInt(String(a.idBoleta || '0').replace(/[^\d]/g, ''), 10) || 0;
+                valB = parseInt(String(b.idBoleta || '0').replace(/[^\d]/g, ''), 10) || 0;
             }
-            // Asegura que los valores sean cadenas para la comparación localeCompare, si no son números o fechas
+            // Manejo para strings
+            else {
+                valA = String(valA || '').toLowerCase();
+                valB = String(valB || '').toLowerCase();
+            }
+
+            // Comparación
             if (typeof valA === 'string' && typeof valB === 'string') {
-                return currentSortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                const result = valA.localeCompare(valB);
+                return currentSortDirection === 'asc' ? result : -result;
             }
-            // Para números o fechas
-            if (valA < valB) {
-                return currentSortDirection === 'asc' ? -1 : 1;
-            }
-            if (valA > valB) {
-                return currentSortDirection === 'asc' ? 1 : -1;
-            }
+            
+            if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
             return 0;
         });
     }
 
-    // Calcular total de páginas
-    totalPages = Math.ceil(ticketsFiltrados.length / pageSize) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
+    // Paginación local
+    const totalItems = ticketsFiltrados.length;
+    totalPages = Math.ceil(totalItems / pageSize) || 1;
+    
+    if (currentPage > totalPages) {
+        currentPage = totalPages;
+    }
 
-    // Obtener los tickets de la página actual
     const startIdx = (currentPage - 1) * pageSize;
     const endIdx = startIdx + pageSize;
     const ticketsPagina = ticketsFiltrados.slice(startIdx, endIdx);
 
     mostrarTickets(ticketsPagina);
     mostrarPaginacion(totalPages);
+}
+
+// Función para verificar si hay filtros locales activos
+function hayFiltrosLocalesActivos() {
+    const idBoleta = document.getElementById('idBoletaFilter').value.trim();
+    const fechaInicio = document.getElementById('fechaInicio').value;
+    const fechaFin = document.getElementById('fechaFin').value;
+    const departamento = document.getElementById('departamentoFilter')?.value || '';
+
+    return fechaInicio || fechaFin || departamento || idBoleta;
 }
 
 // Nueva función para ordenar los tickets
@@ -214,7 +327,6 @@ function sortTickets(column) {
     currentPage = 1; // Reinicia la paginación al ordenar
     filtrarYMostrarTickets(); // Vuelve a filtrar y mostrar con el nuevo orden
 }
-
 
 function mostrarPaginacion(totalPages) {
     const paginacionContainer = document.getElementById('paginacionContainer') || (() => {
@@ -251,10 +363,15 @@ function mostrarPaginacion(totalPages) {
             e.preventDefault();
             if (!isDisabled && currentPage !== page) {
                 currentPage = page;
-                // Al hacer clic en un botón de paginación, siempre se debe recargar desde el backend
-                // ya que el filtrado y ordenamiento local solo aplican a la página actual de `ticketsData`
-                const tipo = document.getElementById('tipoTicket').value;
-                getTickets(tipo, page); // 🔁 Recarga la página desde el backend
+                
+                // Si hay filtros locales activos, usar filtrado local
+                if (hayFiltrosLocalesActivos()) {
+                    filtrarYMostrarTickets();
+                } else {
+                    // Si no hay filtros locales, recargar desde backend
+                    const tipo = document.getElementById('tipoTicket').value;
+                    getTickets(tipo, page);
+                }
             }
         };
         li.appendChild(a);
@@ -292,22 +409,7 @@ function mostrarPaginacion(totalPages) {
     paginacionContainer.appendChild(ul);
 }
 
-
-// Reiniciar página al cambiar filtros
-[idBoletaInput, fechaInicioInput, fechaFinInput].forEach(input => {
-    input.addEventListener('input', () => {
-        currentPage = 1;
-        filtrarYMostrarTickets();
-    });
-    input.addEventListener('change', () => {
-        currentPage = 1;
-        filtrarYMostrarTickets();
-    });
-});
-
-
 // --- FUNCIONES DE RENDERIZADO (UI) ---
-// Esta función ahora solo se encarga de 'pintar' los tickets que recibe
 function mostrarTickets(tickets) {
     const contenedor = document.getElementById('ticketsContainer');
     contenedor.innerHTML = '';
@@ -337,38 +439,42 @@ function mostrarTickets(tickets) {
             </tr>
         </thead>
     `;
+    
     const tbody = document.createElement('tbody');
     tickets.forEach(ticket => {
         const row = document.createElement('tr');
         const estado = ticket.Estado || (getEstado(ticket.idEstado)?.texto || '-');
         const clase = ticket.Estado ? getEstadoPorTexto(ticket.Estado).clase : (getEstado(ticket.idEstado)?.clase || '');
-        // Para boleta de sanción, mostrar ticket.Tipo en la columna
+        
         row.innerHTML = `
             <td><strong>#${ticket.idBoleta || '-'}</strong></td>
-            <td>${ticket.FechaDeCreacion || ticket.fechaSolicitud || '-'}</td>
+            <td>${formatearFecha(ticket.FechaDeCreacion || ticket.fechaSolicitud)}</td>
             <td>${ticket.Solicitante || '-'}</td>
             <td>${ticket.Departamento || '-'}</td>
             <td><span class="badge rounded-pill ${clase}">${estado}</span></td>
             <td>${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</td>
             ${esSancion ? `<td>${ticket.Tipo || ticket.tipoSancion || '-'}</td>` : ''}
             <td>
-            <button class="btn btn-sm btn-outline-primary btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
-                <i class="fa fa-search"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-secondary btn-print ms-1" data-id="${ticket.idBoleta}" title="Imprimir Detalle">
-                <i class="fa fa-print"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger btn-pdf ms-1" data-id="${ticket.idBoleta}" title="Exportar Detalle PDF">
-                <i class="fa fa-file-pdf"></i>
-            </button>
-        </td>
+                <button class="btn btn-sm btn-outline-primary btn-details" data-id="${ticket.idBoleta}" title="Ver Detalles">
+                    <i class="fa fa-search"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary btn-print ms-1" data-id="${ticket.idBoleta}" title="Imprimir Detalle">
+                    <i class="fa fa-print"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger btn-pdf ms-1" data-id="${ticket.idBoleta}" title="Exportar Detalle PDF">
+                    <i class="fa fa-file-pdf"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(row);
     });
+    
     table.appendChild(tbody);
     contenedor.appendChild(table);
+    
+    // Agregar botones de exportar
+    agregarBotonesExportar();
 }
-
 
 // Botones de imprimir y exportar PDF
 function agregarBotonesExportar() {
@@ -405,7 +511,6 @@ function imprimirTabla() {
 function exportarPDF() {
     const tabla = document.querySelector('#ticketsContainer table');
     if (!tabla) return;
-    // Usar html2pdf.js para exportar la tabla
     const opt = {
         margin: 0.5,
         filename: 'boletas.pdf',
@@ -416,29 +521,19 @@ function exportarPDF() {
     html2pdf().from(tabla).set(opt).save();
 }
 
-// Llama a agregarBotonesExportar cada vez que se muestran tickets
-const oldMostrarTickets = mostrarTickets;
-mostrarTickets = function(tickets) {
-    oldMostrarTickets(tickets);
-    agregarBotonesExportar();
-}
-
-
 // Función para mostrar detalles en el modal
 function mostrarDetalles(idBoleta) {
     const ticket = ticketsData.find(t => t.idBoleta == idBoleta);
     if (!ticket) return;
 
     const tipoTicket = document.getElementById('tipoTicket').value;
-    const tituloBoleta = obtenerTituloBoleta(tipoTicket);
-    const esSancion = tipoTicket === 'getTicketOffRRHH'; // Mantienes esta lógica si es necesaria para otras funciones
+    const esSancion = tipoTicket === 'getTicketOffRRHH';
 
-    // Unir observaciones si existen (pueden venir como observaciones1, observaciones2, etc. o como observaciones)
+    // Unir observaciones si existen
     let observaciones = '';
     if (ticket.observaciones) {
         observaciones = ticket.observaciones;
     } else {
-        // Buscar campos observaciones1, observaciones2, ...
         const obsArr = [];
         for (let i = 1; i <= 5; i++) {
             if (ticket[`observaciones${i}`]) obsArr.push(ticket[`observaciones${i}`]);
@@ -448,6 +543,7 @@ function mostrarDetalles(idBoleta) {
 
     const modalLabel = document.getElementById('detailsModalLabel');
     const modalContent = document.getElementById('modalContent');
+    const modalFooter = document.querySelector('#detailsModal .modal-footer');
 
     modalLabel.textContent = `Detalles de la Boleta #${ticket.idBoleta}`;
 
@@ -456,7 +552,7 @@ function mostrarDetalles(idBoleta) {
         <div class="row g-3">
             <div class="col-md-6"><strong>Solicitante:</strong> ${ticket.Solicitante || '-'}</div>
             <div class="col-md-6"><strong>Departamento:</strong> ${ticket.Departamento || '-'}</div>
-            <div class="col-md-6"><strong>Fecha Creación:</strong> ${ticket.FechaDeCreacion || ticket.fechaSolicitud || '-'}</div>
+            <div class="col-md-6"><strong>Fecha Creación:</strong> ${formatearFecha(ticket.FechaDeCreacion || ticket.fechaSolicitud)}</div>
             <div class="col-md-6"><strong>Estado:</strong> ${ticket.Estado || (getEstado(ticket.idEstado)?.texto || '-')}</div>
             <div class="col-md-6"><strong>Fecha Actualizado:</strong> ${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</div>
             ${esSancion ? `<div class='col-md-6'><strong>Tipo de Sanción:</strong> ${ticket.Tipo || ticket.tipoSancion || '-'}</div>` : ''}
@@ -464,9 +560,65 @@ function mostrarDetalles(idBoleta) {
         </div>
     `;
 
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-danger" id="exportPdfModalBtn">Exportar PDF</button>
+    `;
+
+    document.getElementById('exportPdfModalBtn').addEventListener('click', () => {
+        exportarDetalleModalPDF(ticket);
+    });
+
     const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
     modal.show();
 }
+
+function exportarDetalleModalPDF(ticket) {
+    const tipoTicket = document.getElementById('tipoTicket').value;
+    const esSancion = tipoTicket === 'getTicketOffRRHH';
+
+    let observaciones = '';
+    if (ticket.observaciones) {
+        observaciones = ticket.observaciones;
+    } else {
+        const obsArr = [];
+        for (let i = 1; i <= 5; i++) {
+            if (ticket[`observaciones${i}`]) obsArr.push(ticket[`observaciones${i}`]);
+        }
+        observaciones = obsArr.join('; ');
+    }
+
+    const contentToExport = document.createElement('div');
+    contentToExport.style.fontFamily = 'Arial, sans-serif';
+    contentToExport.style.padding = '20px';
+    contentToExport.style.fontSize = '12px';
+
+    contentToExport.innerHTML = `
+        <h4 style="text-align: center; color: #0056b3;">Detalles de la Boleta #${ticket.idBoleta}</h4>
+        <hr style="border-top: 1px solid #eee;">
+        <div style="display: flex; flex-wrap: wrap; margin-bottom: 10px;">
+            <div style="flex: 0 0 50%; padding: 5px;"><strong>Solicitante:</strong> ${ticket.Solicitante || '-'}</div>
+            <div style="flex: 0 0 50%; padding: 5px;"><strong>Departamento:</strong> ${ticket.Departamento || '-'}</div>
+            <div style="flex: 0 0 50%; padding: 5px;"><strong>Fecha Creación:</strong> ${ticket.FechaDeCreacion || ticket.fechaSolicitud || '-'}</div>
+            <div style="flex: 0 0 50%; padding: 5px;"><strong>Estado:</strong> ${ticket.Estado || (getEstado(ticket.idEstado)?.texto || '-')}</div>
+            <div style="flex: 0 0 50%; padding: 5px;"><strong>Fecha Actualizado:</strong> ${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</div>
+            ${esSancion ? `<div style='flex: 0 0 50%; padding: 5px;'><strong>Tipo de Sanción:</strong> ${ticket.Tipo || ticket.tipoSancion || '-'}</div>` : ''}
+            <div style="flex: 0 0 100%; padding: 5px;"><strong>Observaciones:</strong> ${observaciones || 'Sin observaciones.'}</div>
+        </div>
+    `;
+
+    const opt = {
+        margin: 0.5,
+        filename: `boleta_${ticket.idBoleta}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().from(contentToExport).set(opt).save();
+}
+
+
 
 function mostrarCargando(contenedor) {
     contenedor.innerHTML = `

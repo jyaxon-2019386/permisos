@@ -24,6 +24,11 @@ $password = 'Empres@s0425';
 // $user = 'admin';
 // $password = '1215';
 
+// $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
+// $data_source = 'zzzz';
+// $user = '';
+// $password = '';
+
 // Connect to the data source and get a handle for that connection.
 
 $con = odbc_connect($dsn, $user, $password);
@@ -36,7 +41,7 @@ if (!$con) {
 }
 
 // Detectar tipo de petición
-$request_method = $_SERVER["REQUEST_METHOD"];
+$request_method = $_SERVER["REQUEST_METHOD"];   
 
 // Detectar acción
 $quest = null;
@@ -50,7 +55,7 @@ if ($request_method === 'GET') {
 }
 
 // 👉 Lista de acciones que **NO** requieren autenticación
-$acciones_publicas = ['login', 'getUser', 'getUserTicketVacations', 'getUserTicketReplaceTime', 'getUserTicketJustification', 'getUserTicketRequestIGSS', 'getUserTicketOffIGSS', 'getUserOff', 'Boleta', 'getLastTicket', 'getTicketVacationsRRHH', 'getTicketReplaceTimeRRHH', 'getTicketJustificationRRHH', 'getTicketRequestIGSSRRHH', 'getUserTicketOffIGSSRRHH', 'getTicketOffRRHH'];
+$acciones_publicas = ['login', 'getUser', 'getUserTicketVacations', 'getUserTicketReplaceTime', 'getUserTicketJustification', 'getUserTicketRequestIGSS', 'getUserTicketOffIGSS', 'getUserOff', 'Boleta', 'getLastTicket', 'getTicketVacationsRRHH', 'getTicketReplaceTimeRRHH', 'getTicketJustificationRRHH', 'getTicketRequestIGSSRRHH', 'getUserTicketOffIGSSRRHH', 'getTicketOffRRHH', 'getTicketById'];
 
 // Si la acción no es pública, verificamos si el usuario está logueado
 if (!in_array($quest, $acciones_publicas)) {
