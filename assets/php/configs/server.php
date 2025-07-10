@@ -14,20 +14,20 @@ $hoy = date("Y-m-d");
 // mysqli_select_db($con, "crea");
 // $con->set_charset("utf8");
 
-$dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
-$data_source = 'zzzz';
-$user = 'sa';
-$password = 'Empres@s0425';
+// $dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
+// $data_source = 'zzzz';
+// $user = 'sa';
+// $password = 'Empres@s0425';
 
 // $dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos";
 // $data_source = 'zzzz';
 // $user = 'admin';
 // $password = '1215';
 
-// $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
-// $data_source = 'zzzz';
-// $user = '';
-// $password = '';
+$dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
+$data_source = 'zzzz';
+$user = '';
+$password = '';
 
 // Connect to the data source and get a handle for that connection.
 
@@ -53,18 +53,3 @@ if ($request_method === 'GET') {
     $data = json_decode(file_get_contents('php://input'), true);
     $quest = isset($data['quest']) ? $data['quest'] : null;
 }
-
-// 👉 Lista de acciones que **NO** requieren autenticación
-$acciones_publicas = ['login', 'getUser', 'getUserTicketVacations', 'getUserTicketReplaceTime', 'getUserTicketJustification', 'getUserTicketRequestIGSS', 'getUserTicketOffIGSS', 'getUserOff', 'Boleta', 'getLastTicket', 'getTicketVacationsRRHH', 'getTicketReplaceTimeRRHH', 'getTicketJustificationRRHH', 'getTicketRequestIGSSRRHH', 'getUserTicketOffIGSSRRHH', 'getTicketOffRRHH', 'getTicketById'];
-
-// Si la acción no es pública, verificamos si el usuario está logueado
-if (!in_array($quest, $acciones_publicas)) {
-    if (!isset($_SESSION['id_usuario'])) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
-        exit;
-    }
-}
-
-// Si pasa, podés seguir usando $id_usuario en tus acciones privadas
-$id_usuario = $_SESSION['id_usuario'] ?? null;

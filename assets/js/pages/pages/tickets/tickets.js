@@ -522,24 +522,25 @@ function exportarPDF() {
 }
 
 // Función para mostrar detalles en el modal
+// Función para mostrar detalles en el modal (CON DEPURACIÓN)
 function mostrarDetalles(idBoleta) {
     const ticket = ticketsData.find(t => t.idBoleta == idBoleta);
     if (!ticket) return;
 
     const tipoTicket = document.getElementById('tipoTicket').value;
-    const esSancion = tipoTicket === 'getTicketOffRRHH';
 
-    // Unir observaciones si existen
-    let observaciones = '';
-    if (ticket.observaciones) {
-        observaciones = ticket.observaciones;
-    } else {
-        const obsArr = [];
-        for (let i = 1; i <= 5; i++) {
-            if (ticket[`observaciones${i}`]) obsArr.push(ticket[`observaciones${i}`]);
-        }
-        observaciones = obsArr.join('; ');
-    }
+    // --- LÍNEA DE DEPURACIÓN ---
+    console.log("Al abrir el modal, el valor del <select> es:", tipoTicket);
+    // -------------------------
+
+    const esSancion = tipoTicket === 'getTicketOffRRHH';
+    // Se compara el valor leído con el valor esperado
+    const esConsultaIGSS = tipoTicket === 'getTicketRequestIGSSRRHH'; 
+    
+    // --- MÁS DEPURACIÓN ---
+    console.log("¿El tipo es 'getTicketRequestIGSSRRHH'?", esConsultaIGSS); // Debería ser true
+    // ----------------------
+
 
     const modalLabel = document.getElementById('detailsModalLabel');
     const modalContent = document.getElementById('modalContent');
@@ -562,6 +563,7 @@ function mostrarDetalles(idBoleta) {
 
     modalFooter.innerHTML = `
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        ${esConsultaIGSS ? `<button type="button" class="btn btn-info" id="confirmarHoraBtn">Confirmar Hora</button>` : ''}
         <button type="button" class="btn btn-danger" id="exportPdfModalBtn">Exportar PDF</button>
     `;
 
@@ -569,10 +571,84 @@ function mostrarDetalles(idBoleta) {
         exportarDetalleModalPDF(ticket);
     });
 
+    if (esConsultaIGSS) {
+        document.getElementById('confirmarHoraBtn').addEventListener('click', () => {
+            mostrarSelectorFechaHora(modalContent, ticket.idBoleta);
+        });
+    }
+
     const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
     modal.show();
 }
 
+// --- AGREGAR ESTA NUEVA FUNCIÓN ---
+
+/**
+ * Muestra un selector de fecha y hora dentro del contenedor del modal.
+ * @param {HTMLElement} container - El elemento del DOM donde se insertará el selector.
+ * @param {string} idBoleta - El ID de la boleta para asociar la cita.
+ */
+function mostrarSelectorFechaHora(container, idBoleta) {
+    // Prevenir que se agregue el selector si ya existe
+    if (document.getElementById('fechaHoraSelectorContainer')) {
+        return;
+    }
+
+    const selectorDiv = document.createElement('div');
+    selectorDiv.id = 'fechaHoraSelectorContainer';
+    selectorDiv.className = 'mt-4 p-3 border rounded bg-light';
+    selectorDiv.innerHTML = `
+        <hr>
+        <h5>Confirmar Fecha y Hora de Cita</h5>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label for="citaFecha" class="form-label">Fecha de Cita</label>
+                <input type="date" id="citaFecha" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label for="citaHora" class="form-label">Hora de Cita</label>
+                <input type="time" id="citaHora" class="form-control">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button id="guardarCitaBtn" class="btn btn-primary w-100">Guardar</button>
+                <button id="cancelarCitaBtn" class="btn btn-outline-secondary w-100">X</button>
+            </div>
+        </div>
+        <div id="citaError" class="text-danger mt-2 d-none">Por favor, seleccione una fecha y hora.</div>
+    `;
+
+    // Agrega el nuevo bloque de UI al contenido del modal
+    container.appendChild(selectorDiv);
+    
+    // Función para remover el selector y limpiar listeners
+    const removerSelector = () => {
+        selectorDiv.remove();
+    };
+
+    // Evento para el botón de cancelar
+    document.getElementById('cancelarCitaBtn').addEventListener('click', removerSelector);
+
+    // Evento para el botón de guardar
+    document.getElementById('guardarCitaBtn').addEventListener('click', () => {
+        const fecha = document.getElementById('citaFecha').value;
+        const hora = document.getElementById('citaHora').value;
+        const errorDiv = document.getElementById('citaError');
+
+        if (!fecha || !hora) {
+            errorDiv.classList.remove('d-none'); // Mostrar error
+            return;
+        }
+
+        errorDiv.classList.add('d-none'); // Ocultar error
+
+        // Aquí iría la lógica para enviar los datos al backend (API)
+        console.log(`Guardando cita para boleta #${idBoleta}: Fecha: ${fecha}, Hora: ${hora}`);
+        alert(`Fecha y hora confirmadas para la boleta #${idBoleta} (simulación).`);
+        
+        // Opcional: Remover el selector después de guardar
+        removerSelector(); 
+    });
+}
 function exportarDetalleModalPDF(ticket) {
     const tipoTicket = document.getElementById('tipoTicket').value;
     const esSancion = tipoTicket === 'getTicketOffRRHH';
