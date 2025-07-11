@@ -785,57 +785,37 @@ switch ($request_method) {
     case 'PUT':
         switch ($quest) {
            case 'putStateTickets':
-    $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
-    $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
+        $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+        $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
 
-    // --- NEW DEBUGGING OUTPUT ---
-    error_log("DEBUG: Received idBoleta = " . $idBoleta . " (Type: " . gettype($idBoleta) . ")");
-    error_log("DEBUG: Received nuevoEstado = " . $nuevoEstado . " (Type: " . gettype($nuevoEstado) . ")");
-    // --- END NEW DEBUGGING OUTPUT ---
+        if ($idBoleta <= 0 || $nuevoEstado < 0) {
+            http_response_code(400);
+            echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
+            break;
+        }
 
-    if ($idBoleta <= 0 || $nuevoEstado < 0) {
-        http_response_code(400);
-        echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta. Asegúrate de que idBoleta sea mayor que 0 y nuevoEstado no sea negativo."]);
-        break;
-    }
-
-    $sql = "UPDATE BoletaReposicion SET idEstado = $nuevoEstado WHERE idBoleta = $idBoleta";
-
-    // --- NEW DEBUGGING OUTPUT ---
-    error_log("DEBUG: Final SQL Query String: " . $sql);
-    // --- END NEW DEBUGGING OUTPUT ---
+        // ✅ Actualiza también la fecha
+        $sql = "UPDATE BoletaReposicion 
+            SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
+            WHERE idBoleta = $idBoleta";
 
     $exec = odbc_exec($con, $sql);
 
     if ($exec) {
-        $rowsAffected = odbc_num_rows($exec);
-
-        if ($rowsAffected > 0) {
-            http_response_code(200);
-            echo json_encode([
-                "success" => true,
-                "message" => "Boleta actualizada correctamente. Filas afectadas: " . $rowsAffected,
-                "idBoleta" => $idBoleta
-            ]);
-        } else {
-            // This is the path you're hitting
-            http_response_code(200);
-            echo json_encode([
-                "success" => true,
-                "message" => "La boleta se procesó correctamente, pero no se encontró la boleta con ID " . $idBoleta . " para actualizar, o el estado ya era el mismo.",
-                "idBoleta" => $idBoleta
-            ]);
-        }
+        http_response_code(200);
+        echo json_encode([
+            "success" => true,
+            "message" => "Boleta actualizada correctamente.",
+            "idBoleta" => $idBoleta
+        ]);
     } else {
         http_response_code(500);
-        $errorMessage = odbc_errormsg($con);
-        echo json_encode([
-            "success" => false,
-            "message" => "Error al ejecutar la actualización en SQL Server: " . $errorMessage,
-            "sql_attempted" => $sql
-        ]);
+        echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
     }
+
+
     break;
+
 
     
             case 'putTicketOffRRHH':
