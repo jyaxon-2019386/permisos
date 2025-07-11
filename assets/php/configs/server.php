@@ -19,15 +19,14 @@ $hoy = date("Y-m-d");
 // $user = 'sa';
 // $password = 'Empres@s0425';
 
-// $dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos";
-// $data_source = 'zzzz';
-// $user = 'admin';
-// $password = '1215';
-
 $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
 $data_source = 'zzzz';
-$user = '';
-$password = '';
+$user = 'sa';
+$password = 'Empresas0425';
+
+// $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos;Integrated Security=SSPI;";
+// $user = ''; // Dejar vacío
+// $password = ''; // Dejar vacío
 
 // Connect to the data source and get a handle for that connection.
 
@@ -41,15 +40,8 @@ if (!$con) {
 }
 
 // Detectar tipo de petición
-$request_method = $_SERVER["REQUEST_METHOD"];   
+$request_method = $_SERVER["REQUEST_METHOD"];
+$quest = isset($_GET['quest']) ? $_GET['quest'] : null;
+$data = json_decode(file_get_contents('php://input'), true);
 
-// Detectar acción
-$quest = null;
-$data = [];
 
-if ($request_method === 'GET') {
-    $quest = isset($_GET['quest']) ? $_GET['quest'] : null;
-} else {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $quest = isset($data['quest']) ? $data['quest'] : null;
-}

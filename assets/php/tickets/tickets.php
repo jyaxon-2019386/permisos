@@ -774,7 +774,7 @@ switch ($request_method) {
                     http_response_code(500);
                     echo json_encode(["error" => "Error al crear la boleta de vacaciones"]);
                 }
-                
+                break;
             
             default:
                 header("HTTP/1.1 400 Bad Request");
@@ -784,37 +784,100 @@ switch ($request_method) {
             break;
     case 'PUT':
         switch ($quest) {
-            case 'putStateTickets': // ACTUALIZAR ESTADO BOLETAS REPOSICIÓN (por método PUT)
+           case 'putStateTickets':
+    $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+    $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
 
-                $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
-                $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
+    // --- NEW DEBUGGING OUTPUT ---
+    error_log("DEBUG: Received idBoleta = " . $idBoleta . " (Type: " . gettype($idBoleta) . ")");
+    error_log("DEBUG: Received nuevoEstado = " . $nuevoEstado . " (Type: " . gettype($nuevoEstado) . ")");
+    // --- END NEW DEBUGGING OUTPUT ---
 
-                if ($idBoleta <= 0 || $nuevoEstado < 0) {
+    if ($idBoleta <= 0 || $nuevoEstado < 0) {
+        http_response_code(400);
+        echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta. Asegúrate de que idBoleta sea mayor que 0 y nuevoEstado no sea negativo."]);
+        break;
+    }
+
+    $sql = "UPDATE BoletaReposicion SET idEstado = $nuevoEstado WHERE idBoleta = $idBoleta";
+
+    // --- NEW DEBUGGING OUTPUT ---
+    error_log("DEBUG: Final SQL Query String: " . $sql);
+    // --- END NEW DEBUGGING OUTPUT ---
+
+    $exec = odbc_exec($con, $sql);
+
+    if ($exec) {
+        $rowsAffected = odbc_num_rows($exec);
+
+        if ($rowsAffected > 0) {
+            http_response_code(200);
+            echo json_encode([
+                "success" => true,
+                "message" => "Boleta actualizada correctamente. Filas afectadas: " . $rowsAffected,
+                "idBoleta" => $idBoleta
+            ]);
+        } else {
+            // This is the path you're hitting
+            http_response_code(200);
+            echo json_encode([
+                "success" => true,
+                "message" => "La boleta se procesó correctamente, pero no se encontró la boleta con ID " . $idBoleta . " para actualizar, o el estado ya era el mismo.",
+                "idBoleta" => $idBoleta
+            ]);
+        }
+    } else {
+        http_response_code(500);
+        $errorMessage = odbc_errormsg($con);
+        echo json_encode([
+            "success" => false,
+            "message" => "Error al ejecutar la actualización en SQL Server: " . $errorMessage,
+            "sql_attempted" => $sql
+        ]);
+    }
+    break;
+
+    
+            case 'putTicketOffRRHH':
+                $input = json_decode(file_get_contents("php://input"), true);
+
+                $horaF1 = isset($input['horaF1']) ? floatval($input['horaF1']) : 0;
+                $totalH = isset($input['totalH']) ? floatval($input['totalH']) : 0;
+                $idBoleta = isset($input['idBoleta']) ? intval($input['idBoleta']) : 0;
+
+
+                if ($idBoleta <= 0 || $horaF1 <= 0 || $totalH <= 0) {
                     http_response_code(400);
-                    echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
+                    echo json_encode(["success" => false, "message" => "Datos inválidos."]);
                     break;
                 }
 
-                $sql = "UPDATE BoletaReposicion SET idEstado = ? WHERE idBoleta = ?";
-                $stmt = odbc_prepare($con, $sql);.
 
-                if (!$stmt) {
-                    http_response_code(500);
-                    echo json_encode(["error" => "Error al preparar la consulta"]);
-                    break;
-                }
+                // Consulta preparada con parámetros
+                $sql = "UPDATE BoletaConsultaIGSS 
+                        SET horaF1 = ?, totalH = ?, idEstado = 11 
+                        WHERE idBoleta = ?";
 
-                $exec = odbc_execute($stmt, [$nuevoEstado, $idBoleta]);
+                $stmt = odbc_prepare($con, $sql);
+                $params = [$horaF1, $totalH, $idBoleta];
+                $exec = odbc_execute($stmt, $params);
 
                 if ($exec) {
                     http_response_code(200);
-                    echo json_encode(["success" => "Boleta actualizada exitosamente"]);
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Boleta actualizada correctamente.",
+                        "idBoleta" => $idBoleta
+                    ]);
                 } else {
                     http_response_code(500);
-                    echo json_encode(["error" => "Error al ejecutar la actualización"]);
+                    echo json_encode([
+                        "success" => false,
+                        "message" => "Error al actualizar la boleta."
+                    ]);
                 }
-                break;
 
+                break;
             default:
                 header('HTTP/1.1 400 Bad Request');
                 echo json_encode(['error' => 'Quest PUT no encontrado']);
