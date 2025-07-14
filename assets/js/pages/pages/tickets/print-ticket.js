@@ -713,7 +713,6 @@ function handleConfirmation(idBoleta) {
 
 // Ejemplo de cómo podrías llamar a la función para mostrar los detalles en un modal.
 function mostrarDetalles(idBoleta) {
-    // Asumimos que 'ticketsData' es una variable global o accesible que contiene los datos de las boletas.
     const ticket = ticketsData.find(t => t.idBoleta == idBoleta);
     if (!ticket) return;
 
@@ -721,6 +720,7 @@ function mostrarDetalles(idBoleta) {
     const tituloBoleta = obtenerTituloBoleta(tipoTicket); // Asumimos que esta función existe
 
     const modalContent = document.getElementById('modalContent');
+    // Ensure that generarHTMLDetalle creates the necessary elements for confirmation if needed
     modalContent.innerHTML = generarHTMLDetalle(ticket, tituloBoleta, tipoTicket);
 
     const modalFooter = document.querySelector('#detailsModal .modal-footer');
@@ -732,7 +732,15 @@ function mostrarDetalles(idBoleta) {
 
     // Add the "Confirmar Hora Final" button only for 'getTicketRequestIGSSRRHH' type
     if (tipoTicket === 'getTicketRequestIGSSRRHH') {
-        footerButtons += `<button type="button" class="btn btn-success" onclick="handleConfirmation(${idBoleta})"><i class="fa-solid fa-clock"></i> Confirmar Hora Final</button>`;
+        footerButtons += `<button type="button" class="btn btn-success" onclick="handleConfirmationIGSS(${idBoleta})"><i class="fa-solid fa-clock"></i> Confirmar Hora Final</button>`;
+    }
+
+    // New logic for 'getTicketReplaceTimeRRHH' with specific states
+    if (tipoTicket === 'getTicketReplaceTimeRRHH') {
+        // Button for Aprobar (Approve) - use newState 12
+        footerButtons += `<button type="button" class="btn btn-success" onclick="handleTicketReplacement(${idBoleta}, 12)"><i class="fa-solid fa-check"></i> Aprobar</button>`;
+        // Button for No Repuso (Did Not Replace) - use newState 13
+        footerButtons += `<button type="button" class="btn btn-danger" onclick="handleTicketReplacement(${idBoleta}, 13)"><i class="fa-solid fa-x"></i> No Repuso</button>`;
     }
 
     modalFooter.innerHTML = footerButtons;
@@ -741,26 +749,25 @@ function mostrarDetalles(idBoleta) {
     detailsModal.show();
 
     // Set default values for the confirmation date and time selectors
-    // This should happen AFTER the modal content is rendered and elements exist
     if (tipoTicket === 'getTicketRequestIGSSRRHH') {
         const today = new Date();
         document.getElementById('confirmationDay').value = today.getDate();
-        document.getElementById('confirmationMonth').value = today.getMonth() + 1; // Months are 0-indexed
+        document.getElementById('confirmationMonth').value = today.getMonth() + 1;
         document.getElementById('confirmationYear').value = today.getFullYear();
 
-        // Add event listeners to time selectors to update total hours
         const timeFromSelect = document.getElementById('confirmationTimeFrom');
         const timeToSelect = document.getElementById('confirmationTimeTo');
 
-        // Set initial values and trigger calculation
-        timeFromSelect.value = '07:00'; // Example default from your image
-        timeToSelect.value = '10:30';   // Example default from your image
-        updateTotalConfirmedHours(); // Calculate initial total hours
+        timeFromSelect.value = '07:00';
+        timeToSelect.value = '10:30';
+        updateTotalConfirmedHours();
 
         timeFromSelect.addEventListener('change', updateTotalConfirmedHours);
         timeToSelect.addEventListener('change', updateTotalConfirmedHours);
     }
 }
+
+
 
 
 // Placeholder for `obtenerTituloBoleta` and `ticketsData` for the code to be runnable.

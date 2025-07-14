@@ -6,7 +6,7 @@ async function getUser() {
             return;
         }
 
-        const response = await fetch(`http://192.168.1.7:81/permisos/assets/php/auth/auth.php?quest=getUser&idUsuario=${encodeURIComponent(idUsuario)}`, {
+        const response = await fetch(`/permisos/assets/php/auth/auth.php?quest=getUser&idUsuario=${encodeURIComponent(idUsuario)}`, {
             method: 'GET'
         });
 

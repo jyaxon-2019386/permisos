@@ -785,39 +785,43 @@ switch ($request_method) {
     case 'PUT':
         switch ($quest) {
            case 'putStateTickets':
-        $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
-        $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
+            $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+            $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
 
-        if ($idBoleta <= 0 || $nuevoEstado < 0) {
-            http_response_code(400);
-            echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
+            if ($idBoleta <= 0 || $nuevoEstado < 0) {
+                http_response_code(400);
+                echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
+                break;
+            }
+
+            // Validar que solo se permita estado 12 o 13
+            if (!in_array($nuevoEstado, [12, 13])) {
+                http_response_code(400);
+                echo json_encode([
+                    "error" => "Estado no permitido. Solo se aceptan los valores 12 o 13."
+                ]);
+                break;
+            }
+            $sql = "UPDATE BoletaReposicion 
+                    SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
+                    WHERE idBoleta = $idBoleta";
+
+            $exec = odbc_exec($con, $sql);
+
+            if ($exec) {
+                http_response_code(200);
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Boleta actualizada correctamente.",
+                    "idBoleta" => $idBoleta
+                ]);
+            } else {
+                http_response_code(500);
+                echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
+            }
+
             break;
-        }
 
-        // ✅ Actualiza también la fecha
-        $sql = "UPDATE BoletaReposicion 
-            SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
-            WHERE idBoleta = $idBoleta";
-
-    $exec = odbc_exec($con, $sql);
-
-    if ($exec) {
-        http_response_code(200);
-        echo json_encode([
-            "success" => true,
-            "message" => "Boleta actualizada correctamente.",
-            "idBoleta" => $idBoleta
-        ]);
-    } else {
-        http_response_code(500);
-        echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
-    }
-
-
-    break;
-
-
-    
             case 'putTicketOffRRHH':
                 $input = json_decode(file_get_contents("php://input"), true);
 

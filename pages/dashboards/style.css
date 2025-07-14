@@ -348,6 +348,15 @@ body {
     border-color: var(--secondary-color);
 }
 
+.sidebar-collapsed .sidebar {
+    display: none;
+}
+
+.sidebar-collapsed .main-content {
+    margin-left: 0 !important;
+}
+
+
 
 /* ========================================
    RESPONSIVIDAD

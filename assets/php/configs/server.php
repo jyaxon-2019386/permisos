@@ -1,47 +1,50 @@
 <?php
 
-header('Content-Type: text/html; charset=UTF-8');
+
+// --- Configuración inicial y CORS ---
+header('Content-Type: text/html; charset=UTF-8'); // Considera 'application/json' si solo retornas JSON
 date_default_timezone_set("America/Guatemala");
-session_start();
-$hoy = date("Y-m-d");
+session_start(); // Inicia la sesión si la usas
 
-// ---------------- MYSQL SISTEMAS -------------------- //
+// CORS Headers para permitir solicitudes desde otros orígenes (AJAX)
+header("Access-Control-Allow-Origin: *"); // ¡IMPORTANTE! En producción, sé específico: "http://tu-dominio-frontend.com"
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"); // Métodos permitidos
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Cabeceras permitidas
 
-// $con = mysqli_connect("localhost", "root", "");
-// if (!$con) {
-//     die('Could not connect: ' . mysqli_connect_error());
-// }
-// mysqli_select_db($con, "crea");
-// $con->set_charset("utf8");
+// Manejo de solicitudes OPTIONS (pre-vuelo CORS)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit(); // Termina la ejecución para solicitudes OPTIONS
+}
 
-// $dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
-// $data_source = 'zzzz';
-// $user = 'sa';
-// $password = 'Empres@s0425';
-
+// --- Configuración de Conexión a Base de Datos ---
 $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
-$data_source = 'zzzz';
+// $data_source = 'zzzz'; // Esta variable no se usa, puedes eliminarla
 $user = 'sa';
 $password = 'Empresas0425';
 
-// $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos;Integrated Security=SSPI;";
-// $user = ''; // Dejar vacío
-// $password = ''; // Dejar vacío
-
-// Connect to the data source and get a handle for that connection.
-
 $con = odbc_connect($dsn, $user, $password);
 if (!$con) {
-    if (phpversion() < '4.0') {
-        exit("Connection Failed: . $php_errormsg");
-    } else {
-        exit("Connection Failed:" . odbc_errormsg());
-    }
+    // Un mensaje de error más claro
+    http_response_code(500);
+    echo json_encode(["error" => "Error de conexión a la base de datos: " . odbc_errormsg()]);
+    exit(); // Termina la ejecución si no hay conexión a la DB
 }
 
-// Detectar tipo de petición
-$request_method = $_SERVER["REQUEST_METHOD"];
-$quest = isset($_GET['quest']) ? $_GET['quest'] : null;
-$data = json_decode(file_get_contents('php://input'), true);
+// --- Detección del Método de Solicitud y Parseo de Datos ---
+$request_method = $_SERVER["REQUEST_METHOD"]; // Esta línea es CRUCIAL y debe estar aquí.
+
+// Leer el input JSON en bruto para métodos que usan cuerpo (POST, PUT, DELETE)
+$raw_input = file_get_contents('php://input');
+$data = json_decode($raw_input, true); // Decodificar el JSON en un array asociativo
+
+
+$quest = null;
+if ($request_method === 'GET' && isset($_GET['quest'])) {
+    $quest = $_GET['quest'];
+} elseif (isset($data['quest'])) { // <--- CAMBIO AQUÍ
+    $quest = $data['quest'];      // <--- Y AQUÍ
+}
+
 
 

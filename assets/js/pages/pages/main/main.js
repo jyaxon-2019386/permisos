@@ -10,7 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   getLastTicker();
 
-  
+  toggleSidebarBtn.addEventListener('click', function () {
+    document.body.classList.toggle('sidebar-collapsed');
+});
+
 });
 
 

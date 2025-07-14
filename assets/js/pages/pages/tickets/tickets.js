@@ -1,3 +1,4 @@
+
 // Almacena la lista completa de tickets obtenida de la API
 let ticketsData = [];
 const usaPaginacionBackend = true;
@@ -809,4 +810,89 @@ function obtenerTituloBoleta(tipoTicket) {
         'getTicketOffRRHH': 'Boleta de Sanción'
     };
     return titulos[tipoTicket] || 'Boleta de Usuario';
+}
+
+/**
+ * Actualiza el estado de una boleta a través de una llamada a la API.
+ * Muestra notificaciones de éxito o error usando Notyf.
+ * @param {string | number} ticketId - El ID de la boleta a actualizar.
+ * @param {number} newState - El nuevo ID de estado para la boleta.
+ * @returns {Promise<object>} - El resultado de la API.
+ */
+async function updateTicketState(ticketId, newState) {
+    const data = {
+        quest: 'putStateTickets',
+        idBoleta: ticketId,
+        nuevoEstado: newState
+    };
+
+    try {
+        const response = await fetch('/permisos/assets/php/tickets/tickets.php', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            console.log('Success:', result);
+            notyf.success(result.message || 'Estado actualizado correctamente.');
+            return result;
+        } else {
+            console.error('Error:', result);
+            notyf.error(result.error || result.message || 'Error desconocido');
+            throw new Error(result.error || result.message || 'Error desconocido durante la llamada a la API');
+        }
+    } catch (error) {
+        console.error('Error de red o de parsing:', error);
+        notyf.error('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
+        throw error;
+    }
+}
+
+/**
+ * Maneja la lógica de confirmación y actualización para una boleta de reposición
+ * utilizando SweetAlert2 para una mejor experiencia de usuario.
+ * @param {string | number} idBoleta - El ID de la boleta.
+ * @param {number} newState - El nuevo estado (12 para aprobado, 13 para no repuesto).
+ */
+async function handleTicketReplacement(idBoleta, newState) {
+    const confirmAction = newState === 12 ? "aprobar" : "marcar como 'No Repuso'";
+
+    // ✅ Usamos SweetAlert2 en lugar del confirm() nativo
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Deseas ${confirmAction} la boleta #${idBoleta}. Esta acción no se puede revertir.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: `Sí, ¡${confirmAction}!`,
+        cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+        // Si el usuario confirma la acción
+        if (result.isConfirmed) {
+            try {
+                await updateTicketState(idBoleta, newState);
+
+                // Cierra el modal de detalles si está abierto
+                const detailsModalElement = document.getElementById('detailsModal');
+                if (detailsModalElement) {
+                    const detailsModal = bootstrap.Modal.getInstance(detailsModalElement);
+                    if (detailsModal) {
+                        detailsModal.hide();
+                    }
+                }
+                
+                // Refresca la lista de tickets para mostrar los cambios
+                const tipo = document.getElementById('tipoTicket').value;
+                getTickets(tipo, currentPage);
+
+            } catch (error) {
+                console.error('Error al manejar el reemplazo de la boleta:', error);
+                // El error ya es notificado por updateTicketState()
+            }
+        }
+    });
 }
