@@ -1,69 +1,3 @@
-/**
- * Formatea una fecha y filtra las que son placeholders (ej. '2000-01-01').
- * @param {string} dateString - La fecha en formato string.
- * @returns {string|null} - La fecha formateada como DD/MM/YYYY o null si es inválida.
- */
-function formatearFecha(fechaStr, incluirHora = false) {
-    if (!fechaStr) return '-';
-    // Asegurarse de que la fecha sea parseable, incluso con formato ISO sin 'Z'
-    const fecha = new Date(fechaStr.replace(' ', 'T'));
-    if (isNaN(fecha.getTime())) return fechaStr;
-
-    const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    let fechaFormateada = fecha.toLocaleDateString('es-GT', opcionesFecha);
-
-    if (incluirHora) {
-        const opcionesHora = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }; // Añadido seconds
-        fechaFormateada += ' ' + fecha.toLocaleTimeString('es-GT', opcionesHora);
-    }
-    return fechaFormateada;
-}
-
-function formatAndFilterDate(dateString) {
-    if (!dateString || dateString.startsWith('2000-01-01')) {
-        return null;
-    }
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return null; // Fecha inválida
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    } catch (e) {
-        return null;
-    }
-}
-
-/**
- * Obtiene la ruta de la firma del jefe inmediato según el departamento.
- * @param {string} departamento - El nombre del departamento.
- * @returns {object} - Un objeto con la ruta de la imagen de la firma y el estilo, o un objeto vacío si no se encuentra.
- */
-function getFirmaJefe(departamento) {
-    const firmas = {
-        'Recursos Humanos': { src: '../../assets/img/firmas/rrhh.png', style: 'max-width: 140px; height: auto;' },
-        'Sistemas': { src: '../../assets/img/firmas/sistemas.png' },
-        'Comercialización UNHESA': { src: '../../assets/img/firmas/unhesa.png', style: 'max-width: 65px; height: auto;' }, // Antonio Jolón
-        'Logística': { src: '../../assets/img/firmas/logistica.png', style: 'max-width: 300px; height: auto;' },
-        'Investigación y Desarrollo': { src: '../../assets/img/firmas/id.png', style: 'max-width: 85px; height: auto;' },
-        'Compras': { src: '../../assets/img/firmas/compras.png', style: 'max-width: 120px; height: auto;' },
-        'Planificación': { src: '../../assets/img/firmas/planificacion.png' }, // Juan Carlos Monterroso
-        'Producción': { src: '../../assets/img/firmas/planificacion.png' }, // Uso planificacion.png porque es el mismo jefe.
-        'Mercadeo': { src: '../../assets/img/firmas/unhesa.png', style: 'max-width: 65px; height: auto;' }, // Uso unhesa.png porque es el mismo jefe.
-        'Mantenimiento': { src: '../../assets/img/firmas/planificacion.png' }, // Juan Carlos Monterroso
-        'Gestión de Calidad': { src: '../../assets/img/firmas/calidad.png' },
-        'Gerencias': { src: '../../assets/img/firmas/gerencias.png' },
-        'Finanzas': { src: '../../assets/img/firmas/finanzas.png', style: 'max-width: 130px; height: auto;' },
-        'Contabilidad': { src: '../../assets/img/firmas/contabilidad.png', style: 'max-width: 300px; height: auto;' },
-        'Comercialización PROQUIMA': { src: '../../assets/img/firmas/proquima.png', style: 'max-width: 130px; height: auto;' },
-        'Administración': { src: '../../assets/img/firmas/administracion.png', style: 'max-width: 135px; height: auto;' },
-        // Puedo agregar más departamentos y sus firmas aquí
-
-    };
-
-    return firmas[departamento] || { src: '' };
-}
 
 /**
  * Genera el HTML para el detalle de una boleta, ideal para impresión o PDF, con un diseño de media página.
@@ -583,135 +517,7 @@ function exportarDetallePDF(idBoleta) {
     html2pdf().from(elemento).set(opciones).save();
 }
 
-/**
- * Utilidad para obtener el nombre de la empresa a partir de su ID.
- * @param {number | string} idEmpresa - El ID de la empresa.
- * @returns {string} - El nombre de la empresa.
- */
-function getEmpresa(idEmpresa) {
-    const empresas = {
-        1: 'PROQUIMA',
-        2: 'UNHESA',
-        3: 'ECONACIONAL'
-    };
-    return empresas[idEmpresa] || idEmpresa || 'No especificada';
-}
 
-/**
- * Calculates the difference in hours between two time strings (HH:MM).
- * @param {string} timeFrom - Start time string (e.g., "07:00").
- * @param {string} timeTo - End time string (e.g., "10:30").
- * @returns {number} The difference in hours, or NaN if times are invalid.
- */
-function calculateHoursDifference(timeFrom, timeTo) {
-    if (!timeFrom || !timeTo) return 0;
-
-    const [hFrom, mFrom] = timeFrom.split(':').map(Number);
-    const [hTo, mTo] = timeTo.split(':').map(Number);
-
-    const minutesFrom = hFrom * 60 + mFrom;
-    const minutesTo = hTo * 60 + mTo;
-
-    // Handle overnight cases (e.g., from 22:00 to 02:00 next day) if needed.
-    // For now, assuming times are within the same 24-hour period.
-    let diffMinutes = minutesTo - minutesFrom;
-
-    if (diffMinutes < 0) {
-        // If end time is earlier than start time, assume it's on the next day
-        diffMinutes += 24 * 60;
-    }
-
-    return diffMinutes / 60; // Return in hours
-}
-
-/**
- * Updates the total confirmed hours displayed in the modal.
- */
-function updateTotalConfirmedHours() {
-    const timeFrom = document.getElementById('confirmationTimeFrom').value;
-    const timeTo = document.getElementById('confirmationTimeTo').value;
-    const totalHoursElement = document.getElementById('totalConfirmedHours');
-
-    if (timeFrom && timeTo && totalHoursElement) {
-        const hours = calculateHoursDifference(timeFrom, timeTo);
-        totalHoursElement.textContent = `Total Horas: ${hours.toFixed(2)}`;
-    }
-}
-
-
-/**
- * Handles the confirmation action for IGSS Consultation tickets.
- * Retrieves the selected date and time from the modal inputs.
- * You would typically send this data to your backend here.
- * @param {number | string} idBoleta - The ID of the ticket being confirmed.
- */
-function handleConfirmation(idBoleta) {
-    const confirmationDay = document.getElementById('confirmationDay').value;
-    const confirmationMonth = document.getElementById('confirmationMonth').value;
-    const confirmationYear = document.getElementById('confirmationYear').value;
-    const confirmationTimeFrom = document.getElementById('confirmationTimeFrom').value;
-    const confirmationTimeTo = document.getElementById('confirmationTimeTo').value;
-    const observationConfirm = document.getElementById('observationConfirm').value;
-
-    if (!confirmationDay || !confirmationMonth || !confirmationYear || !confirmationTimeFrom || !confirmationTimeTo) {
-        alert('Por favor, selecciona el día, mes, año y ambos horarios para confirmar.');
-        return;
-    }
-
-    // Construct the full date string (e.g., YYYY-MM-DD)
-    const formattedMonth = String(confirmationMonth).padStart(2, '0');
-    const formattedDay = String(confirmationDay).padStart(2, '0');
-    const fullConfirmationDate = `${confirmationYear}-${formattedMonth}-${formattedDay}`;
-
-    const totalCalculatedHours = calculateHoursDifference(confirmationTimeFrom, confirmationTimeTo);
-
-    console.log(`Confirmación para Boleta #${idBoleta}:`);
-    console.log(`Fecha Confirmada: ${fullConfirmationDate}`);
-    console.log(`Hora Inicio Confirmada: ${confirmationTimeFrom}`);
-    console.log(`Hora Final Confirmada: ${confirmationTimeTo}`);
-    console.log(`Total de Horas Calculadas: ${totalCalculatedHours.toFixed(2)}`);
-    console.log(`Observación de Confirmación: ${observationConfirm || 'N/A'}`);
-
-    // Here you would typically make an API call to update the ticket
-    // For example:
-    // fetch('/api/confirmTicketTime', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //         idBoleta: idBoleta,
-    //         confirmationDate: fullConfirmationDate,
-    //         confirmationTimeFrom: confirmationTimeFrom,
-    //         confirmationTimeTo: confirmationTimeTo,
-    //         totalConfirmedHours: totalCalculatedHours,
-    //         observation: observationConfirm
-    //     }),
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //     if (data.success) {
-    //         alert('Hora de consulta confirmada exitosamente.');
-    //         // Optionally close the modal or refresh the data
-    //         const detailsModal = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
-    //         detailsModal.hide();
-    //     } else {
-    //         alert('Error al confirmar la hora: ' + data.message);
-    //     }
-    // })
-    // .catch(error => {
-    //     console.error('Error:', error);
-    //     alert('Ocurrió un error al intentar confirmar la hora.');
-    // });
-
-    alert(`Simulación: Boleta #${idBoleta} confirmada para el ${fullConfirmationDate} de ${confirmationTimeFrom} a ${confirmationTimeTo}. Total: ${totalCalculatedHours.toFixed(2)} horas.`);
-    // Close the modal after successful confirmation (or based on your logic)
-    const detailsModal = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
-    detailsModal.hide();
-}
-
-
-// Ejemplo de cómo podrías llamar a la función para mostrar los detalles en un modal.
 function mostrarDetalles(idBoleta) {
     const ticket = ticketsData.find(t => t.idBoleta == idBoleta);
     if (!ticket) return;
@@ -737,10 +543,11 @@ function mostrarDetalles(idBoleta) {
 
     // New logic for 'getTicketReplaceTimeRRHH' with specific states
     if (tipoTicket === 'getTicketReplaceTimeRRHH') {
-        // Button for Aprobar (Approve) - use newState 12
-        footerButtons += `<button type="button" class="btn btn-success" onclick="handleTicketReplacement(${idBoleta}, 12)"><i class="fa-solid fa-check"></i> Aprobar</button>`;
-        // Button for No Repuso (Did Not Replace) - use newState 13
-        footerButtons += `<button type="button" class="btn btn-danger" onclick="handleTicketReplacement(${idBoleta}, 13)"><i class="fa-solid fa-x"></i> No Repuso</button>`;
+        // Aprueba la boleta idEstado = 12
+        footerButtons += `<button type="button" class="btn btn-success" onclick="handleTicketReplacement(${idBoleta}, 12)"><i class="fa-solid fa-check"></i> Revisado</button>`;
+
+        // Rechaza la boleta idEstado = 13
+        footerButtons += `<button type="button" class="btn btn-danger" onclick="handleTicketReplacement(${idBoleta}, 13)"><i class="fa-solid fa-x"></i> No Repuso Tiempo</button>`;
     }
 
     modalFooter.innerHTML = footerButtons;
@@ -769,17 +576,29 @@ function mostrarDetalles(idBoleta) {
 
 
 
+function updateTotalConfirmedHours() {
+    const from = document.getElementById('confirmationTimeFrom').value;
+    const to = document.getElementById('confirmationTimeTo').value;
+    const output = document.getElementById('totalConfirmedHours');
 
-// Placeholder for `obtenerTituloBoleta` and `ticketsData` for the code to be runnable.
-// In a real application, these would be defined elsewhere.
-function obtenerTituloBoleta(tipoTicket) {
-    switch (tipoTicket) {
-        case 'getTicketOffRRHH': return 'Boleta de Sanción';
-        case 'getUserTicketOffIGSSRRHH': return 'Boleta de Suspensión IGSS';
-        case 'getTicketRequestIGSSRRHH': return 'Boleta de Consulta IGSS';
-        case 'getTicketJustificationRRHH': return 'Boleta de Permiso Justificado';
-        case 'getTicketVacationsRRHH': return 'Boleta de Solicitud de Vacaciones';
-        case 'getTicketReplaceTimeRRHH': return 'Boleta de Reposición de Tiempo';
-        default: return 'Detalle de Boleta';
+    if (!from || !to) {
+        output.value = '';
+        return;
     }
+
+    const [fromHours, fromMinutes] = from.split(':').map(Number);
+    const [toHours, toMinutes] = to.split(':').map(Number);
+
+    let totalMinutes = (toHours * 60 + toMinutes) - (fromHours * 60 + fromMinutes);
+
+    if (totalMinutes <= 0) {
+        output.value = 'Rango inválido';
+        return;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    output.value = `${hours}h ${minutes}m`;
 }
+

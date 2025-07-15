@@ -785,6 +785,7 @@ switch ($request_method) {
     case 'PUT':
         switch ($quest) {
            case 'putStateTickets':
+
             $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
             $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
 
@@ -822,7 +823,7 @@ switch ($request_method) {
 
             break;
 
-            case 'putTicketOffRRHH':
+            case 'putTicketOffRRHH': // ACTUALIZAR BOLETAS DE CONSULTA IGSS HORARIO
                 $input = json_decode(file_get_contents("php://input"), true);
 
                 $horaF1 = isset($input['horaF1']) ? floatval($input['horaF1']) : 0;

@@ -127,11 +127,17 @@ function debounce(func, wait) {
 }
 
 // --- LÓGICA DE DATOS (API) ---
+let tipoActual = 'putStateTickets'; // o el tipo que uses para cargar tickets, cambia según tu lógica
+
 async function getTickets(tipo, pagina = 1) {
     const contenedor = document.getElementById('ticketsContainer');
     mostrarCargando(contenedor);
 
     try {
+        // Actualizo variables globales de estado
+        tipoActual = tipo;
+        currentPage = pagina;
+
         const url = new URL(`/permisos/assets/php/tickets/tickets.php`, window.location.origin);
         url.searchParams.set('quest', tipo);
         url.searchParams.set('page', pagina);
@@ -329,7 +335,7 @@ function sortTickets(column) {
     filtrarYMostrarTickets(); // Vuelve a filtrar y mostrar con el nuevo orden
 }
 
-function mostrarPaginacion(totalPages) {
+function mostrarPaginacion(numTotalPages) { // Renombrado para mayor claridad
     const paginacionContainer = document.getElementById('paginacionContainer') || (() => {
         const container = document.createElement('div');
         container.id = 'paginacionContainer';
@@ -339,7 +345,9 @@ function mostrarPaginacion(totalPages) {
     })();
 
     paginacionContainer.innerHTML = '';
-    if (totalPages <= 1) return;
+    // Usa numTotalPages que se le pasa, que será el total de páginas del backend
+    // o el total de páginas de los tickets filtrados localmente.
+    if (numTotalPages <= 1) return;
 
     const ul = document.createElement('ul');
     ul.className = 'pagination pagination-sm';
@@ -348,8 +356,8 @@ function mostrarPaginacion(totalPages) {
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = startPage + maxVisible - 1;
 
-    if (endPage > totalPages) {
-        endPage = totalPages;
+    if (endPage > numTotalPages) { // Usa numTotalPages aquí
+        endPage = numTotalPages;
         startPage = Math.max(1, endPage - maxVisible + 1);
     }
 
@@ -363,13 +371,14 @@ function mostrarPaginacion(totalPages) {
         a.onclick = (e) => {
             e.preventDefault();
             if (!isDisabled && currentPage !== page) {
-                currentPage = page;
-                
-                // Si hay filtros locales activos, usar filtrado local
+                // Determine if local filters are active
                 if (hayFiltrosLocalesActivos()) {
+                    // If local filters are active, just update currentPage and re-render locally
+                    currentPage = page;
                     filtrarYMostrarTickets();
                 } else {
-                    // Si no hay filtros locales, recargar desde backend
+                    // If NO local filters are active, fetch new data from the backend
+                    // This will also update currentPage and totalPages global variables
                     const tipo = document.getElementById('tipoTicket').value;
                     getTickets(tipo, page);
                 }
@@ -395,17 +404,17 @@ function mostrarPaginacion(totalPages) {
         ul.appendChild(createPageButton(i, null, i === currentPage));
     }
 
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
+    if (endPage < numTotalPages) { // Usa numTotalPages aquí
+        if (endPage < numTotalPages - 1) { // Usa numTotalPages aquí
             const li = document.createElement('li');
             li.className = 'page-item disabled';
             li.innerHTML = `<span class="page-link">...</span>`;
             ul.appendChild(li);
         }
-        ul.appendChild(createPageButton(totalPages));
+        ul.appendChild(createPageButton(numTotalPages)); // Usa numTotalPages aquí
     }
 
-    ul.appendChild(createPageButton(currentPage + 1, '»', false, currentPage === totalPages));
+    ul.appendChild(createPageButton(currentPage + 1, '»', false, currentPage === numTotalPages)); // Usa numTotalPages aquí
 
     paginacionContainer.appendChild(ul);
 }
@@ -473,426 +482,10 @@ function mostrarTickets(tickets) {
     table.appendChild(tbody);
     contenedor.appendChild(table);
     
-    // Agregar botones de exportar
-    agregarBotonesExportar();
-}
-
-// Botones de imprimir y exportar PDF
-function agregarBotonesExportar() {
-    let exportContainer = document.getElementById('exportContainer');
-    if (!exportContainer) {
-        exportContainer = document.createElement('div');
-        exportContainer.id = 'exportContainer';
-        exportContainer.className = 'd-flex justify-content-end gap-2 mb-2';
-        document.getElementById('ticketsContainer').parentElement.prepend(exportContainer);
-    }
-    exportContainer.innerHTML = `
-        <button id="btnImprimir" class="btn btn-outline-primary btn-sm"><i class="fa fa-print"></i> Imprimir</button>
-        <button id="btnExportarPDF" class="btn btn-outline-danger btn-sm"><i class="fa fa-file-pdf"></i> Exportar PDF</button>
-    `;
-    document.getElementById('btnImprimir').onclick = imprimirTabla;
-    document.getElementById('btnExportarPDF').onclick = exportarPDF;
-}
-
-function imprimirTabla() {
-    const tabla = document.querySelector('#ticketsContainer table');
-    if (!tabla) return;
-    const ventana = window.open('', '', 'width=900,height=700');
-    ventana.document.write('<html><head><title>Imprimir Boletas</title>');
-    ventana.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">');
-    ventana.document.write('</head><body>');
-    ventana.document.write(tabla.outerHTML);
-    ventana.document.write('</body></html>');
-    ventana.document.close();
-    ventana.focus();
-    ventana.print();
-    ventana.close();
-}
-
-function exportarPDF() {
-    const tabla = document.querySelector('#ticketsContainer table');
-    if (!tabla) return;
-    const opt = {
-        margin: 0.5,
-        filename: 'boletas.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-    };
-    html2pdf().from(tabla).set(opt).save();
-}
-
-// Función para mostrar detalles en el modal
-// Función para mostrar detalles en el modal (CON DEPURACIÓN)
-function mostrarDetalles(idBoleta) {
-    const ticket = ticketsData.find(t => t.idBoleta == idBoleta);
-    if (!ticket) return;
-
-    const tipoTicket = document.getElementById('tipoTicket').value;
-
-    // --- LÍNEA DE DEPURACIÓN ---
-    console.log("Al abrir el modal, el valor del <select> es:", tipoTicket);
-    // -------------------------
-
-    const esSancion = tipoTicket === 'getTicketOffRRHH';
-    // Se compara el valor leído con el valor esperado
-    const esConsultaIGSS = tipoTicket === 'getTicketRequestIGSSRRHH'; 
-    
-    // --- MÁS DEPURACIÓN ---
-    console.log("¿El tipo es 'getTicketRequestIGSSRRHH'?", esConsultaIGSS); // Debería ser true
-    // ----------------------
-
-
-    const modalLabel = document.getElementById('detailsModalLabel');
-    const modalContent = document.getElementById('modalContent');
-    const modalFooter = document.querySelector('#detailsModal .modal-footer');
-
-    modalLabel.textContent = `Detalles de la Boleta #${ticket.idBoleta}`;
-
-    modalContent.innerHTML = `
-        <h5>Información General</h5>
-        <div class="row g-3">
-            <div class="col-md-6"><strong>Solicitante:</strong> ${ticket.Solicitante || '-'}</div>
-            <div class="col-md-6"><strong>Departamento:</strong> ${ticket.Departamento || '-'}</div>
-            <div class="col-md-6"><strong>Fecha Creación:</strong> ${formatearFecha(ticket.FechaDeCreacion || ticket.fechaSolicitud)}</div>
-            <div class="col-md-6"><strong>Estado:</strong> ${ticket.Estado || (getEstado(ticket.idEstado)?.texto || '-')}</div>
-            <div class="col-md-6"><strong>Fecha Actualizado:</strong> ${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</div>
-            ${esSancion ? `<div class='col-md-6'><strong>Tipo de Sanción:</strong> ${ticket.Tipo || ticket.tipoSancion || '-'}</div>` : ''}
-            <div class="col-12"><strong>Observaciones:</strong> ${observaciones || 'Sin observaciones.'}</div>
-        </div>
-    `;
-
-    modalFooter.innerHTML = `
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        ${esConsultaIGSS ? `<button type="button" class="btn btn-info" id="confirmarHoraBtn">Confirmar Hora</button>` : ''}
-        <button type="button" class="btn btn-danger" id="exportPdfModalBtn">Exportar PDF</button>
-    `;
-
-    document.getElementById('exportPdfModalBtn').addEventListener('click', () => {
-        exportarDetalleModalPDF(ticket);
-    });
-
-    if (esConsultaIGSS) {
-        document.getElementById('confirmarHoraBtn').addEventListener('click', () => {
-            mostrarSelectorFechaHora(modalContent, ticket.idBoleta);
-        });
-    }
-
-    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
-    modal.show();
-}
-
-// --- AGREGAR ESTA NUEVA FUNCIÓN ---
-
-/**
- * Muestra un selector de fecha y hora dentro del contenedor del modal.
- * @param {HTMLElement} container - El elemento del DOM donde se insertará el selector.
- * @param {string} idBoleta - El ID de la boleta para asociar la cita.
- */
-function mostrarSelectorFechaHora(container, idBoleta) {
-    // Prevenir que se agregue el selector si ya existe
-    if (document.getElementById('fechaHoraSelectorContainer')) {
-        return;
-    }
-
-    const selectorDiv = document.createElement('div');
-    selectorDiv.id = 'fechaHoraSelectorContainer';
-    selectorDiv.className = 'mt-4 p-3 border rounded bg-light';
-    selectorDiv.innerHTML = `
-        <hr>
-        <h5>Confirmar Fecha y Hora de Cita</h5>
-        <div class="row g-3 align-items-end">
-            <div class="col-md-5">
-                <label for="citaFecha" class="form-label">Fecha de Cita</label>
-                <input type="date" id="citaFecha" class="form-control">
-            </div>
-            <div class="col-md-4">
-                <label for="citaHora" class="form-label">Hora de Cita</label>
-                <input type="time" id="citaHora" class="form-control">
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button id="guardarCitaBtn" class="btn btn-primary w-100">Guardar</button>
-                <button id="cancelarCitaBtn" class="btn btn-outline-secondary w-100">X</button>
-            </div>
-        </div>
-        <div id="citaError" class="text-danger mt-2 d-none">Por favor, seleccione una fecha y hora.</div>
-    `;
-
-    // Agrega el nuevo bloque de UI al contenido del modal
-    container.appendChild(selectorDiv);
-    
-    // Función para remover el selector y limpiar listeners
-    const removerSelector = () => {
-        selectorDiv.remove();
-    };
-
-    // Evento para el botón de cancelar
-    document.getElementById('cancelarCitaBtn').addEventListener('click', removerSelector);
-
-    // Evento para el botón de guardar
-    document.getElementById('guardarCitaBtn').addEventListener('click', () => {
-        const fecha = document.getElementById('citaFecha').value;
-        const hora = document.getElementById('citaHora').value;
-        const errorDiv = document.getElementById('citaError');
-
-        if (!fecha || !hora) {
-            errorDiv.classList.remove('d-none'); // Mostrar error
-            return;
-        }
-
-        errorDiv.classList.add('d-none'); // Ocultar error
-
-        // Aquí iría la lógica para enviar los datos al backend (API)
-        console.log(`Guardando cita para boleta #${idBoleta}: Fecha: ${fecha}, Hora: ${hora}`);
-        alert(`Fecha y hora confirmadas para la boleta #${idBoleta} (simulación).`);
-        
-        // Opcional: Remover el selector después de guardar
-        removerSelector(); 
-    });
-}
-function exportarDetalleModalPDF(ticket) {
-    const tipoTicket = document.getElementById('tipoTicket').value;
-    const esSancion = tipoTicket === 'getTicketOffRRHH';
-
-    let observaciones = '';
-    if (ticket.observaciones) {
-        observaciones = ticket.observaciones;
-    } else {
-        const obsArr = [];
-        for (let i = 1; i <= 5; i++) {
-            if (ticket[`observaciones${i}`]) obsArr.push(ticket[`observaciones${i}`]);
-        }
-        observaciones = obsArr.join('; ');
-    }
-
-    const contentToExport = document.createElement('div');
-    contentToExport.style.fontFamily = 'Arial, sans-serif';
-    contentToExport.style.padding = '20px';
-    contentToExport.style.fontSize = '12px';
-
-    contentToExport.innerHTML = `
-        <h4 style="text-align: center; color: #0056b3;">Detalles de la Boleta #${ticket.idBoleta}</h4>
-        <hr style="border-top: 1px solid #eee;">
-        <div style="display: flex; flex-wrap: wrap; margin-bottom: 10px;">
-            <div style="flex: 0 0 50%; padding: 5px;"><strong>Solicitante:</strong> ${ticket.Solicitante || '-'}</div>
-            <div style="flex: 0 0 50%; padding: 5px;"><strong>Departamento:</strong> ${ticket.Departamento || '-'}</div>
-            <div style="flex: 0 0 50%; padding: 5px;"><strong>Fecha Creación:</strong> ${ticket.FechaDeCreacion || ticket.fechaSolicitud || '-'}</div>
-            <div style="flex: 0 0 50%; padding: 5px;"><strong>Estado:</strong> ${ticket.Estado || (getEstado(ticket.idEstado)?.texto || '-')}</div>
-            <div style="flex: 0 0 50%; padding: 5px;"><strong>Fecha Actualizado:</strong> ${formatearFecha(ticket.FechaActualizado || ticket.fecha_actualizado, true)}</div>
-            ${esSancion ? `<div style='flex: 0 0 50%; padding: 5px;'><strong>Tipo de Sanción:</strong> ${ticket.Tipo || ticket.tipoSancion || '-'}</div>` : ''}
-            <div style="flex: 0 0 100%; padding: 5px;"><strong>Observaciones:</strong> ${observaciones || 'Sin observaciones.'}</div>
-        </div>
-    `;
-
-    const opt = {
-        margin: 0.5,
-        filename: `boleta_${ticket.idBoleta}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().from(contentToExport).set(opt).save();
+   
 }
 
 
 
-function mostrarCargando(contenedor) {
-    contenedor.innerHTML = `
-        <div class="d-flex justify-content-center align-items-center p-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <strong class="ms-3">Cargando boletas...</strong>
-        </div>
-    `;
-}
 
-function mostrarError(msg) {
-    document.getElementById('ticketsContainer').innerHTML = `<div class="alert alert-danger text-center">${msg}</div>`;
-}
 
-// --- FUNCIONES UTILITARIAS ---
-function getEstado(idEstado) {
-    const estados = {
-        1: { texto: 'Esperando Nivel 1', clase: 'bg-estado-pendiente' },
-        2: { texto: 'Esperando Nivel 2', clase: 'bg-estado-pendiente' },
-        3: { texto: 'Esperando Nivel 3', clase: 'bg-estado-pendiente' },
-        4: { texto: 'Autorizado', clase: 'bg-estado-autorizado' },
-        5: { texto: 'Denegado Nivel 1', clase: 'bg-estado-denegado' },
-        6: { texto: 'Denegado Nivel 2', clase: 'bg-estado-denegado' },
-        7: { texto: 'Denegado Nivel 3', clase: 'bg-estado-denegado' },
-        8: { texto: 'Esperando GG', clase: 'bg-estado-pendiente' },
-        9: { texto: 'Autorizado por GG', clase: 'bg-estado-autorizado' },
-        10: { texto: 'Rechazado por GG', clase: 'bg-estado-denegado' },
-        11: { texto: 'Confirmado Recepción', clase: 'bg-estado-autorizado' },
-        12: { texto: 'Revisado por RRHH', clase: 'bg-estado-otro' },
-        13: { texto: 'No Repuso Tiempo', clase: 'bg-estado-denegado' },
-        14: { texto: 'Anulado', clase: 'bg-estado-anulado' },
-        15: { texto: 'Denegado por Sistema', clase: 'bg-estado-denegado' },
-    };
-    return estados[idEstado] || { texto: 'Desconocido', clase: 'bg-estado-anulado' };
-}
-
-// Utilidad: Obtener clase de estado por texto
-function getEstadoPorTexto(texto) {
-    const estados = {
-        'Esperando Nivel 1': { clase: 'bg-estado-pendiente' },
-        'Esperando Nivel 2': { clase: 'bg-estado-pendiente' },
-        'Esperando Nivel 3': { clase: 'bg-estado-pendiente' },
-        'Autorizado': { clase: 'bg-estado-autorizado' },
-        'Denegado Nivel 1': { clase: 'bg-estado-denegado' },
-        'Denegado Nivel 2': { clase: 'bg-estado-denegado' },
-        'Denegado Nivel 3': { clase: 'bg-estado-denegado' },
-        'Esperando GG': { clase: 'bg-estado-pendiente' },
-        'Autorizado por GG': { clase: 'bg-estado-autorizado' },
-        'Rechazado por GG': { clase: 'bg-estado-denegado' },
-        'Confirmado Recepción': { clase: 'bg-estado-autorizado' },
-        'Revisado por RRHH': { clase: 'bg-estado-otro' },
-        'No Repuso Tiempo': { clase: 'bg-estado-denegado' },
-        'Anulado': { clase: 'bg-estado-anulado' },
-        'Denegado por Sistema': { clase: 'bg-estado-denegado' }
-    };
-    return estados[texto] || { clase: 'bg-estado-anulado' };
-}
-
-function formatearFecha(fechaStr, incluirHora = false) {
-    if (!fechaStr) return '-';
-    // Asegurarse de que la fecha sea parseable, incluso con formato ISO sin 'Z'
-    const fecha = new Date(fechaStr.replace(' ', 'T'));
-    if (isNaN(fecha.getTime())) return fechaStr;
-
-    const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    let fechaFormateada = fecha.toLocaleDateString('es-GT', opcionesFecha);
-
-    if (incluirHora) {
-        const opcionesHora = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }; // Añadido seconds
-        fechaFormateada += ' ' + fecha.toLocaleTimeString('es-GT', opcionesHora);
-    }
-    return fechaFormateada;
-}
-
-// --- FUNCIONES DE SESIÓN Y NAVEGACIÓN ---
-function logout() {
-    sessionStorage.clear('usuario_principal');
-    sessionStorage.clear('avatar');
-    sessionStorage.clear('id_usuario');
-    window.location.href = '../authentication/signin/login.html';
-}
-
-function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    // Si el sidebar está oculto, se muestra y se asigna el margen original al contenedor principal.
-    if (getComputedStyle(sidebar).display === 'none') {
-        sidebar.style.display = 'block';
-        // Asigna el margen original (ajusta el valor según el ancho real de tu sidebar)
-        mainContent.style.marginLeft = "220px"; /* O el valor que usas en tu CSS */
-    } else {
-        // Oculta el sidebar y expande el contenedor principal
-        sidebar.style.display = 'none';
-        mainContent.style.marginLeft = "0";
-    }
-}
-
-/**
- * Mapea el valor del tipo de boleta a un título descriptivo.
- * @param {string} tipoTicket - El valor del select 'tipoTicket'.
- * @returns {string} - El título correspondiente a la boleta.
- */
-function obtenerTituloBoleta(tipoTicket) {
-    const titulos = {
-        'getTicketVacationsRRHH': 'Boleta de Vacaciones',
-        'getTicketReplaceTimeRRHH': 'Boleta de Reposición de Tiempo',
-        'getTicketJustificationRRHH': 'Boleta de Falta Justificada',
-        'getTicketRequestIGSSRRHH': 'Boleta de Consulta IGSS',
-        'getUserTicketOffIGSSRRHH': 'Boleta de Suspensión IGSS',
-        'getTicketOffRRHH': 'Boleta de Sanción'
-    };
-    return titulos[tipoTicket] || 'Boleta de Usuario';
-}
-
-/**
- * Actualiza el estado de una boleta a través de una llamada a la API.
- * Muestra notificaciones de éxito o error usando Notyf.
- * @param {string | number} ticketId - El ID de la boleta a actualizar.
- * @param {number} newState - El nuevo ID de estado para la boleta.
- * @returns {Promise<object>} - El resultado de la API.
- */
-async function updateTicketState(ticketId, newState) {
-    const data = {
-        quest: 'putStateTickets',
-        idBoleta: ticketId,
-        nuevoEstado: newState
-    };
-
-    try {
-        const response = await fetch('/permisos/assets/php/tickets/tickets.php', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            console.log('Success:', result);
-            notyf.success(result.message || 'Estado actualizado correctamente.');
-            return result;
-        } else {
-            console.error('Error:', result);
-            notyf.error(result.error || result.message || 'Error desconocido');
-            throw new Error(result.error || result.message || 'Error desconocido durante la llamada a la API');
-        }
-    } catch (error) {
-        console.error('Error de red o de parsing:', error);
-        notyf.error('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
-        throw error;
-    }
-}
-
-/**
- * Maneja la lógica de confirmación y actualización para una boleta de reposición
- * utilizando SweetAlert2 para una mejor experiencia de usuario.
- * @param {string | number} idBoleta - El ID de la boleta.
- * @param {number} newState - El nuevo estado (12 para aprobado, 13 para no repuesto).
- */
-async function handleTicketReplacement(idBoleta, newState) {
-    const confirmAction = newState === 12 ? "aprobar" : "marcar como 'No Repuso'";
-
-    // ✅ Usamos SweetAlert2 en lugar del confirm() nativo
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: `Deseas ${confirmAction} la boleta #${idBoleta}. Esta acción no se puede revertir.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: `Sí, ¡${confirmAction}!`,
-        cancelButtonText: 'Cancelar'
-    }).then(async (result) => {
-        // Si el usuario confirma la acción
-        if (result.isConfirmed) {
-            try {
-                await updateTicketState(idBoleta, newState);
-
-                // Cierra el modal de detalles si está abierto
-                const detailsModalElement = document.getElementById('detailsModal');
-                if (detailsModalElement) {
-                    const detailsModal = bootstrap.Modal.getInstance(detailsModalElement);
-                    if (detailsModal) {
-                        detailsModal.hide();
-                    }
-                }
-                
-                // Refresca la lista de tickets para mostrar los cambios
-                const tipo = document.getElementById('tipoTicket').value;
-                getTickets(tipo, currentPage);
-
-            } catch (error) {
-                console.error('Error al manejar el reemplazo de la boleta:', error);
-                // El error ya es notificado por updateTicketState()
-            }
-        }
-    });
-}
