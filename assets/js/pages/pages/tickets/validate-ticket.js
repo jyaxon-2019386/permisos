@@ -17,19 +17,30 @@ async function updateTicketState(ticketId, newState) {
         const result = await response.json();
 
         if (response.ok) {
-            console.log('Success:', result);
-            return result;
-        } else {
-            console.error('Error:', result);
-            notyf.error(result.error || result.message || 'Error desconocido');
-            throw new Error(result.error || result.message || 'Error desconocido durante la llamada a la API');
+            notyf.success(`Boleta #${ticketId} actualizada correctamente.`);
+            return { success: true, result };
         }
+
+        // Manejo por código de estado
+        if (response.status === 409) {
+            notyf.open({
+            type: 'warning',
+            message: `La boleta #${ticketId} ya tiene este estado.`
+        });
+
+            return { success: false, tipo: 'estadoRepetido' };
+        }
+
+        notyf.error(result.error || result.message || 'Error desconocido.');
+        return { success: false, tipo: 'errorGeneral' };
+
     } catch (error) {
-        console.error('Error de red o de parsing:', error);
+        console.error('Error de red o parsing:', error);
         notyf.error('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
-        throw error;
+        return { success: false, tipo: 'errorRed', error };
     }
 }
+
 
 async function handleTicketReplacement(idBoleta, newState) {
     const confirmAction = newState === 12 ? "aprobar" : "marcar como 'No Repuso'";
@@ -44,19 +55,13 @@ async function handleTicketReplacement(idBoleta, newState) {
         cancelButtonText: 'Cancelar',
         confirmButtonColor: '#198754',
         cancelButtonColor: '#6c757d',
-        reverseButtons: true,
-        showClass: {
-            popup: 'animate__animated animate__fadeInDown'
-        },
-        hideClass: {
-            popup: 'animate__animated animate__fadeOutUp'
-        }
+        reverseButtons: true
     }).then(async (result) => {
         if (result.isConfirmed) {
-            try {
-                await updateTicketState(idBoleta, newState);
+            const resultado = await updateTicketState(idBoleta, newState);
 
-                // Cierra el modal detalles
+            if (resultado.success) {
+                // Cierra modal si existe
                 const detailsModalElement = document.getElementById('detailsModal');
                 if (detailsModalElement) {
                     const detailsModal = bootstrap.Modal.getInstance(detailsModalElement);
@@ -65,14 +70,100 @@ async function handleTicketReplacement(idBoleta, newState) {
                     }
                 }
 
-                notyf.success(`La boleta #${idBoleta} fue ${newState === 12 ? "aprobada" : "marcada como 'No Repuso'"} correctamente.`);
-
-                // Recarga la tabla con tipo y página actual
+                // Recarga tabla
                 getTickets(tipoActual, currentPage);
+            } else if (resultado.tipo === 'estadoRepetido') {
+                // No mostrar nada adicional, ya fue notificado por notyf
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo actualizar el estado. Inténtalo de nuevo.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    });
+}
 
-            } catch (error) {
-                console.error('Error al manejar el reemplazo de la boleta:', error);
+async function updateTicketTimeIGSS(idBoleta) {
+    const horaF1 = document.getElementById('confirmationTimeFrom').value;
+    const totalH = document.getElementById('confirmationTimeTo').value;
 
+    const data = {
+        quest: 'putTicketOffRRHH',
+        horaF1: horaF1,
+        totalH: totalH,
+        idBoleta: idBoleta,
+    };
+
+    try {
+        const response = await fetch('/permisos/assets/php/tickets/tickets.php', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            notyf.success(`Boleta #${idBoleta} actualizada correctamente.`);
+            return { success: true, result };
+        }
+
+        // Manejo por código de estado
+        if (response.status === 400) {
+            notyf.open({
+            type: 'error',
+            message: `Datos inválidos para la boleta #${idBoleta}.`
+        });
+
+            return { success: false, tipo: 'valide' };
+        }
+
+        notyf.error(result.error || result.message || 'Error desconocido.');
+        return { success: false, tipo: 'errorGeneral' };
+
+    } catch (error) {
+        console.error('Error de red o parsing:', error);
+        notyf.error('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
+        return { success: false, tipo: 'errorRed', error };
+    }
+}
+
+async function handleConfirmationIGSS(idBoleta) {
+    // const confirmAction = newState === 12 ? "aprobar" : "marcar como 'No Repuso'";
+
+    Swal.fire({
+        title: `¿Confirmar horario?`,
+        html: `<strong>Boleta #${idBoleta}</strong><br>Esta acción no se puede deshacer.`,
+        icon: 'question',
+        iconColor: '#007bff',
+        showCancelButton: true,
+        confirmButtonText: `Sí, confirmar`,
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        reverseButtons: true
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const resultado = await updateTicketState(idBoleta);
+
+            if (resultado.success) {
+                // Cierra modal si existe
+                const detailsModalElement = document.getElementById('detailsModal');
+                if (detailsModalElement) {
+                    const detailsModal = bootstrap.Modal.getInstance(detailsModalElement);
+                    if (detailsModal) {
+                        detailsModal.hide();
+                    }
+                }
+
+                // Recarga tabla
+                getTickets(tipoActual, currentPage);
+            } else if (resultado.tipo === 'valide') {
+                // No mostrar nada adicional, ya fue notificado por notyf
+            } else {
                 Swal.fire({
                     title: 'Error',
                     text: 'No se pudo actualizar el estado. Inténtalo de nuevo.',
@@ -86,5 +177,8 @@ async function handleTicketReplacement(idBoleta, newState) {
 
 
 
+
 window.handleTicketReplacement = handleTicketReplacement;
 window.updateTicketState = updateTicketState;
+window.updateTicketTimeIGSS = updateTicketTimeIGSS;
+window.handleConfirmationIGSS = handleConfirmationIGSS;

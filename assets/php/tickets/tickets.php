@@ -258,6 +258,10 @@ switch ($request_method) {
 					b.desc3 AS Detalle3,
 					b.desc4 AS Detalle4,
 					b.desc5 AS Detalle5,
+                    b.observaciones1,
+                    b.observaciones2,
+                    b.observaciones3,
+                    b.observaciones4,
                     b.fecha_actualizado AS FechaActualizado
                     FROM 
                         BoletaVacaciones b
@@ -533,6 +537,10 @@ switch ($request_method) {
                         b.fechaInicio AS fechaInicio,
                         b.fechaFinal AS fechaFinal,
                         b.totalD as TotalDias,
+                        b.observaciones1,
+                        b.observaciones2,
+                        b.observaciones3,
+                        b.observaciones4,
                         b.fecha_actualizado AS FechaActualizado
                     FROM 
                         BoletaSuspencionIGSS b
@@ -592,6 +600,10 @@ switch ($request_method) {
                         u.puesto AS Cargo,
                         u.idEmpresa AS Empresa,
                         e.nombre AS Estado,
+                        b.observaciones1,
+                        b.observaciones2,
+                        b.observaciones3,
+                        b.observaciones4,
                         d.nombre AS Departamento,
                         b.fecha_actualizado AS FechaActualizado
                     FROM 
@@ -803,6 +815,30 @@ switch ($request_method) {
                 ]);
                 break;
             }
+
+            // 1. Obtener el estado actual
+            $sqlEstado = "SELECT idEstado FROM BoletaReposicion WHERE idBoleta = $idBoleta";
+            $resEstado = odbc_exec($con, $sqlEstado);
+
+            if (!$resEstado || !odbc_fetch_row($resEstado)) {
+                http_response_code(404);
+                echo json_encode(["error" => "No se encontró la boleta con ID $idBoleta."]);
+                break;
+            }
+
+            $estadoActual = intval(odbc_result($resEstado, 'idEstado'));
+
+            // 2. Verificar si ya tiene el mismo estado
+            if ($estadoActual === $nuevoEstado) {
+                http_response_code(409); // Conflicto
+                echo json_encode([
+                    "error" => "La boleta ya tiene el estado especificado.",
+                    "estadoActual" => $estadoActual
+                ]);
+                break;
+            }
+
+            // 3. Actualizar si es diferente
             $sql = "UPDATE BoletaReposicion 
                     SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
                     WHERE idBoleta = $idBoleta";
@@ -823,14 +859,14 @@ switch ($request_method) {
 
             break;
 
+
             case 'putTicketOffRRHH': // ACTUALIZAR BOLETAS DE CONSULTA IGSS HORARIO
-                $input = json_decode(file_get_contents("php://input"), true);
+                // $input = json_decode(file_get_contents("php://input"), true);
 
-                $horaF1 = isset($input['horaF1']) ? floatval($input['horaF1']) : 0;
-                $totalH = isset($input['totalH']) ? floatval($input['totalH']) : 0;
-                $idBoleta = isset($input['idBoleta']) ? intval($input['idBoleta']) : 0;
-
-
+                $horaF1 = isset($data['horaF1']) ? floatval($data['horaF1']) : 0;
+                $totalH = isset($data['totalH']) ? floatval($data['totalH']) : 0;
+                $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+                
                 if ($idBoleta <= 0 || $horaF1 <= 0 || $totalH <= 0) {
                     http_response_code(400);
                     echo json_encode(["success" => false, "message" => "Datos inválidos."]);

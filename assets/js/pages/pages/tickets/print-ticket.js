@@ -536,12 +536,10 @@ function mostrarDetalles(idBoleta) {
         <button type="button" class="btn btn-danger" onclick="exportarDetallePDF(${idBoleta})"><i class="fa fa-file-pdf"></i> Exportar a PDF</button>
     `;
 
-    // Add the "Confirmar Hora Final" button only for 'getTicketRequestIGSSRRHH' type
     if (tipoTicket === 'getTicketRequestIGSSRRHH') {
         footerButtons += `<button type="button" class="btn btn-success" onclick="handleConfirmationIGSS(${idBoleta})"><i class="fa-solid fa-clock"></i> Confirmar Hora Final</button>`;
     }
 
-    // New logic for 'getTicketReplaceTimeRRHH' with specific states
     if (tipoTicket === 'getTicketReplaceTimeRRHH') {
         // Aprueba la boleta idEstado = 12
         footerButtons += `<button type="button" class="btn btn-success" onclick="handleTicketReplacement(${idBoleta}, 12)"><i class="fa-solid fa-check"></i> Revisado</button>`;
@@ -573,8 +571,6 @@ function mostrarDetalles(idBoleta) {
         timeToSelect.addEventListener('change', updateTotalConfirmedHours);
     }
 }
-
-
 
 function updateTotalConfirmedHours() {
     const from = document.getElementById('confirmationTimeFrom').value;

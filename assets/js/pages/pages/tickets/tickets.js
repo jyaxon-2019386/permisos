@@ -484,8 +484,3 @@ function mostrarTickets(tickets) {
     
    
 }
-
-
-
-
-
