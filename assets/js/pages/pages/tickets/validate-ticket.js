@@ -86,15 +86,31 @@ async function handleTicketReplacement(idBoleta, newState) {
     });
 }
 
+
+function convertirHoraDecimal(horaStr) {
+    if (!horaStr) return 0;
+    const [horas, minutos] = horaStr.split(':').map(Number);
+    return horas + (minutos / 60);
+}
+
+
 async function updateTicketTimeIGSS(idBoleta) {
-    const horaF1 = document.getElementById('confirmationTimeFrom').value;
-    const totalH = document.getElementById('confirmationTimeTo').value;
+    const horaF1Str = document.getElementById('confirmationTimeTo').value;
+    const horaF1 = convertirHoraDecimal(horaF1Str);
+
+    const totalHText = document.getElementById('totalConfirmedHours').textContent;
+    const totalH = parseFloat(totalHText.replace(/[^0-9.]/g, ''));
+
+    if (horaF1 <= 0 || isNaN(totalH) || totalH <= 0) {
+        notyf.error('Por favor ingresa una hora válida y verifica el total de horas.');
+        return { success: false, tipo: 'valide' };
+    }
 
     const data = {
         quest: 'putTicketOffRRHH',
-        horaF1: horaF1,
-        totalH: totalH,
-        idBoleta: idBoleta,
+        horaF1,
+        totalH,
+        idBoleta,
     };
 
     try {
@@ -111,13 +127,11 @@ async function updateTicketTimeIGSS(idBoleta) {
             return { success: true, result };
         }
 
-        // Manejo por código de estado
         if (response.status === 400) {
             notyf.open({
-            type: 'error',
-            message: `Datos inválidos para la boleta #${idBoleta}.`
-        });
-
+                type: 'error',
+                message: `Datos inválidos para la boleta #${idBoleta}.`
+            });
             return { success: false, tipo: 'valide' };
         }
 
@@ -130,6 +144,8 @@ async function updateTicketTimeIGSS(idBoleta) {
         return { success: false, tipo: 'errorRed', error };
     }
 }
+
+
 
 async function handleConfirmationIGSS(idBoleta) {
     // const confirmAction = newState === 12 ? "aprobar" : "marcar como 'No Repuso'";
@@ -147,7 +163,7 @@ async function handleConfirmationIGSS(idBoleta) {
         reverseButtons: true
     }).then(async (result) => {
         if (result.isConfirmed) {
-            const resultado = await updateTicketState(idBoleta);
+            const resultado = await updateTicketTimeIGSS(idBoleta);
 
             if (resultado.success) {
                 // Cierra modal si existe
@@ -175,10 +191,38 @@ async function handleConfirmationIGSS(idBoleta) {
     });
 }
 
+function getCurrentDate() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+}
 
+/**
+ * Convierte una hora en formato de 24h (ej: "14:30") a formato de 12h con AM/PM (ej: "02:30 PM").
+ * @param {string} time24 La hora en formato de 24 horas.
+ * @returns {string} La hora en formato de 12 horas o 'N/A' si la entrada es inválida.
+ */
+function formatTimeTo12Hour(time24) {
+    if (!time24 || time24 === 'N/A') {
+        return 'N/A';
+    }
 
+    const [hours, minutes] = time24.split(':');
+    const hoursNum = parseInt(hours, 10);
 
+    const ampm = hoursNum >= 12 ? 'PM' : 'AM';
+    let hours12 = hoursNum % 12;
+    hours12 = hours12 ? hours12 : 12; // La hora '0' debe ser '12'
+
+    const hours12Padded = String(hours12).padStart(2, '0');
+
+    return `${hours12Padded}:${minutes} ${ampm}`;
+}
 window.handleTicketReplacement = handleTicketReplacement;
 window.updateTicketState = updateTicketState;
 window.updateTicketTimeIGSS = updateTicketTimeIGSS;
 window.handleConfirmationIGSS = handleConfirmationIGSS;
+window.getCurrentDate = getCurrentDate;
+window.formatTimeTo12Hour = formatTimeTo12Hour;

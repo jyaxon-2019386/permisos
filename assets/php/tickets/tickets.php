@@ -499,6 +499,10 @@ switch ($request_method) {
                         if ($exec) {
                             while ($row = odbc_fetch_array($stmt)) {
                                 $row = array_map(fn($v) => !is_null($v) ? mb_convert_encoding($v, 'UTF-8', 'Windows-1252') : null, $row);
+
+                                $row['HoraInicio'] = convertirDecimalAHora($row['HoraInicio']);
+                                $row['HoraFinal']  = convertirDecimalAHora($row['HoraFinal']);
+
                                 $tickets[] = $row;
                             }
                         }
@@ -861,8 +865,6 @@ switch ($request_method) {
 
 
             case 'putTicketOffRRHH': // ACTUALIZAR BOLETAS DE CONSULTA IGSS HORARIO
-                // $input = json_decode(file_get_contents("php://input"), true);
-
                 $horaF1 = isset($data['horaF1']) ? floatval($data['horaF1']) : 0;
                 $totalH = isset($data['totalH']) ? floatval($data['totalH']) : 0;
                 $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
@@ -872,8 +874,6 @@ switch ($request_method) {
                     echo json_encode(["success" => false, "message" => "Datos inválidos."]);
                     break;
                 }
-
-
                 // Consulta preparada con parámetros
                 $sql = "UPDATE BoletaConsultaIGSS 
                         SET horaF1 = ?, totalH = ?, idEstado = 11 
@@ -912,5 +912,13 @@ switch ($request_method) {
     break;
         
 }
+
+function convertirDecimalAHora($decimal) {
+    if ($decimal === null || !is_numeric($decimal)) return null;
+    $horas = floor($decimal);
+    $minutos = round(($decimal - $horas) * 60);
+    return sprintf('%02d:%02d', $horas, $minutos);
+}
+
 
 ?>
