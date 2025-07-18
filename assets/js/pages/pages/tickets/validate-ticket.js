@@ -87,16 +87,10 @@ async function handleTicketReplacement(idBoleta, newState) {
 }
 
 
-function convertirHoraDecimal(horaStr) {
-    if (!horaStr) return 0;
-    const [horas, minutos] = horaStr.split(':').map(Number);
-    return horas + (minutos / 60);
-}
-
 
 async function updateTicketTimeIGSS(idBoleta) {
     const horaF1Str = document.getElementById('confirmationTimeTo').value;
-    const horaF1 = convertirHoraDecimal(horaF1Str);
+    const horaF1 = horaF1Str;
 
     const totalHText = document.getElementById('totalConfirmedHours').textContent;
     const totalH = parseFloat(totalHText.replace(/[^0-9.]/g, ''));

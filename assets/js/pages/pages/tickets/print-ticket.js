@@ -225,7 +225,6 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
 
         case 'getTicketRequestIGSSRRHH':
     const fechaConsulta = formatAndFilterDate(ticket.Fecha) || 'N/A';
-    // Se mantienen las variables originales para la lógica y los inputs
     const horaInicio = ticket.HoraInicio || 'N/A';
     const horaFinal = ticket.HoraFinal || 'N/A';
     const totalHoras = ticket.HorasTotal || '0.00';
@@ -256,7 +255,6 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
 
     const mostrarConfirmacion = horaInicio !== 'N/A' && horaFinal !== 'N/A';
     
-    // La lógica para mostrar/ocultar el formulario de confirmación no cambia
     if (mostrarConfirmacion && ticket.Estado !== 'Confirmada por Recepcion') {
         camposDinamicosHTML += `
             <div class="col-12 mt-4">
@@ -284,13 +282,11 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
                 </div>
             </div>`;
 
-            // El bloque setTimeout y la lógica interna permanecen exactamente iguales.
             setTimeout(() => {
                 const timeFrom = document.getElementById('confirmationTimeFrom');
                 const timeTo = document.getElementById('confirmationTimeTo');
                 const totalSpan = document.getElementById('totalConfirmedHours');
 
-                // Esta línea ya no es necesaria si se establece el 'value' directamente, pero no afecta si se deja.
                 if (timeFrom?.dataset.default) timeFrom.value = timeFrom.dataset.default;
 
                 const convertirHoraDecimal = h => {
