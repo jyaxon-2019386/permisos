@@ -245,19 +245,19 @@ switch ($request_method) {
                     u.nombre AS Solicitante, 
                     d.nombre AS Departamento, 
                     e.nombre AS Estado,
-					u.puesto AS Puesto,
-					u.idEmpresa AS Empresa,
-					b.totalD AS TotalDias,
-					b.fecha1 AS Fecha1,
-					b.fecha2 AS Fecha2,
-					b.fecha3 AS Fecha3,
-					b.fecha4 AS Fecha4,
-					b.fecha5 AS Fecha5,
-					b.desc1 AS Detalle1,
-					b.desc2 AS Detalle2,
-					b.desc3 AS Detalle3,
-					b.desc4 AS Detalle4,
-					b.desc5 AS Detalle5,
+                    u.puesto AS Puesto,
+                    u.idEmpresa AS Empresa,
+                    b.totalD AS TotalDias,
+                    b.fecha1 AS Fecha1,
+                    b.fecha2 AS Fecha2,
+                    b.fecha3 AS Fecha3,
+                    b.fecha4 AS Fecha4,
+                    b.fecha5 AS Fecha5,
+                    b.desc1 AS Detalle1,
+                    b.desc2 AS Detalle2,
+                    b.desc3 AS Detalle3,
+                    b.desc4 AS Detalle4,
+                    b.desc5 AS Detalle5,
                     b.observaciones1,
                     b.observaciones2,
                     b.observaciones3,
@@ -651,6 +651,8 @@ switch ($request_method) {
                             "totalBoletas" => $totalRows
                         ]);
                         break;
+                      case 'getTicketsIGSSFaltantes': // Obtener boletas con horaF1 o totalH en NULL o 0
+
 
                 case 'getTicketById':
                     $idBoleta = isset($_GET['idBoleta']) ? intval($_GET['idBoleta']) : 0;
@@ -767,38 +769,97 @@ switch ($request_method) {
     
     case 'POST':
         switch ($quest) {
-            case 'postTicketVacations': // INSERTAR BOLETAS VACACIONES
-                $idCreador = isset($_POST['idCreador']) ? trim($_POST['idCreador']) : '';
-                $fechaInicio = isset($_POST['fechaInicio']) ? trim($_POST['fechaInicio']) : '';
-                $fechaFin = isset($_POST['fechaFin']) ? trim($_POST['fechaFin']) : '';
-                $motivo = isset($_POST['motivo']) ? trim($_POST['motivo']) : '';
 
-                if (empty($idCreador) || empty($fechaInicio) || empty($fechaFin) || empty($motivo)) {
-                    http_response_code(400);
-                    echo json_encode(["error" => "Datos incompletos para la boleta de vacaciones"]);
-                    break;
+            case 'postTicketVacations':
+                $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaVacaciones";
+                $result = odbc_exec($con, $sqlCorrelativo);
+                $correlativo = 1;
+                if ($result && odbc_fetch_row($result)) {
+                    $correlativo = odbc_result($result, "nuevoCorrelativo");
                 }
 
-                $sql = "INSERT INTO BoletaVacaciones (idCreador, fechaInicio, fechaFin, motivo) VALUES (?, ?, ?, ?)";
+                $fechaSolicitud = isset($data['fechaSolicitud']) ? trim($data['fechaSolicitud']) : '';
+                $observaciones2 = isset($data['observaciones2']) ? trim($data['observaciones2']) : null;
+                $idSolicitante  = isset($data['idSolicitante']) ? trim($data['idSolicitante']) : '';
+                $idCreador      = isset($data['idCreador']) ? trim($data['idCreador']) : '';
+                $idDepartamento = isset($data['idDepartamento']) ? trim($data['idDepartamento']) : '';
+                $idEstado       = isset($data['idEstado']) ? trim($data['idEstado']) : '';
+                $totalD         = isset($data['totalD']) ? trim($data['totalD']) : null;
+
+                $fechas = [];
+                $descs = [];
+                for ($i = 1; $i <= 10; $i++) {
+                    $fecha = isset($data['fecha'.$i]) ? trim($data['fecha'.$i]) : null;
+                    $fechas[$i] = ($fecha === '' || strtolower($fecha) === 'null') ? null : $fecha;
+                    $desc = isset($data['desc'.$i]) ? trim($data['desc'.$i]) : null;
+                    $descs[$i] = ($desc === '' || strtolower($desc) === 'null') ? null : $desc;
+                }
+
+                $sql = "INSERT INTO BoletaVacaciones (
+                    correlativo, observaciones1, observaciones2, observaciones3, observaciones4,
+                    fechaSolicitud,
+                    fecha1, desc1, fecha2, desc2, fecha3, desc3, fecha4, desc4, fecha5, desc5,
+                    fecha6, desc6, fecha7, desc7, fecha8, desc8, fecha9, desc9, fecha10, desc10,
+                    totalD, idSolicitante, idCreador, idDepartamento, idJefe, idGerente, idRH, idEstado, fecha_actualizado
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                )";
+
+                $params = [
+                    $correlativo,
+                    null, // observaciones1
+                    $observaciones2,
+                    null, // observaciones3
+                    null, // observaciones4
+                    $fechaSolicitud,
+                    $fechas[1], $descs[1],
+                    $fechas[2], $descs[2],
+                    $fechas[3], $descs[3],
+                    $fechas[4], $descs[4],
+                    $fechas[5], $descs[5],
+                    $fechas[6], $descs[6],
+                    $fechas[7], $descs[7],
+                    $fechas[8], $descs[8],
+                    $fechas[9], $descs[9],
+                    $fechas[10], $descs[10],
+                    $totalD,
+                    $idSolicitante,
+                    $idCreador,
+                    $idDepartamento,
+                    null, // idJefe
+                    null, // idGerente
+                    null, // idRH
+                    $idEstado,
+                    null // fecha_actualizado
+                ];
+
                 $stmt = odbc_prepare($con, $sql);
-                $exec = odbc_execute($stmt, [$idCreador, $fechaInicio, $fechaFin, $motivo]);
+                if (!$stmt) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Falló la preparación de la consulta SQL.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
+                
+                $exec = odbc_execute($stmt, $params);
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta de vacaciones creada exitosamente"]);
+                    echo json_encode(["success" => "Boleta de vacaciones creada exitosamente con correlativo: " . $correlativo]);
                 } else {
                     http_response_code(500);
-                    echo json_encode(["error" => "Error al crear la boleta de vacaciones"]);
+                    $error = odbc_errormsg($con);
+                    echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => $error]);
                 }
                 break;
-            
-            default:
-                header("HTTP/1.1 400 Bad Request");
-                echo json_encode(["error" => "Quest POST no encontrado"]);
-                break;
-            }
-            break;
-    case 'PUT':
+
+                default:
+                        header("HTTP/1.1 400 Bad Request");
+                        echo json_encode(["error" => "Quest POST no encontrado"]);
+                        break;
+                    }
+                    break;
+case 'PUT':
         switch ($quest) {
            case 'putStateTickets':
 
@@ -863,36 +924,32 @@ switch ($request_method) {
 
             break;
 
-
             case 'putTicketOffRRHH': // ACTUALIZAR BOLETAS DE CONSULTA IGSS HORARIO
-
                 function convertirHoraADecimal($hora) {
-                    // Espera un formato HH:mm
-                    if (!$hora || !preg_match('/^\d{1,2}:\d{2}$/', $hora)) return 0;
-
+                    if (!$hora || !preg_match('/^\d{1,2}:\d{2}$/', $hora)) return null;
                     list($horas, $minutos) = explode(':', $hora);
                     return floatval($horas) + floatval($minutos) / 60;
                 }
 
-                $horaF1 = isset($data['horaF1']) ? $data['horaF1'] : null; // formato: 'HH:mm'
+                $horaF1 = isset($data['horaF1']) && $data['horaF1'] !== '' ? $data['horaF1'] : null;
                 $totalH = isset($data['totalH']) ? floatval($data['totalH']) : 0;
                 $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
 
-                $horaF1 = round(convertirHoraADecimal($horaF1), 2); 
+                // Convertir hora a decimal si aplica
+                $horaF1Decimal = is_null($horaF1) ? null : round(convertirHoraADecimal($horaF1), 2);
 
-                if ($idBoleta <= 0 || $horaF1 <= 0 || $totalH <= 0) {
+                if ($idBoleta <= 0) {
                     http_response_code(400);
                     echo json_encode(["success" => false, "message" => "Datos inválidos."]);
                     break;
                 }
 
-                // Consulta preparada con parámetros
                 $sql = "UPDATE BoletaConsultaIGSS 
                         SET horaF1 = ?, totalH = ?, idEstado = 11 
                         WHERE idBoleta = ?";
 
                 $stmt = odbc_prepare($con, $sql);
-                $params = [$horaF1, $totalH, $idBoleta];
+                $params = [$horaF1Decimal, $totalH, $idBoleta];
                 $exec = odbc_execute($stmt, $params);
 
                 if ($exec) {
@@ -911,7 +968,6 @@ switch ($request_method) {
                 }
 
                 break;
-
             default:
                 header('HTTP/1.1 400 Bad Request');
                 echo json_encode(['error' => 'Quest PUT no encontrado']);

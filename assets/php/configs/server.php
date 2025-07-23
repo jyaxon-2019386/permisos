@@ -6,7 +6,6 @@ header('Content-Type: text/html; charset=UTF-8'); // Considera 'application/json
 date_default_timezone_set("America/Guatemala");
 session_start(); // Inicia la sesión si la usas
 
-// CORS Headers para permitir solicitudes desde otros orígenes (AJAX)
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"); // Métodos permitidos
 header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Cabeceras permitidas
@@ -18,13 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
  // --- Configuración de Conexión a Base de Datos ---
-// $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
-// $user = 'sa';
-// $password = 'Empresas0425';
-
-$dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
+$dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
 $user = 'sa';
-$password = 'Empres@s0425';
+$password = 'Empresas0425';
+
+// $dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
+// $user = 'sa';
+// $password = 'Empres@s0425';
 
 $con = odbc_connect($dsn, $user, $password);
 if (!$con) {
@@ -37,7 +36,6 @@ if (!$con) {
 // --- Detección del Método de Solicitud y Parseo de Datos ---
 $request_method = $_SERVER["REQUEST_METHOD"]; 
 
-// Leer el input JSON en bruto para métodos que usan cuerpo (POST, PUT, DELETE)
 $raw_input = file_get_contents('php://input');
 $data = json_decode($raw_input, true); 
 

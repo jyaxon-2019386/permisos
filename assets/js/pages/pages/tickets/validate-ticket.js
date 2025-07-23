@@ -85,25 +85,52 @@ async function handleTicketReplacement(idBoleta, newState) {
         }
     });
 }
-
-
-
 async function updateTicketTimeIGSS(idBoleta) {
-    const horaF1Str = document.getElementById('confirmationTimeTo').value;
-    const horaF1 = horaF1Str;
+    const horaF1Input = document.getElementById('confirmationTimeTo');
+    const horaInicioInput = document.getElementById('confirmationTimeFrom');
+    const totalHTextElement = document.getElementById('totalConfirmedHours');
 
-    const totalHText = document.getElementById('totalConfirmedHours').textContent;
-    const totalH = parseFloat(totalHText.replace(/[^0-9.]/g, ''));
+    let horaF1 = null;
+    let totalH = 8.00; // Valor por defecto
 
-    if (horaF1 <= 0 || isNaN(totalH) || totalH <= 0) {
-        notyf.error('Por favor ingresa una hora válida y verifica el total de horas.');
-        return { success: false, tipo: 'valide' };
+    // Obtener hora final si existe
+    if (horaF1Input) {
+        const valor = horaF1Input.value.trim();
+        if (valor !== '') {
+            horaF1 = valor;
+        }
+    }
+
+    // Obtener total horas si existe y es numérico
+    if (totalHTextElement) {
+        const totalHText = totalHTextElement.textContent;
+        const parsedTotal = parseFloat(totalHText.replace(/[^0-9.]/g, ''));
+        if (!isNaN(parsedTotal)) {
+            totalH = parsedTotal;
+        }
+    }
+
+    // Validar que hora final no sea menor a la hora de inicio
+    if (horaF1 && horaInicioInput && horaInicioInput.value) {
+        const [hInicio, mInicio] = horaInicioInput.value.split(':').map(Number);
+        const [hFinal, mFinal] = horaF1.split(':').map(Number);
+
+        const minutosInicio = hInicio * 60 + mInicio;
+        const minutosFinal = hFinal * 60 + mFinal;
+
+        if (minutosFinal < minutosInicio) {
+            notyf.open({
+                type: 'error',
+                message: 'La hora final no puede ser menor que la hora de inicio.'
+            });
+            return { success: false, tipo: 'horaInvalida' };
+        }
     }
 
     const data = {
         quest: 'putTicketOffRRHH',
-        horaF1,
-        totalH,
+        horaF1, // puede ser string 'HH:mm' o null
+        totalH: isNaN(totalH) ? 8.00 : totalH,
         idBoleta,
     };
 
@@ -138,7 +165,6 @@ async function updateTicketTimeIGSS(idBoleta) {
         return { success: false, tipo: 'errorRed', error };
     }
 }
-
 
 
 async function handleConfirmationIGSS(idBoleta) {
@@ -176,7 +202,7 @@ async function handleConfirmationIGSS(idBoleta) {
             } else {
                 Swal.fire({
                     title: 'Error',
-                    text: 'No se pudo actualizar el estado. Inténtalo de nuevo.',
+                    text: 'No se pudo actualizar la boleta. Inténtalo de nuevo.',
                     icon: 'error',
                     confirmButtonColor: '#dc3545'
                 });

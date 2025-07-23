@@ -43,7 +43,7 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
                 <p style="margin: 5px 0;"><strong>Fecha:</strong> ${formatAndFilterDate(ticket.Fecha) || 'N/A'}</p>
                 <div class="col-md-6"><strong>Detalle:</strong> ${ticket.Detalles || 'Boleta de Consulta de IGSS'}</div>
                 <p style="margin: 5px 0;"><strong>Hora Inicio:</strong> ${ticket.HoraInicio || 'N/A'}</p>
-                <p style="margin: 5px 0;"><strong>Hora Final:</strong> ${ticket.HoraFinal || 'N/A'}</p>
+                <p style="margin: 5px 0;"><strong>Hora Final:</strong> ${!ticket.HoraFinal ? 'N/A' : ticket.HoraFinal}</p>
                 <p style="margin-top: 15px; font-size: 14px;"><strong>Total de Horas:</strong> ${ticket.HorasTotal || '0'}</p>`;
             break;
 
@@ -226,7 +226,8 @@ function generarHTMLDetalle(ticket, tituloBoleta, tipoTicket) {
         case 'getTicketRequestIGSSRRHH':
     const fechaConsulta = formatAndFilterDate(ticket.Fecha) || 'N/A';
     const horaInicio = ticket.HoraInicio || 'N/A';
-    const horaFinal = ticket.HoraFinal || 'N/A';
+    const horaFinal = (!ticket.HoraFinal || ticket.HoraFinal === 0 || ticket.HoraFinal === 0.00) ? 'N/A' : ticket.HoraFinal;
+
     const totalHoras = ticket.HorasTotal || '0.00';
     const detalleConsulta = ticket.Detalles || 'Boleta de Consulta de IGSS';
 
@@ -562,4 +563,3 @@ function updateTotalConfirmedHours() {
 
     output.value = `${hours}h ${minutes}m`;
 }
-
