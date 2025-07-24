@@ -859,98 +859,56 @@ switch ($request_method) {
                         break;
                     }
                     break;
-case 'PUT':
-        switch ($quest) {
-           case 'putStateTickets':
+    case 'PUT':
+            switch ($quest) {
+            case 'putStateTickets':
 
-            $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
-            $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
-
-            if ($idBoleta <= 0 || $nuevoEstado < 0) {
-                http_response_code(400);
-                echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
-                break;
-            }
-
-            // Validar que solo se permita estado 12 o 13
-            if (!in_array($nuevoEstado, [12, 13])) {
-                http_response_code(400);
-                echo json_encode([
-                    "error" => "Estado no permitido. Solo se aceptan los valores 12 o 13."
-                ]);
-                break;
-            }
-
-            // 1. Obtener el estado actual
-            $sqlEstado = "SELECT idEstado FROM BoletaReposicion WHERE idBoleta = $idBoleta";
-            $resEstado = odbc_exec($con, $sqlEstado);
-
-            if (!$resEstado || !odbc_fetch_row($resEstado)) {
-                http_response_code(404);
-                echo json_encode(["error" => "No se encontró la boleta con ID $idBoleta."]);
-                break;
-            }
-
-            $estadoActual = intval(odbc_result($resEstado, 'idEstado'));
-
-            // 2. Verificar si ya tiene el mismo estado
-            if ($estadoActual === $nuevoEstado) {
-                http_response_code(409); // Conflicto
-                echo json_encode([
-                    "error" => "La boleta ya tiene el estado especificado.",
-                    "estadoActual" => $estadoActual
-                ]);
-                break;
-            }
-
-            // 3. Actualizar si es diferente
-            $sql = "UPDATE BoletaReposicion 
-                    SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
-                    WHERE idBoleta = $idBoleta";
-
-            $exec = odbc_exec($con, $sql);
-
-            if ($exec) {
-                http_response_code(200);
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Boleta actualizada correctamente.",
-                    "idBoleta" => $idBoleta
-                ]);
-            } else {
-                http_response_code(500);
-                echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
-            }
-
-            break;
-
-            case 'putTicketOffRRHH': // ACTUALIZAR BOLETAS DE CONSULTA IGSS HORARIO
-                function convertirHoraADecimal($hora) {
-                    if (!$hora || !preg_match('/^\d{1,2}:\d{2}$/', $hora)) return null;
-                    list($horas, $minutos) = explode(':', $hora);
-                    return floatval($horas) + floatval($minutos) / 60;
-                }
-
-                $horaF1 = isset($data['horaF1']) && $data['horaF1'] !== '' ? $data['horaF1'] : null;
-                $totalH = isset($data['totalH']) ? floatval($data['totalH']) : 0;
                 $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+                $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
 
-                // Convertir hora a decimal si aplica
-                $horaF1Decimal = is_null($horaF1) ? null : round(convertirHoraADecimal($horaF1), 2);
-
-                if ($idBoleta <= 0) {
+                if ($idBoleta <= 0 || $nuevoEstado < 0) {
                     http_response_code(400);
-                    echo json_encode(["success" => false, "message" => "Datos inválidos."]);
+                    echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
                     break;
                 }
 
-                $sql = "UPDATE BoletaConsultaIGSS 
-                        SET horaF1 = ?, totalH = ?, idEstado = 11 
-                        WHERE idBoleta = ?";
+                // Validar que solo se permita estado 12 o 13
+                if (!in_array($nuevoEstado, [12, 13])) {
+                    http_response_code(400);
+                    echo json_encode([
+                        "error" => "Estado no permitido. Solo se aceptan los valores 12 o 13."
+                    ]);
+                    break;
+                }
 
-                $stmt = odbc_prepare($con, $sql);
-                $params = [$horaF1Decimal, $totalH, $idBoleta];
-                $exec = odbc_execute($stmt, $params);
+                // 1. Obtener el estado actual
+                $sqlEstado = "SELECT idEstado FROM BoletaReposicion WHERE idBoleta = $idBoleta";
+                $resEstado = odbc_exec($con, $sqlEstado);
+
+                if (!$resEstado || !odbc_fetch_row($resEstado)) {
+                    http_response_code(404);
+                    echo json_encode(["error" => "No se encontró la boleta con ID $idBoleta."]);
+                    break;
+                }
+
+                $estadoActual = intval(odbc_result($resEstado, 'idEstado'));
+
+                // 2. Verificar si ya tiene el mismo estado
+                if ($estadoActual === $nuevoEstado) {
+                    http_response_code(409); // Conflicto
+                    echo json_encode([
+                        "error" => "La boleta ya tiene el estado especificado.",
+                        "estadoActual" => $estadoActual
+                    ]);
+                    break;
+                }
+
+                // 3. Actualizar si es diferente
+                $sql = "UPDATE BoletaReposicion 
+                        SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
+                        WHERE idBoleta = $idBoleta";
+
+                $exec = odbc_exec($con, $sql);
 
                 if ($exec) {
                     http_response_code(200);
@@ -961,24 +919,66 @@ case 'PUT':
                     ]);
                 } else {
                     http_response_code(500);
-                    echo json_encode([
-                        "success" => false,
-                        "message" => "Error al actualizar la boleta."
-                    ]);
+                    echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
                 }
 
                 break;
-            default:
-                header('HTTP/1.1 400 Bad Request');
-                echo json_encode(['error' => 'Quest PUT no encontrado']);
-                break;
-        }
-        exit;
 
-    default:
-    header('HTTP/1.1 405 Method Not Allowed');
-    echo json_encode(['error' => 'Método no permitido']);
-    break;
+                case 'putTicketOffRRHH': // ACTUALIZAR BOLETAS DE CONSULTA IGSS HORARIO
+                    function convertirHoraADecimal($hora) {
+                        if (!$hora || !preg_match('/^\d{1,2}:\d{2}$/', $hora)) return null;
+                        list($horas, $minutos) = explode(':', $hora);
+                        return floatval($horas) + floatval($minutos) / 60;
+                    }
+
+                    $horaF1 = isset($data['horaF1']) && $data['horaF1'] !== '' ? $data['horaF1'] : null;
+                    $totalH = isset($data['totalH']) ? floatval($data['totalH']) : 0;
+                    $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+
+                    // Convertir hora a decimal si aplica
+                    $horaF1Decimal = is_null($horaF1) ? null : round(convertirHoraADecimal($horaF1), 2);
+
+                    if ($idBoleta <= 0) {
+                        http_response_code(400);
+                        echo json_encode(["success" => false, "message" => "Datos inválidos."]);
+                        break;
+                    }
+
+                    $sql = "UPDATE BoletaConsultaIGSS 
+                            SET horaF1 = ?, totalH = ?, idEstado = 11 
+                            WHERE idBoleta = ?";
+
+                    $stmt = odbc_prepare($con, $sql);
+                    $params = [$horaF1Decimal, $totalH, $idBoleta];
+                    $exec = odbc_execute($stmt, $params);
+
+                    if ($exec) {
+                        http_response_code(200);
+                        echo json_encode([
+                            "success" => true,
+                            "message" => "Boleta actualizada correctamente.",
+                            "idBoleta" => $idBoleta
+                        ]);
+                    } else {
+                        http_response_code(500);
+                        echo json_encode([
+                            "success" => false,
+                            "message" => "Error al actualizar la boleta."
+                        ]);
+                    }
+
+                    break;
+                default:
+                    header('HTTP/1.1 400 Bad Request');
+                    echo json_encode(['error' => 'Quest PUT no encontrado']);
+                    break;
+            }
+            exit;
+
+        default:
+        header('HTTP/1.1 405 Method Not Allowed');
+        echo json_encode(['error' => 'Método no permitido']);
+        break;
         
 }
 

@@ -38,14 +38,27 @@ function generarHTMLDetalleImpresion(ticket, tituloBoleta, tipoTicket) {
             break;
 
         case 'getTicketRequestIGSSRRHH':
+            // Formatear horas a AM/PM
+            const horaInicioAMPM = formatTimeTo12Hour(ticket.HoraInicio || '');
+            const horaFinalAMPM = formatTimeTo12Hour(ticket.HoraFinal || '');
             rightColumnHTML = `
                 <h4 style="margin-top:0; margin-bottom: 10px; font-size: 14px; color: #333;">Detalle de Consulta</h4>
                 <p style="margin: 5px 0;"><strong>Fecha:</strong> ${formatAndFilterDate(ticket.Fecha) || 'N/A'}</p>
                 <div class="col-md-6"><strong>Detalle:</strong> ${ticket.Detalles || 'Boleta de Consulta de IGSS'}</div>
-                <p style="margin: 5px 0;"><strong>Hora Inicio:</strong> ${ticket.HoraInicio || 'N/A'}</p>
-                <p style="margin: 5px 0;"><strong>Hora Final:</strong> ${!ticket.HoraFinal ? 'N/A' : ticket.HoraFinal}</p>
+                <p style="margin: 5px 0;"><strong>Hora Inicio:</strong> ${horaInicioAMPM || 'N/A'}</p>
+                <p style="margin: 5px 0;"><strong>Hora Final:</strong> ${!ticket.HoraFinal ? 'N/A' : horaFinalAMPM}</p>
                 <p style="margin-top: 15px; font-size: 14px;"><strong>Total de Horas:</strong> ${ticket.HorasTotal || '0'}</p>`;
             break;
+// Función para formatear hora a formato 12h AM/PM
+function formatTimeTo12Hour(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return '';
+    const [hour, minute] = timeStr.split(':').map(Number);
+    if (isNaN(hour) || isNaN(minute)) return timeStr;
+    let period = hour >= 12 ? 'PM' : 'AM';
+    let hour12 = hour % 12;
+    if (hour12 === 0) hour12 = 12;
+    return `${hour12}:${minute.toString().padStart(2, '0')} ${period}`;
+}
 
         case 'getTicketJustificationRRHH':
             const specialDays = [];
