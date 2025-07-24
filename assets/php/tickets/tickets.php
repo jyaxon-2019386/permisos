@@ -769,8 +769,7 @@ switch ($request_method) {
     
     case 'POST':
         switch ($quest) {
-
-            case 'postTicketVacations':
+             case 'postTicketVacations':
                 $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaVacaciones";
                 $result = odbc_exec($con, $sqlCorrelativo);
                 $correlativo = 1;
@@ -779,10 +778,18 @@ switch ($request_method) {
                 }
 
                 $fechaSolicitud = isset($data['fechaSolicitud']) ? trim($data['fechaSolicitud']) : '';
+                $observaciones1 = isset($data['observaciones1']) ? trim($data['observaciones1']) : null;
                 $observaciones2 = isset($data['observaciones2']) ? trim($data['observaciones2']) : null;
+                $observaciones3 = isset($data['observaciones3']) ? trim($data['observaciones3']) : null;
+                $observaciones4 = isset($data['observaciones4']) ? trim($data['observaciones4']) : null;
+
                 $idSolicitante  = isset($data['idSolicitante']) ? trim($data['idSolicitante']) : '';
                 $idCreador      = isset($data['idCreador']) ? trim($data['idCreador']) : '';
                 $idDepartamento = isset($data['idDepartamento']) ? trim($data['idDepartamento']) : '';
+                $idJefe = isset($data['idJefe']) ? trim($data['idJefe']) : null;
+                $idGerente = isset($data['idGerente']) ? trim($data['idGerente']) : null;
+                
+                $idRH = isset($data['idRH']) ? trim($data['idRH']) : null;
                 $idEstado       = isset($data['idEstado']) ? trim($data['idEstado']) : '';
                 $totalD         = isset($data['totalD']) ? trim($data['totalD']) : null;
 
@@ -808,10 +815,10 @@ switch ($request_method) {
 
                 $params = [
                     $correlativo,
-                    null, // observaciones1
+                    $observaciones1, // observaciones1
                     $observaciones2,
-                    null, // observaciones3
-                    null, // observaciones4
+                    $observaciones3, // observaciones3
+                    $observaciones4, // observaciones4
                     $fechaSolicitud,
                     $fechas[1], $descs[1],
                     $fechas[2], $descs[2],
@@ -827,9 +834,9 @@ switch ($request_method) {
                     $idSolicitante,
                     $idCreador,
                     $idDepartamento,
-                    null, // idJefe
-                    null, // idGerente
-                    null, // idRH
+                    $idJefe, // idJefe
+                    $idGerente, // idGerente
+                    $idRH, // idRH
                     $idEstado,
                     null // fecha_actualizado
                 ];
