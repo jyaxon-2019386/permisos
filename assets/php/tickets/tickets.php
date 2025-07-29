@@ -840,6 +840,7 @@ switch ($request_method) {
                     $idEstado,
                     null // fecha_actualizado
                 ];
+                
 
                 $stmt = odbc_prepare($con, $sql);
                 if (!$stmt) {
@@ -852,7 +853,7 @@ switch ($request_method) {
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta de vacaciones creada exitosamente con correlativo: " . $correlativo]);
+                    echo json_encode(["success" => "Boleta creada exitosamente."]);
                 } else {
                     http_response_code(500);
                     $error = odbc_errormsg($con);

@@ -1,5 +1,6 @@
+import { notyf } from "../../../plugins/notify.js";
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     const avatarURL = sessionStorage.getItem('avatar');
     if (avatarURL) {
         const avatarEl = document.getElementById('avatar');
@@ -43,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="form-group type-select">
                 <label for="desc${entryCounter}">Tipo de Día</label>
                 <select id="desc${entryCounter}" name="desc${entryCounter}" class="form-control desc" required>
-                    <option value="Todo el día">Todo el día</option>
-                    <option value="Medio día (por la mañana)">Medio día mañana</option>
-                    <option value="Medio día (por la tarde)">Medio día tarde</option>
+                    <option value="Todo el día">Todo el día.</option>
+                    <option value="Medio día (por la manana)">Medio día (por la mañana).</option>
+                    <option value="Medio día (por la tarde)">Medio día (por la tarde).</option>
                 </select>
             </div>
             <button type="button" class="btn-remove-day"><i class="fas fa-trash-alt"></i></button>
@@ -112,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => messageArea.classList.remove('show'), 5000);
     }
 
-    // CAPTURAR ENVÍO DEL FORMULARIO
     vacationForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -142,29 +142,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
         await postTicketVacations(data);
     });
+
+    const idUsuario = sessionStorage.getItem('idUsuario');
+    try {
+        const response = await fetch(`../../assets/php/auth/auth.php?quest=getUserData&idUsuario=${idUsuario}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('formIdSolicitante').value = data.user.idSolicitante;
+            document.getElementById('formIdCreador').value = data.user.idSolicitante;
+            document.getElementById('formIdDepartamento').value = data.user.idDepartamento;
+            document.getElementById('diasDisponibles').textContent = data.user.vacaciones;
+        } else {
+            console.error("Error al obtener los datos del usuario:", data.error);
+        }
+    } catch (error) {
+        console.error("Error al realizar la solicitud:", error);
+    }
 });
 
-// ENVÍO AL BACKEND
 async function postTicketVacations(data) {
-    const allowedDescs = [
-        "Todo el día",
-        "Medio día (por la mañana)",
-        "Medio día (por la tarde)"
-    ];
+    // Obtener nivel del usuario desde el endpoint
+    try {
+        const idUsuario = sessionStorage.getItem('idUsuario');
+        const response = await fetch(`../../assets/php/auth/auth.php?quest=getUserData&idUsuario=${idUsuario}`);
+        const userData = await response.json();
 
-    for (let i = 1; i <= 10; i++) {
-        const desc = data[`desc${i}`];
-        if (desc && !allowedDescs.includes(desc)) {
-            const messageArea = document.getElementById('message-area');
-            if (messageArea) {
-                messageArea.textContent = `desc${i} tiene un valor inválido: "${desc}". Solo se permite: ${allowedDescs.join(', ')}`;
-                messageArea.className = 'message-area error show';
-                setTimeout(() => messageArea.classList.remove('show'), 5000);
-            }
-            return;
+        if (response.ok) {
+            data.idEstado = userData.user.nivel;
+        } else {
+            console.error("Error al obtener el nivel del usuario:", userData.error);
+            data.idEstado = null; 
+        }
+    } catch (error) {
+        console.error("Error al realizar la solicitud para obtener el nivel del usuario:", error);
+        data.idEstado = null; 
+    }
+
+    const today = new Date();
+    data.fechaSolicitud = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    data.observaciones = document.getElementById('observaciones')?.value || null;
+    data.observaciones1 = null;
+    data.observaciones3 = null;
+    data.observaciones4 = null;
+    data.idJefe = null;
+    data.idGerente = null;
+    data.idRH = null;
+
+    for (const key in data) {
+        if (data[key] === "" || data[key] === undefined) {
+            data[key] = null;
         }
     }
-        console.log("Datos enviados al backend:", data);
+
+    for (let i = 1; i <= 10; i++) {
+        if (!data[`fecha${i}`]) {
+            data[`fecha${i}`] = null;
+        }
+        if (!data[`desc${i}`]) {
+            data[`desc${i}`] = null;
+        }
+    }
 
     try {
         data.quest = 'postTicketVacations';
@@ -176,28 +214,21 @@ async function postTicketVacations(data) {
             },
             body: JSON.stringify(data)
         });
+
         const result = await response.json();
-        const messageArea = document.getElementById('message-area');
+        
         if (!response.ok) {
-            if (messageArea) {
-                messageArea.textContent = result.error || 'Error al crear la boleta';
-                messageArea.className = 'message-area error show';
-                setTimeout(() => messageArea.classList.remove('show'), 5000);
-            }
-            return;
+            // Mostrar mensaje de error con notyf
+            notyf.error(result.detalle || result.error || 'Error al crear la boleta');
+        } else {
+            // Mostrar mensaje de éxito con notyf
+            notyf.success(result.success || 'Boleta creada correctamente');
         }
-        if (messageArea) {
-            messageArea.textContent = result.success || 'Boleta creada correctamente';
-            messageArea.className = 'message-area success show';
-            setTimeout(() => messageArea.classList.remove('show'), 5000);
-        }
+
         return result;
+
     } catch (error) {
-        const messageArea = document.getElementById('message-area');
-        if (messageArea) {
-            messageArea.textContent = error.message;
-            messageArea.className = 'message-area error show';
-            setTimeout(() => messageArea.classList.remove('show'), 5000);
-        }
+        // Mostrar mensaje de error de conexión con notyf
+        notyf.error('Error de conexión: ' + error.message);
     }
 }

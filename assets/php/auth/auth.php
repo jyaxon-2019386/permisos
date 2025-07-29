@@ -86,6 +86,56 @@ switch ($request_method) {
                     ]);
                 }
                 break;
+
+            case 'getUserData':
+                $idUsuario = isset($_GET['idUsuario']) ? trim($_GET['idUsuario']) : '';
+
+                if (empty($idUsuario)){
+                    http_response_code(400);
+                    echo json_encode(["success" => false, "error" => "Usuario obligatorio."]);
+                    break;
+                }
+                
+                $sql = "SELECT 
+                    u.idUsuario AS idSolicitante, 
+                    u.nombre, 
+                    u.puesto, 
+                    u.vacaciones, 
+                    u.contador, 
+                    u.inicioLabores, 
+                    u.permiso, 
+                    e.nombre AS empresa, 
+                    d.nivel AS nivel, 
+                    u.idDepartamentoP AS idDepartamento 
+                FROM Usuario u
+                INNER JOIN Empresa e ON u.idEmpresa = e.idEmpresa
+                INNER JOIN UsuarioDep d ON u.idDepartamentoP = d.idDepartamento AND u.idUsuario = d.idUsuario 
+                WHERE u.idUsuario = ?";
+                
+                $stmt = odbc_prepare($con, $sql);
+
+                $exec = odbc_execute($stmt, [$idUsuario]);
+
+                if ($exec && ($user = odbc_fetch_array($stmt))) {
+
+                    $user = array_map(function($val) {
+                        return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
+                    }, $user);
+
+                    http_response_code(200);
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Usuario encontrado",
+                        "user" => $user
+                    ]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode([
+                        "success" => false,
+                        "error" => "Usuario no encontrado o credenciales incorrectas."
+                    ]);
+                }
+                break;
             default:
             http_response_code(500);
             echo json_encode([
