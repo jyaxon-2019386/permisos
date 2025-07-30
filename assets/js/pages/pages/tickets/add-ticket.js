@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             <div class="form-group type-select">
                 <label for="desc${entryCounter}">Tipo de Día</label>
                 <select id="desc${entryCounter}" name="desc${entryCounter}" class="form-control desc" required>
-                    <option value="Todo el día">Todo el día.</option>
-                    <option value="Medio día (por la manana)">Medio día (por la mañana).</option>
-                    <option value="Medio día (por la tarde)">Medio día (por la tarde).</option>
+                    <option value="Todo el día.">Todo el día.</option>
+                    <option value="Medio día (por la mañana).">Medio día (por la mañana).</option>
+                    <option value="Medio día (por la tarde).">Medio día (por la tarde).</option>
                 </select>
             </div>
             <button type="button" class="btn-remove-day"><i class="fas fa-trash-alt"></i></button>
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         let total = 0;
         vacationEntriesContainer.querySelectorAll('.date-entry').forEach(entry => {
             const selectElement = entry.querySelector('select');
-            if (selectElement.value === "Todo el día") total += 1;
+            if (selectElement.value === "Todo el día.") total += 1;
             else if (selectElement.value.includes("Medio día")) total += 0.5;
         });
         totalDiasSolicitadosSpan.textContent = total.toFixed(2);
