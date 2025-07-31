@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     const vacationEntriesContainer = document.getElementById('vacationEntriesContainer');
     const totalDiasSolicitadosSpan = document.getElementById('totalDiasSolicitados');
     const formTotalD = document.getElementById('formTotalD');
-    const messageArea = document.getElementById('message-area');
 
     let entryCounter = 0;
     const MAX_VACATION_DAYS = 10;
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     function addVacationDayEntry() {
         if (entryCounter >= MAX_VACATION_DAYS) {
-            showMessage(`Solo puedes añadir un máximo de ${MAX_VACATION_DAYS} días.`, 'error');
+            notyf.error(`Solo puedes añadir un máximo de ${MAX_VACATION_DAYS} días.`, 'error');
             return;
         }
 
@@ -107,12 +106,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         formTotalD.value = total;
     }
 
-    function showMessage(message, type) {
-        messageArea.textContent = message;
-        messageArea.className = `message-area ${type} show`;
-        setTimeout(() => messageArea.classList.remove('show'), 5000);
-    }
-
     vacationForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -136,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
 
         if (!data.totalD || parseFloat(data.totalD) <= 0) {
-            showMessage('Debes agregar al menos un día válido para enviar la solicitud.', 'error');
+            notyf.error('Debes agregar al menos un día válido para enviar la solicitud.', 'error');
             return;
         }
 
@@ -159,7 +152,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     } catch (error) {
         console.error("Error al realizar la solicitud:", error);
     }
+
+
 });
+
 
 async function postTicketVacations(data) {
     // Obtener nivel del usuario desde el endpoint
@@ -172,11 +168,11 @@ async function postTicketVacations(data) {
             data.idEstado = userData.user.nivel;
         } else {
             console.error("Error al obtener el nivel del usuario:", userData.error);
-            data.idEstado = null; 
+            data.idEstado = null;
         }
     } catch (error) {
         console.error("Error al realizar la solicitud para obtener el nivel del usuario:", error);
-        data.idEstado = null; 
+        data.idEstado = null;
     }
 
     const today = new Date();
@@ -216,14 +212,18 @@ async function postTicketVacations(data) {
         });
 
         const result = await response.json();
-        
+
         if (!response.ok) {
             // Mostrar mensaje de error con notyf
             notyf.error(result.detalle || result.error || 'Error al crear la boleta');
         } else {
             // Mostrar mensaje de éxito con notyf
             notyf.success(result.success || 'Boleta creada correctamente');
-        }
+            // Redireccionar a la página de boletas
+            setTimeout(() => {
+                window.location.href = '../../pages/ticket/new-ticket.html';
+            }, 2000);
+        } 
 
         return result;
 
@@ -232,3 +232,13 @@ async function postTicketVacations(data) {
         notyf.error('Error de conexión: ' + error.message);
     }
 }
+
+
+function logout() {
+    sessionStorage.clear('usuario_principal');
+    sessionStorage.clear('avatar');
+    sessionStorage.clear('id_usuario');
+    window.location.href = '../../pages/authentication/signin/login.html';
+}
+
+window.logout = logout;

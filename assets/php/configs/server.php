@@ -34,10 +34,9 @@ if (!$con) {
     // Un mensaje de error más claro
     http_response_code(500);
     echo json_encode(["error" => "Error de conexión a la base de datos: " . odbc_errormsg()]);
-    exit(); // Termina la ejecución si no hay conexión a la DB
+    exit();
 }
 
-// --- Detección del Método de Solicitud y Parseo de Datos ---
 $request_method = $_SERVER["REQUEST_METHOD"]; 
 
 $raw_input = file_get_contents('php://input');

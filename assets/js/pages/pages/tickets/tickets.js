@@ -18,6 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (avatarEl) avatarEl.src = avatarURL;
     }
 
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    if (toggleSidebarBtn) {
+        toggleSidebarBtn.addEventListener('click', function () {
+            document.body.classList.toggle('sidebar-collapsed');
+        });
+    }
+
     // Referencias a los elementos del DOM
     const idBoletaInput = document.getElementById('idBoletaFilter');
     const tipoTicketSelect = document.getElementById('tipoTicket');

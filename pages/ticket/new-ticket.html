@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nueva Solicitud - PERMISOS</title>
+    <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../dashboards/style.css" />
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-logo">PERMISOS</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
+            <li><a href="#" class="active"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
+            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Boletas</a></li>
+            <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar slide-up">
+            <button class="btn-toggle-sidebar" id="toggleSidebar">
+                <i class="fa fa-bars"></i>
+            </button>
+            <div class="topbar-actions">
+                <i class="fa fa-bell"></i>
+                <div class="dropdown">
+                    <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
+                        alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="../../pages/pages/profile/profile.html">
+                                <i class="fa fa-user"></i> Perfil
+                            </a></li>
+                        <li><a class="dropdown-item" href="#">
+                                <i class="fa fa-cog"></i> Configuración
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal">
+                                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                            </a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <section class="dashboard-section">
+            <div class="welcome-card">
+                <div class="welcome-text">
+                    <h1 class="welcome-title">¿Qué tipo de solicitud necesitas?</h1>
+                    <p>Selecciona una opción para empezar.</p>
+                </div>
+            </div>
+
+            <div class="boleta-cards-grid row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div class="col">
+                    <div class="boleta-card">
+                        <i class="fa fa-sun boleta-icon"></i>
+                        <div class="card-info-content">
+                            <span class="badge boleta-category-badge badge-time-off">Tiempo Libre</span>
+                            <h3 class="boleta-title">Solicitud de Vacaciones</h3>
+                            <p class="boleta-description">Tramita tus días de descanso anuales de manera sencilla.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action" onclick="location.href='../../pages/ticket/add-ticket-vacation.html'">
+                                <i class="fa fa-file-alt"></i> Llenar Boleta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="boleta-card">
+                        <i class="fa fa-hospital boleta-icon"></i>
+                        <div class="card-info-content">
+                            <span class="badge boleta-category-badge badge-medical">Salud</span>
+                            <h3 class="boleta-title">Boleta Consulta IGSS</h3>
+                            <p class="boleta-description">Justifica tu ausencia por consultas médicas en el IGSS.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action">
+                                <i class="fa fa-file-alt"></i> Llenar Boleta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="boleta-card">
+                        <i class="fa fa-star boleta-icon"></i>
+                        <div class="card-info-content">
+                            <span class="badge boleta-category-badge badge-general">General</span>
+                            <h3 class="boleta-title">Falta Justificada</h3>
+                            <p class="boleta-description">Para permisos especiales no contemplados en otras categorías.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action">
+                                <i class="fa fa-file-alt"></i> Llenar Boleta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="boleta-card">
+                        <i class="fa fa-exchange-alt boleta-icon"></i>
+                        <div class="card-info-content">
+                            <span class="badge boleta-category-badge badge-administrative">Administrativa</span>
+                            <h3 class="boleta-title">Boleta de Reposición de Tiempo</h3>
+                            <p class="boleta-description">Solicita la reposición de tiempo o documentos extraviados.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action">
+                                <i class="fa fa-file-alt"></i> Llenar Boleta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="boleta-card">
+                        <i class="fa fa-exclamation-triangle boleta-icon"></i>
+                        <div class="card-info-content">
+                            <span class="badge boleta-category-badge badge-disciplinary">Disciplinaria</span>
+                            <h3 class="boleta-title">Boleta de Sanción</h3>
+                            <p class="boleta-description">Visualiza y gestiona información sobre posibles sanciones.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action">
+                                <i class="fa fa-file-alt"></i> Ver Boleta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="boleta-card">
+                        <i class="fa fa-medkit boleta-icon"></i>
+                        <div class="card-info-content">
+                            <span class="badge boleta-category-badge badge-medical">Salud</span>
+                            <h3 class="boleta-title">Boleta Suspensión IGSS</h3>
+                            <p class="boleta-description">Documenta suspensiones laborales por parte del IGSS.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action">
+                                <i class="fa fa-file-alt"></i> Llenar Boleta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cerrar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas cerrar la sesión?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/pages/pages/tickets/new-ticket.js"></script>
+    </body>
+
+</html>

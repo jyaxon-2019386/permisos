@@ -158,9 +158,9 @@ function formatTimeTo12Hour(timeStr) {
     }
 
     // Obtener la firma del jefe inmediato
-    const firmaInfo = getFirmaJefe(departamento); // Obtiene el objeto con src y style
-    const defaultImgStyle = "max-width: 150px; height: auto; display: block; margin: 0 auto;"; // Estilo por defecto
-    const customImgStyle = firmaInfo.style || defaultImgStyle; // Usa el estilo específico o el por defecto
+    const firmaInfo = getFirmaJefe(departamento); 
+    const defaultImgStyle = "max-width: 150px; height: auto; display: block; margin: 0 auto;";
+    const customImgStyle = firmaInfo.style || defaultImgStyle; 
 
     const firmaJefeHTML = firmaInfo.src ? `<img src="${firmaInfo.src}" alt="Firma del Jefe Inmediato" style="${customImgStyle}">` : '';
 

@@ -399,3 +399,97 @@ body {
         margin-top: 1rem;
     }
 }
+
+.boleta-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%; 
+}
+
+.boleta-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.07);
+}
+
+.boleta-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.boleta-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.boleta-description {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    flex-grow: 1; 
+    margin-bottom: 1.5rem;
+}
+
+.boleta-card .btn-action {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .boleta-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+
+.boleta-card .card-info-content {
+    flex-grow: 1; 
+    margin-bottom: 1rem; 
+}
+
+.boleta-category-badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.8em;
+    border-radius: 15px;
+    font-weight: 500;
+    display: inline-block; 
+    margin-bottom: 0.8rem; 
+}
+
+.badge-time-off {
+    background-color: #e0f2f7; 
+    color: #0288d1; 
+}
+
+.badge-medical {
+    background-color: #e8f5e9; 
+    color: #2e7d32; 
+}
+
+.badge-general {
+    background-color: #f3f3c1; 
+    color: #a3a304; 
+}
+
+.badge-administrative {
+    background-color: #ede7f6; 
+    color: #5e35b1; 
+}
+
+.badge-disciplinary {
+    background-color: #ffebee;
+    color: #c62828; 
+}
+    

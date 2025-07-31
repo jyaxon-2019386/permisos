@@ -1,6 +1,7 @@
 // Carga el avatar del usuario desde sessionStorage
 document.addEventListener("DOMContentLoaded", function () { 
   const avatarURL = sessionStorage.getItem('avatar');
+  const username = sessionStorage.getItem('nombre');
   if (avatarURL) {
     const avatarEl = document.getElementById('avatar');
     if (avatarEl) {
@@ -8,11 +9,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  if(username){
+    const isUsername = document.getElementById('username');
+    if(isUsername){
+        isUsername.textContent = username;
+    }
+  }
+
   getLastTicker();
 
-  toggleSidebarBtn.addEventListener('click', function () {
-    document.body.classList.toggle('sidebar-collapsed');
-});
+ const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    if (toggleSidebarBtn) {
+        toggleSidebarBtn.addEventListener('click', function () {
+            document.body.classList.toggle('sidebar-collapsed');
+        });
+    }
 
 });
 
