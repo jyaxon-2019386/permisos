@@ -1,5 +1,6 @@
 import { notyf } from '../../plugins/notify.js';
 
+
 export async function login() {
     const usuario = document.getElementById("user_name").value;
     const contrasena = document.getElementById("password").value;

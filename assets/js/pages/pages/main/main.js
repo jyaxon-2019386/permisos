@@ -1,3 +1,5 @@
+isUserLoggedIn()
+
 // Carga el avatar del usuario desde sessionStorage
 document.addEventListener("DOMContentLoaded", function () { 
   const avatarURL = sessionStorage.getItem('avatar');

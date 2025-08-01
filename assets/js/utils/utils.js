@@ -1,3 +1,9 @@
+function isUserLoggedIn() {
+    if (!sessionStorage.getItem('usuario_principal')) {
+        window.location.href = '../../pages/authentication/signin/login.html';
+      }
+}
+
 // --- FUNCIONES DE SESIÓN Y NAVEGACIÓN ---
 function logout() {
     sessionStorage.clear('usuario_principal');
@@ -158,3 +164,4 @@ function obtenerTituloBoleta(tipoTicket) {
 }
 
 window.getFirmaJefe = getFirmaJefe;
+window.isUserLoggedIn = isUserLoggedIn;

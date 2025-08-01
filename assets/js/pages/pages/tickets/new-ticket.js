@@ -1,3 +1,5 @@
+isUserLoggedIn()
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // Sidebar toggle functionality
