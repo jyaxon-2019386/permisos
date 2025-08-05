@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function logout() {
-    sessionStorage.clear('usuario_principal');
+    sessionStorage.clear('usuario');
     sessionStorage.clear('avatar');
     sessionStorage.clear('id_usuario');
     window.location.href = '../../authentication/signin/login.html';

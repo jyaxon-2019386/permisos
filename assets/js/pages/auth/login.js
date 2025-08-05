@@ -20,7 +20,7 @@ export async function login() {
 
         if (response.status === 200 && data?.success) {
             notyf.success(escapeHtml(data.greeting));
-            sessionStorage.setItem('usuario_principal', data.usuario);
+            sessionStorage.setItem('usuario', data.usuario);
             sessionStorage.setItem('nombre', data.nombre);
             sessionStorage.setItem('idUsuario', data.idUsuario);
 
@@ -43,7 +43,7 @@ export async function login() {
             } else {
                 notyf.error(escapeHtml(data.error || 'Error desconocido'));
             }
-            sessionStorage.removeItem('usuario_principal');
+            sessionStorage.removeItem('usuario');
             return false;
         }
     } catch (error) {

@@ -13,7 +13,7 @@ function toggleSidebar(){
     }
 }
 function logout() {
-    sessionStorage.clear('usuario_principal');
+    sessionStorage.clear('usuario');
     sessionStorage.clear('avatar');
     sessionStorage.clear('id_usuario');
     window.location.href = '../../../pages/authentication/signin/login.html';

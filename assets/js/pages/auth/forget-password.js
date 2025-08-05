@@ -38,7 +38,7 @@ export async function forgetPassword() {
             } else {
                 notyf.error(escapeHtml(data.error || 'Error desconocido'));
             }
-            sessionStorage.removeItem('usuario_principal');
+            sessionStorage.removeItem('usuario');
             return false;
         }
     } catch (error) {

@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.body.classList.toggle('sidebar-collapsed');
     });
 
+    document.getElementById('workingHoursSelect').addEventListener('change', () => {
+    updateTotalDays(); // Recalcular el total con la nueva jornada
+});
     addDayBtn.addEventListener('click', addVacationDayEntry);
     addVacationDayEntry(); // Añadir primer día
 
@@ -44,8 +47,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <label for="desc${entryCounter}">Tipo de Día</label>
                 <select id="desc${entryCounter}" name="desc${entryCounter}" class="form-control desc" required>
                     <option value="Todo el día.">Todo el día.</option>
-                    <option value="Medio día (por la mañana).">Medio día (por la mañana).</option>
-                    <option value="Medio día (por la tarde).">Medio día (por la tarde).</option>
                 </select>
             </div>
             <button type="button" class="btn-remove-day"><i class="fas fa-trash-alt"></i></button>
@@ -96,15 +97,25 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     function updateTotalDays() {
-        let total = 0;
-        vacationEntriesContainer.querySelectorAll('.date-entry').forEach(entry => {
-            const selectElement = entry.querySelector('select');
-            if (selectElement.value === "Todo el día.") total += 1;
-            else if (selectElement.value.includes("Medio día")) total += 0.5;
-        });
-        totalDiasSolicitadosSpan.textContent = total.toFixed(2);
-        formTotalD.value = total;
-    }
+    let total = 0;
+
+    const jornadaValue = parseFloat(document.getElementById('workingHoursSelect').value); // 8 o 9
+
+    vacationEntriesContainer.querySelectorAll('.date-entry').forEach(entry => {
+        const dayTypeSelect = entry.querySelector('select');
+
+        if (dayTypeSelect.value === "Todo el día.") {
+            total += jornadaValue;
+        } else if (dayTypeSelect.value === "Medio día.") {
+            total += jornadaValue / 2;
+        }
+    });
+
+    totalDiasSolicitadosSpan.textContent = total.toFixed(2);
+    formTotalD.value = total;
+}
+
+
 
     vacationForm.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -133,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
-        await postTicketVacations(data);
+        await postTicketSpecial(data);
     });
 
     const idUsuario = sessionStorage.getItem('idUsuario');
@@ -145,7 +156,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('formIdSolicitante').value = data.user.idSolicitante;
             document.getElementById('formIdCreador').value = data.user.idSolicitante;
             document.getElementById('formIdDepartamento').value = data.user.idDepartamento;
-            document.getElementById('diasDisponibles').textContent = data.user.vacaciones;
         } else {
             console.error("Error al obtener los datos del usuario:", data.error);
         }
@@ -157,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 
-async function postTicketVacations(data) {
+async function postTicketSpecial(data) {
     // Obtener nivel del usuario desde el endpoint
     try {
         const idUsuario = sessionStorage.getItem('idUsuario');
@@ -185,23 +195,8 @@ async function postTicketVacations(data) {
     data.idGerente = null;
     data.idRH = null;
 
-    for (const key in data) {
-        if (data[key] === "" || data[key] === undefined) {
-            data[key] = null;
-        }
-    }
-
-    for (let i = 1; i <= 10; i++) {
-        if (!data[`fecha${i}`]) {
-            data[`fecha${i}`] = null;
-        }
-        if (!data[`desc${i}`]) {
-            data[`desc${i}`] = null;
-        }
-    }
-
     try {
-        data.quest = 'postTicketVacations';
+        data.quest = 'postTicketSpecial';
 
         const response = await fetch('../../assets/php/tickets/tickets.php', {
             method: 'POST',

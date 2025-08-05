@@ -1,4 +1,3 @@
-isUserLoggedIn()
 
 // Carga el avatar del usuario desde sessionStorage
 document.addEventListener("DOMContentLoaded", function () { 
@@ -32,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Función para cerrar sesión y redirigir al login
 function logout() {
-    sessionStorage.clear('usuario_principal');
+    sessionStorage.clear('usuario');
     sessionStorage.clear('avatar');
     sessionStorage.clear('id_usuario');
     window.location.href = '../../pages/authentication/signin/login.html';

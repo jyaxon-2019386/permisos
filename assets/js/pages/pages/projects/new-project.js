@@ -94,7 +94,7 @@ async function saveProject() {
                 } else {
                     notyf.error(escapeHtml(data.error || 'Error desconocido'));
                 }
-                sessionStorage.removeItem('usuario_principal');
+                sessionStorage.removeItem('usuario');
                 return false;
             }
   } catch (error) {
@@ -127,7 +127,7 @@ function toggleSidebar(){
 }
 
 function logout() {
-  sessionStorage.clear('usuario_principal');
+  sessionStorage.clear('usuario');
   sessionStorage.clear('avatar');
   sessionStorage.clear('id_usuario');
   window.location.href = '../../../pages/authentication/signin/login.html';
