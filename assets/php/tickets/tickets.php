@@ -771,325 +771,512 @@ switch ($request_method) {
         switch ($quest) {
             case 'postTicketVacations':
 
-            function limpiarTexto($texto) {
-                return isset($texto) ? utf8_decode(trim($texto)) : null;
-            }
+                function limpiarTexto($texto) {
+                    return isset($texto) ? utf8_decode(trim($texto)) : null;
+                }
 
-            // Obtener nuevo correlativo
-            $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaVacaciones";
-            $result = odbc_exec($con, $sqlCorrelativo);
-            $correlativo = 1;
-            if ($result && odbc_fetch_row($result)) {
-                $correlativo = odbc_result($result, "nuevoCorrelativo");
-            }
+                // Obtener nuevo correlativo
+                $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaVacaciones";
+                $result = odbc_exec($con, $sqlCorrelativo);
+                $correlativo = 1;
+                if ($result && odbc_fetch_row($result)) {
+                    $correlativo = odbc_result($result, "nuevoCorrelativo");
+                }
 
-            $fechaSolicitud = isset($data['fechaSolicitud']) ? trim($data['fechaSolicitud']) : '';
+                $fechaSolicitud = isset($data['fechaSolicitud']) ? trim($data['fechaSolicitud']) : '';
 
-            $observaciones1 = limpiarTexto($data['observaciones1'] ?? null);
-            $observaciones2 = limpiarTexto($data['observaciones2'] ?? null);
-            $observaciones3 = limpiarTexto($data['observaciones3'] ?? null);
-            $observaciones4 = limpiarTexto($data['observaciones4'] ?? null);
+                $observaciones1 = limpiarTexto($data['observaciones1'] ?? null);
+                $observaciones2 = limpiarTexto($data['observaciones2'] ?? null);
+                $observaciones3 = limpiarTexto($data['observaciones3'] ?? null);
+                $observaciones4 = limpiarTexto($data['observaciones4'] ?? null);
 
-            $idSolicitante = trim($data['idSolicitante'] ?? '');
-            $idCreador = trim($data['idCreador'] ?? '');
-            $idDepartamento = trim($data['idDepartamento'] ?? '');
-                        
-            $idGerente = trim($data['idGerente'] ?? '') ?: null;
-            $idRH = trim($data['idRH'] ?? '') ?: null;
-            
-            if (empty($idDepartamento)) {
-                http_response_code(400);
-                echo json_encode(["error" => "No se pudo determinar el departamento del solicitante."]);
-                break;
-            }
-
-            // Consulta para encontrar al jefe y pueda autorizar
-            $sqlJefe = "SELECT idUsuario FROM UsuarioDep WHERE nivel = 1 AND idDepartamento = ?";
-            $stmtJefe = odbc_prepare($con, $sqlJefe);
-            if (!$stmtJefe) {
-                http_response_code(500);
-                echo json_encode(["error" => "Error al preparar la consulta para encontrar al jefe."]);
-                break;
-            }
-            
-            $paramsJefe = [$idDepartamento];
-            if (!odbc_execute($stmtJefe, $paramsJefe)) {
-                http_response_code(500);
-                echo json_encode(["error" => "Error al ejecutar la consulta para encontrar al jefe.", "detalle" => odbc_errormsg($con)]);
-                break;
-            }
-            
-            if (!odbc_fetch_row($stmtJefe)) {
-                http_response_code(400);
-                echo json_encode([
-                    "error" => "No se encontró un jefe de nivel 1 para el departamento con ID {$idDepartamento}. Por favor, verifique la configuración de los usuarios."
-                ]);
-                break;
-            }
-            
-            $idJefe = odbc_result($stmtJefe, 'idUsuario');
-            
-            
-            $idEstado = trim($data['idEstado'] ?? '');
-            $totalD = trim($data['totalD'] ?? '') ?: null;
-
-            $fechas = [];
-            $descs = [];
-            $tieneParValido = false;
-
-            for ($i = 1; $i <= 10; $i++) {
-                $fecha = isset($data['fecha' . $i]) ? trim($data['fecha' . $i]) : null;
-                $desc = isset($data['desc' . $i]) ? limpiarTexto($data['desc' . $i]) : null;
-
-                $fecha = (strtolower($fecha) === 'null' || $fecha === '') ? null : $fecha;
-                $desc = (strtolower($desc) === 'null' || $desc === '') ? null : $desc;
-
-                $fechas[$i] = $fecha;
-                $descs[$i] = $desc;
-
-                if (($fecha && !$desc) || (!$fecha && $desc)) {
+                $idSolicitante = trim($data['idSolicitante'] ?? '');
+                $idCreador = trim($data['idCreador'] ?? '');
+                $idDepartamento = trim($data['idDepartamento'] ?? '');
+                            
+                $idGerente = trim($data['idGerente'] ?? '') ?: null;
+                $idRH = trim($data['idRH'] ?? '') ?: null;
+                
+                if (empty($idDepartamento)) {
                     http_response_code(400);
-                    echo json_encode(["error" => "Debes ingresar una fecha válida. Revisar el día #{$i}."]);
-                    break 2;
+                    echo json_encode(["error" => "No se pudo determinar el departamento del solicitante."]);
+                    break;
                 }
-                if ($fecha && $desc) {
-                    $tieneParValido = true;
+
+                // Consulta para encontrar al jefe y pueda autorizar
+                $sqlJefe = "SELECT idUsuario FROM UsuarioDep WHERE nivel = 1 AND idDepartamento = ?";
+                $stmtJefe = odbc_prepare($con, $sqlJefe);
+                if (!$stmtJefe) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al preparar la consulta para encontrar al jefe."]);
+                    break;
                 }
-            }
+                
+                $paramsJefe = [$idDepartamento];
+                if (!odbc_execute($stmtJefe, $paramsJefe)) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al ejecutar la consulta para encontrar al jefe.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
+                
+                if (!odbc_fetch_row($stmtJefe)) {
+                    http_response_code(400);
+                    echo json_encode([
+                        "error" => "No se encontró un jefe de nivel 1 para el departamento con ID {$idDepartamento}. Por favor, verifique la configuración de los usuarios."
+                    ]);
+                    break;
+                }
+                
+                $idJefe = odbc_result($stmtJefe, 'idUsuario');
+                
+                
+                $idEstado = trim($data['idEstado'] ?? '');
+                $totalD = trim($data['totalD'] ?? '') ?: null;
 
-            if (!$tieneParValido) {
-                http_response_code(400);
-                echo json_encode(["error" => "Debe ingresar al menos una fecha con su descripción."]);
-                break;
-            }
+                $fechas = [];
+                $descs = [];
+                $tieneParValido = false;
 
-            odbc_exec($con, "SET LANGUAGE SPANISH;");
+                for ($i = 1; $i <= 10; $i++) {
+                    $fecha = isset($data['fecha' . $i]) ? trim($data['fecha' . $i]) : null;
+                    $desc = isset($data['desc' . $i]) ? limpiarTexto($data['desc' . $i]) : null;
 
-            $sql = "INSERT INTO BoletaVacaciones (
-                correlativo, observaciones1, observaciones2, observaciones3, observaciones4,
-                fechaSolicitud,
-                fecha1, desc1, fecha2, desc2, fecha3, desc3, fecha4, desc4, fecha5, desc5,
-                fecha6, desc6, fecha7, desc7, fecha8, desc8, fecha9, desc9, fecha10, desc10,
-                totalD, idSolicitante, idCreador, idDepartamento, idJefe, idGerente, idRH, idEstado, fecha_actualizado
-            ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )";
+                    $fecha = (strtolower($fecha) === 'null' || $fecha === '') ? null : $fecha;
+                    $desc = (strtolower($desc) === 'null' || $desc === '') ? null : $desc;
 
-            $params = [
-                $correlativo,
-                $observaciones1,
-                $observaciones2,
-                $observaciones3,
-                $observaciones4,
-                $fechaSolicitud,
-                $fechas[1], $descs[1],
-                $fechas[2], $descs[2],
-                $fechas[3], $descs[3],
-                $fechas[4], $descs[4],
-                $fechas[5], $descs[5],
-                $fechas[6], $descs[6],
-                $fechas[7], $descs[7],
-                $fechas[8], $descs[8],
-                $fechas[9], $descs[9],
-                $fechas[10], $descs[10],
-                $totalD,
-                $idSolicitante,
-                $idCreador,
-                $idDepartamento,
-                $idJefe,
-                $idGerente,
-                $idRH,
-                $idEstado,
-                null
-            ];
+                    $fechas[$i] = $fecha;
+                    $descs[$i] = $desc;
 
-            $stmt = odbc_prepare($con, $sql);
-            if (!$stmt) {
-                http_response_code(500);
-                echo json_encode(["error" => "Falló la preparación de la consulta SQL.", "detalle" => odbc_errormsg($con)]);
-                break;
-            }
+                    if (($fecha && !$desc) || (!$fecha && $desc)) {
+                        http_response_code(400);
+                        echo json_encode(["error" => "Debes ingresar una fecha válida. Revisar el día #{$i}."]);
+                        break 2;
+                    }
+                    if ($fecha && $desc) {
+                        $tieneParValido = true;
+                    }
+                }
 
-            $exec = odbc_execute($stmt, $params);
+                if (!$tieneParValido) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "Debe ingresar al menos una fecha con su descripción."]);
+                    break;
+                }
 
-            if ($exec) {
-                http_response_code(201);
-                echo json_encode(["success" => "Boleta creada exitosamente."]);
-            } else {
-                http_response_code(500);
-                echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);
-            }
+                odbc_exec($con, "SET LANGUAGE SPANISH;");
+
+                $sql = "INSERT INTO BoletaVacaciones (
+                    correlativo, observaciones1, observaciones2, observaciones3, observaciones4,
+                    fechaSolicitud,
+                    fecha1, desc1, fecha2, desc2, fecha3, desc3, fecha4, desc4, fecha5, desc5,
+                    fecha6, desc6, fecha7, desc7, fecha8, desc8, fecha9, desc9, fecha10, desc10,
+                    totalD, idSolicitante, idCreador, idDepartamento, idJefe, idGerente, idRH, idEstado, fecha_actualizado
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                )";
+
+                $params = [
+                    $correlativo,
+                    $observaciones1,
+                    $observaciones2,
+                    $observaciones3,
+                    $observaciones4,
+                    $fechaSolicitud,
+                    $fechas[1], $descs[1],
+                    $fechas[2], $descs[2],
+                    $fechas[3], $descs[3],
+                    $fechas[4], $descs[4],
+                    $fechas[5], $descs[5],
+                    $fechas[6], $descs[6],
+                    $fechas[7], $descs[7],
+                    $fechas[8], $descs[8],
+                    $fechas[9], $descs[9],
+                    $fechas[10], $descs[10],
+                    $totalD,
+                    $idSolicitante,
+                    $idCreador,
+                    $idDepartamento,
+                    $idJefe,
+                    $idGerente,
+                    $idRH,
+                    $idEstado,
+                    null
+                ];
+
+                $stmt = odbc_prepare($con, $sql);
+                if (!$stmt) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Falló la preparación de la consulta SQL.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
+
+                $exec = odbc_execute($stmt, $params);
+
+                if ($exec) {
+                    http_response_code(201);
+                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);
+                }
 
             break;
-        case 'postTicketSpecial':
+            case 'postTicketSpecial':
+                function limpiarTexto($texto) {
+                    return isset($texto) ? utf8_decode(trim($texto)) : null;
+                }
 
-            function limpiarTexto($texto) {
-                return isset($texto) ? utf8_decode(trim($texto)) : null;
-            }
+                // Obtener nuevo correlativo
+                $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaEspecial";
+                $result = odbc_exec($con, $sqlCorrelativo);
+                $correlativo = 1;
+                if ($result && odbc_fetch_row($result)) {
+                    $correlativo = odbc_result($result, "nuevoCorrelativo");
+                }
 
-            // Obtener nuevo correlativo
-            $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaEspecial";
-            $result = odbc_exec($con, $sqlCorrelativo);
-            $correlativo = 1;
-            if ($result && odbc_fetch_row($result)) {
-                $correlativo = odbc_result($result, "nuevoCorrelativo");
-            }
+                $fechaSolicitud = isset($data['fechaSolicitud']) ? trim($data['fechaSolicitud']) : '';
 
-            $fechaSolicitud = isset($data['fechaSolicitud']) ? trim($data['fechaSolicitud']) : '';
+                $observaciones1 = limpiarTexto($data['observaciones1'] ?? null);
+                $observaciones2 = limpiarTexto($data['observaciones2'] ?? null);
+                $observaciones3 = limpiarTexto($data['observaciones3'] ?? null);
+                $observaciones4 = limpiarTexto($data['observaciones4'] ?? null);
 
-            $observaciones1 = limpiarTexto($data['observaciones1'] ?? null);
-            $observaciones2 = limpiarTexto($data['observaciones2'] ?? null);
-            $observaciones3 = limpiarTexto($data['observaciones3'] ?? null);
-            $observaciones4 = limpiarTexto($data['observaciones4'] ?? null);
+                $idSolicitante = trim($data['idSolicitante'] ?? '');
+                $idCreador = trim($data['idCreador'] ?? '');
+                $idDepartamento = trim($data['idDepartamento'] ?? '');
+                
+                $idGerente = trim($data['idGerente'] ?? '') ?: null;
+                $idRH = trim($data['idRH'] ?? '') ?: null;
 
-            $idSolicitante = trim($data['idSolicitante'] ?? '');
-            $idCreador = trim($data['idCreador'] ?? '');
-            $idDepartamento = trim($data['idDepartamento'] ?? '');
-            
-            $idGerente = trim($data['idGerente'] ?? '') ?: null;
-            $idRH = trim($data['idRH'] ?? '') ?: null;
-
-            if (empty($idDepartamento)) {
-                http_response_code(400);
-                echo json_encode(["error" => "No se pudo determinar el departamento del solicitante."]);
-                break;
-            }
-
-            // Buscar jefe de departamento
-            $sqlJefe = "SELECT idUsuario FROM UsuarioDep WHERE nivel = 1 AND idDepartamento = ?";
-            $stmtJefe = odbc_prepare($con, $sqlJefe);
-            if (!$stmtJefe) {
-                http_response_code(500);
-                echo json_encode(["error" => "Error al preparar la consulta para encontrar al jefe."]);
-                break;
-            }
-
-            if (!odbc_execute($stmtJefe, [$idDepartamento])) {
-                http_response_code(500);
-                echo json_encode(["error" => "Error al ejecutar la consulta para encontrar al jefe.", "detalle" => odbc_errormsg($con)]);
-                break;
-            }
-
-            if (!odbc_fetch_row($stmtJefe)) {
-                http_response_code(400);
-                echo json_encode(["error" => "No se encontró un jefe de nivel 1 para el departamento con ID {$idDepartamento}."]);
-                break;
-            }
-
-            $idJefe = odbc_result($stmtJefe, 'idUsuario');
-            $idEstado = trim($data['idEstado'] ?? '');
-            $totalH = trim($data['totalH'] ?? '') ?: null;
-
-            // Procesar fechas y descripciones
-            $fechas = [];
-            $descs = [];
-            $tieneParValido = false;
-
-            for ($i = 1; $i <= 5; $i++) {
-                $fecha = isset($data['fecha' . $i]) ? trim($data['fecha' . $i]) : null;
-                $desc = isset($data['desc' . $i]) ? limpiarTexto($data['desc' . $i]) : null;
-
-                $fecha = (strtolower($fecha) === 'null' || $fecha === '') ? null : $fecha;
-                $desc = (strtolower($desc) === 'null' || $desc === '') ? null : $desc;
-
-                $fechas[$i] = $fecha;
-                $descs[$i] = $desc;
-
-                if (($fecha && !$desc) || (!$fecha && $desc)) {
+                if (empty($idDepartamento)) {
                     http_response_code(400);
-                    echo json_encode(["error" => "Debes ingresar una fecha válida. Revisar el día #{$i}."]);
-                    break 2;
+                    echo json_encode(["error" => "No se pudo determinar el departamento del solicitante."]);
+                    break;
                 }
 
-                if ($fecha && $desc) {
-                    $tieneParValido = true;
+                // Buscar jefe de departamento
+                $sqlJefe = "SELECT idUsuario FROM UsuarioDep WHERE nivel = 1 AND idDepartamento = ?";
+                $stmtJefe = odbc_prepare($con, $sqlJefe);
+                if (!$stmtJefe) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al preparar la consulta para encontrar al jefe."]);
+                    break;
                 }
-            }
 
-            if (!$tieneParValido) {
-                http_response_code(400);
-                echo json_encode(["error" => "Debe ingresar al menos una fecha con su descripción."]);
-                break;
-            }
+                if (!odbc_execute($stmtJefe, [$idDepartamento])) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al ejecutar la consulta para encontrar al jefe.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
 
-            // Capturar horas
-            $horaI1 = $data['horaI1'] ?? null;
-            $horaF1 = $data['horaF1'] ?? null;
-            $horaI2 = $data['horaI2'] ?? null;
-            $horaF2 = $data['horaF2'] ?? null;
-            $horaI3 = $data['horaI3'] ?? null;
-            $horaF3 = $data['horaF3'] ?? null;
-            $horaI4 = $data['horaI4'] ?? null;
-            $horaF4 = $data['horaF4'] ?? null;
-            $horaI5 = $data['horaI5'] ?? null;
-            $horaF5 = $data['horaF5'] ?? null;
+                if (!odbc_fetch_row($stmtJefe)) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No se encontró un jefe de nivel 1 para el departamento con ID {$idDepartamento}."]);
+                    break;
+                }
 
-            // Asignar descripciones
-            $desc1A = $descs[1];
-            $desc2A = $descs[2];
-            $desc3A = $descs[3];
-            $desc4A = $descs[4];
-            $desc5A = $descs[5];
+                $idJefe = odbc_result($stmtJefe, 'idUsuario');
+                $idEstado = trim($data['idEstado'] ?? '');
+                $totalH = trim($data['totalH'] ?? '') ?: null;
 
-            odbc_exec($con, "SET LANGUAGE SPANISH;");
+                // Procesar fechas y descripciones
+                $fechas = [];
+                $descs = [];
+                $tieneParValido = false;
 
-            $sql = "INSERT INTO BoletaEspecial (
-                fechaSolicitud,
-                correlativo, observaciones1, observaciones2, observaciones3, observaciones4,
-                fecha1, horaI1, horaF1, fecha2, horaI2, horaF2, fecha3, horaI3, horaF3, fecha4, horaI4, horaF4, fecha5, horaI5, horaF5,
-                desc1A, desc2A, desc3A, desc4A, desc5A,
-                totalH, idSolicitante, idCreador, idDepartamento, idJefe, idGerente, idRH, idEstado, fecha_actualizado
-            ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )";
+                for ($i = 1; $i <= 5; $i++) {
+                    $fecha = isset($data['fecha' . $i]) ? trim($data['fecha' . $i]) : null;
+                    $desc = isset($data['desc' . $i]) ? limpiarTexto($data['desc' . $i]) : null;
 
-            $params = [
-                $fechaSolicitud,
-                $correlativo,
-                $observaciones1,
-                $observaciones2,
-                $observaciones3,
-                $observaciones4,
-                $fechas[1], $horaI1, $horaF1,
-                $fechas[2], $horaI2, $horaF2,
-                $fechas[3], $horaI3, $horaF3,
-                $fechas[4], $horaI4, $horaF4,
-                $fechas[5], $horaI5, $horaF5,
-                $desc1A,
-                $desc2A,
-                $desc3A,
-                $desc4A,
-                $desc5A,
-                $totalH,
-                $idSolicitante,
-                $idCreador,
-                $idDepartamento,
-                $idJefe,
-                $idGerente,
-                $idRH,
-                $idEstado,
-                null
-            ];
+                    $fecha = (strtolower($fecha) === 'null' || $fecha === '') ? null : $fecha;
+                    $desc = (strtolower($desc) === 'null' || $desc === '') ? null : $desc;
 
-            $stmt = odbc_prepare($con, $sql);
-            if (!$stmt) {
-                http_response_code(500);
-                echo json_encode(["error" => "Falló la preparación de la consulta SQL.", "detalle" => odbc_errormsg($con)]);
-                break;
-            }
+                    $fechas[$i] = $fecha;
+                    $descs[$i] = $desc;
 
-            $exec = odbc_execute($stmt, $params);
+                    if (($fecha && !$desc) || (!$fecha && $desc)) {
+                        http_response_code(400);
+                        echo json_encode(["error" => "Debes ingresar una fecha válida. Revisar el día #{$i}."]);
+                        break 2;
+                    }
 
-            if ($exec) {
-                http_response_code(201);
-                echo json_encode(["success" => "Boleta creada exitosamente."]);
-            } else {
-                http_response_code(500);
-                echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);
-            }
+                    if ($fecha && $desc) {
+                        $tieneParValido = true;
+                    }
+                }
+
+                if (!$tieneParValido) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "Debe ingresar al menos una fecha con su descripción."]);
+                    break;
+                }
+
+                // Capturar horas
+                $horaI1 = $data['horaI1'] ?? null;
+                $horaF1 = $data['horaF1'] ?? null;
+                $horaI2 = $data['horaI2'] ?? null;
+                $horaF2 = $data['horaF2'] ?? null;
+                $horaI3 = $data['horaI3'] ?? null;
+                $horaF3 = $data['horaF3'] ?? null;
+                $horaI4 = $data['horaI4'] ?? null;
+                $horaF4 = $data['horaF4'] ?? null;
+                $horaI5 = $data['horaI5'] ?? null;
+                $horaF5 = $data['horaF5'] ?? null;
+
+                // Asignar descripciones
+                $desc1A = $descs[1];
+                $desc2A = $descs[2];
+                $desc3A = $descs[3];
+                $desc4A = $descs[4];
+                $desc5A = $descs[5];
+
+                odbc_exec($con, "SET LANGUAGE SPANISH;");
+
+                $sql = "INSERT INTO BoletaEspecial (
+                    fechaSolicitud,
+                    correlativo, observaciones1, observaciones2, observaciones3, observaciones4,
+                    fecha1, horaI1, horaF1, fecha2, horaI2, horaF2, fecha3, horaI3, horaF3, fecha4, horaI4, horaF4, fecha5, horaI5, horaF5,
+                    desc1A, desc2A, desc3A, desc4A, desc5A,
+                    totalH, idSolicitante, idCreador, idDepartamento, idJefe, idGerente, idRH, idEstado, fecha_actualizado
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                )";
+
+                $params = [
+                    $fechaSolicitud,
+                    $correlativo,
+                    $observaciones1,
+                    $observaciones2,
+                    $observaciones3,
+                    $observaciones4,
+                    $fechas[1], $horaI1, $horaF1,
+                    $fechas[2], $horaI2, $horaF2,
+                    $fechas[3], $horaI3, $horaF3,
+                    $fechas[4], $horaI4, $horaF4,
+                    $fechas[5], $horaI5, $horaF5,
+                    $desc1A,
+                    $desc2A,
+                    $desc3A,
+                    $desc4A,
+                    $desc5A,
+                    $totalH,
+                    $idSolicitante,
+                    $idCreador,
+                    $idDepartamento,
+                    $idJefe,
+                    $idGerente,
+                    $idRH,
+                    $idEstado,
+                    null
+                ];
+
+                $stmt = odbc_prepare($con, $sql);
+                if (!$stmt) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Falló la preparación de la consulta SQL.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
+
+                $exec = odbc_execute($stmt, $params);
+
+                if ($exec) {
+                    http_response_code(201);
+                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);
+                }
+            break;
+            case 'postTicketTime':
+                function limpiarTexto($texto) {
+                    return isset($texto) ? utf8_decode(trim($texto)) : null;
+                }
+
+                // Obtener nuevo correlativo
+                // **NOTA:** La tabla es BoletaReposicion, no BoletaEspecial.
+                $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaReposicion";
+                $result = odbc_exec($con, $sqlCorrelativo);
+                $correlativo = 1;
+                if ($result && odbc_fetch_row($result)) {
+                    $correlativo = odbc_result($result, "nuevoCorrelativo");
+                }
+
+                $fechaSolicitud = trim($data['fechaSolicitud'] ?? '');
+
+                // **NOTA:** Solo hay una columna de observaciones en tu tabla.
+                $observaciones1 = limpiarTexto($data['observaciones1'] ?? null);
+
+                $idSolicitante = trim($data['idSolicitante'] ?? '');
+                $idCreador = trim($data['idCreador'] ?? '');
+                $idDepartamento = trim($data['idDepartamento'] ?? '');
+                $idGerente = trim($data['idGerente'] ?? '') ?: null;
+                $idRH = trim($data['idRH'] ?? '') ?: null;
+
+                if (empty($idDepartamento)) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No se pudo determinar el departamento del solicitante."]);
+                    break;
+                }
+
+                // Buscar jefe
+                $sqlJefe = "SELECT idUsuario FROM UsuarioDep WHERE nivel = 1 AND idDepartamento = ?";
+                $stmtJefe = odbc_prepare($con, $sqlJefe);
+                if (!$stmtJefe) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al preparar la consulta para encontrar al jefe."]);
+                    break;
+                }
+
+                if (!odbc_execute($stmtJefe, [$idDepartamento])) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al ejecutar la consulta para encontrar al jefe.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
+
+                if (!odbc_fetch_row($stmtJefe)) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No se encontró un jefe de nivel 1 para el departamento."]);
+                    break;
+                }
+
+                $idJefe = odbc_result($stmtJefe, 'idUsuario');
+                $idEstado = trim($data['idEstado'] ?? '');
+                $totalH = trim($data['totalH'] ?? '') ?: null;
+                $totalHR = trim($data['totalHR'] ?? '') ?: null; // Campo totalHR añadido
+
+                // Procesar datos para los 5 días de ausencia y 5 días de reposición
+                $fechas = [];
+                $horaI = [];
+                $horaf = [];
+                $fechasR = [];
+                $horaIR = [];
+                $horafR = [];
+                $descA = [];
+                $descR = [];
+
+                $tieneParValido = false;
+
+                for ($i = 1; $i <= 5; $i++) {
+                    // Datos de Ausencia
+                    $fecha = isset($data['fecha' . $i]) ? trim($data['fecha' . $i]) : null;
+                    $horaIA = isset($data['horaI' . $i]) ? trim($data['horaI' . $i]) : null;
+                    $horafA = isset($data['horaF' . $i]) ? trim($data['horaF' . $i]) : null;
+                    $descA_val = isset($data['desc' . $i . 'A']) ? limpiarTexto($data['desc' . $i . 'A']) : null;
+
+                    $fechas[$i] = (strtolower($fecha) === 'null' || $fecha === '') ? null : $fecha;
+                    $horaI[$i] = (strtolower($horaIA) === 'null' || $horaIA === '') ? null : $horaIA;
+                    $horaf[$i] = (strtolower($horafA) === 'null' || $horafA === '') ? null : $horafA;
+                    $descA[$i] = (strtolower($descA_val) === 'null' || $descA_val === '') ? null : $descA_val;
+
+                    // Validar pares de ausencia
+                    if (($fechas[$i] && (!$horaI[$i] || !$horaf[$i] || !$descA[$i])) || 
+                        ((!$fechas[$i]) && ($horaI[$i] || $horaf[$i] || $descA[$i]))) {
+                        http_response_code(400);
+                        echo json_encode(["error" => "Debes ingresar una fecha, horas y descripción válidas. Revisar el día de Ausencia #{$i}."]);
+                        break 2;
+                    }
+
+                    // Datos de Reposición
+                    $fechaR = isset($data['fecha' . $i . 'R']) ? trim($data['fecha' . $i . 'R']) : null;
+                    $horaIR_val = isset($data['horaI' . $i . 'R']) ? trim($data['horaI' . $i . 'R']) : null;
+                    $horafR_val = isset($data['horaF' . $i . 'R']) ? trim($data['horaF' . $i . 'R']) : null;
+                    $descR_val = isset($data['desc' . $i . 'R']) ? limpiarTexto($data['desc' . $i . 'R']) : null;
+
+                    $fechasR[$i] = (strtolower($fechaR) === 'null' || $fechaR === '') ? null : $fechaR;
+                    $horaIR[$i] = (strtolower($horaIR_val) === 'null' || $horaIR_val === '') ? null : $horaIR_val;
+                    $horafR[$i] = (strtolower($horafR_val) === 'null' || $horafR_val === '') ? null : $horafR_val;
+                    $descR[$i] = (strtolower($descR_val) === 'null' || $descR_val === '') ? null : $descR_val;
+
+                    // Validar pares de reposición
+                    if (($fechasR[$i] && (!$horaIR[$i] || !$horafR[$i] || !$descR[$i])) ||
+                        ((!$fechasR[$i]) && ($horaIR[$i] || $horafR[$i] || $descR[$i]))) {
+                        http_response_code(400);
+                        echo json_encode(["error" => "Debes ingresar una fecha, horas y descripción válidas. Revisar el día de Reposición #{$i}."]);
+                        break 2;
+                    }
+
+                    // Verificar si se ha ingresado al menos un par válido
+                    if ($fechas[$i] || $fechasR[$i]) {
+                        $tieneParValido = true;
+                    }
+                }
+
+                if (!$tieneParValido) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "Debe ingresar al menos una fecha de ausencia o reposición con sus datos."]);
+                    break;
+                }
+
+                odbc_exec($con, "SET LANGUAGE SPANISH;");
+
+                // **NOTA:** SQL adaptado a las columnas de la tabla BoletaReposicion
+                $sql = "INSERT INTO BoletaReposicion (
+                    correlativo, observaciones1, fechaSolicitud,
+                    fecha1, horaI1, horaF1,
+                    fecha2, horaI2, horaF2,
+                    fecha3, horaI3, horaF3,
+                    fecha4, horaI4, horaF4,
+                    fecha5, horaI5, horaF5,
+                    fecha1R, horaI1R, horaF1R,
+                    fecha2R, horaI2R, horaF2R,
+                    fecha3R, horaI3R, horaF3R,
+                    fecha4R, horaI4R, horaF4R,
+                    fecha5R, horaI5R, horaF5R,
+                    desc1A, desc2A, desc3A, desc4A, desc5A,
+                    desc1R, desc2R, desc3R, desc4R, desc5R,
+                    totalH, totalHR,
+                    idSolicitante, idCreador, idDepartamento, idJefe, idGerente, idRH, idEstado,
+                    fecha_actualizado
+                ) VALUES (
+                    ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?,
+                    ?
+                )";
+
+                // **NOTA:** Los parámetros se han adaptado a la nueva estructura de la consulta
+                $params = [
+                    $correlativo, $observaciones1, $fechaSolicitud,
+                    $fechas[1], $horaI[1], $horaf[1],
+                    $fechas[2], $horaI[2], $horaf[2],
+                    $fechas[3], $horaI[3], $horaf[3],
+                    $fechas[4], $horaI[4], $horaf[4],
+                    $fechas[5], $horaI[5], $horaf[5],
+                    $fechasR[1], $horaIR[1], $horafR[1],
+                    $fechasR[2], $horaIR[2], $horafR[2],
+                    $fechasR[3], $horaIR[3], $horafR[3],
+                    $fechasR[4], $horaIR[4], $horafR[4],
+                    $fechasR[5], $horaIR[5], $horafR[5],
+                    $descA[1], $descA[2], $descA[3], $descA[4], $descA[5],
+                    $descR[1], $descR[2], $descR[3], $descR[4], $descR[5],
+                    $totalH, $totalHR,
+                    $idSolicitante, $idCreador, $idDepartamento, $idJefe, $idGerente, $idRH, $idEstado,
+                    null // fecha_actualizado
+                ];
+
+                $stmt = odbc_prepare($con, $sql);
+                if (!$stmt) {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Falló la preparación de la consulta SQL.", "detalle" => odbc_errormsg($con)]);
+                    break;
+                }
+
+                $exec = odbc_execute($stmt, $params);
+
+                if ($exec) {
+                    http_response_code(201);
+                    echo json_encode(["success" => "Boleta de reposición registrada correctamente."]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(["error" => "Error al registrar la boleta de reposición.", "detalle" => odbc_errormsg($con)]);
+                }
 
             break;
+
 
         default:
                 header("HTTP/1.1 400 Bad Request");
@@ -1226,6 +1413,5 @@ function convertirDecimalAHora($decimal) {
     $minutos = round(($decimal - $horas) * 60);
     return sprintf('%02d:%02d', $horas, $minutos);
 }
-
 
 ?>

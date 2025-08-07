@@ -63,6 +63,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const dateInput = newEntryDiv.querySelector('input.date-picker');
         flatpickr(dateInput, {
+            altInput: true,
+            altFormat: "j F, Y",
             dateFormat: "Y-m-d",
             minDate: "today",
             locale: "es"

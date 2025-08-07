@@ -29,6 +29,43 @@
             justify-content: space-between;
             align-items: center;
         }
+
+        /* --- NUEVOS ESTILOS PARA MEJOR DISEÑO --- */
+
+        /* Estilo para cada tarjeta de entrada de día */
+        .special-entry-item {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        
+        .special-entry-item:focus-within {
+             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .entry-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-remove-day {
+            margin-top: -5px;
+        }
+
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        /* Asegura que el picker de flatpickr se vea bien */
+        .flatpickr-time input.flatpickr-hour {
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -84,21 +121,9 @@
 
         <div class="form-container">
             <div class="info-column">
-                <!-- <div class="card balance-card">
-                    <div class="card-header">
-                        <i class="fas fa-sun"></i>
-                        <h4>Vacaciones disponibles</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="balance-value" id="diasDisponibles">0</div>
-                        <div class="balance-label">Días Disponibles</div>
-                    </div>
-                </div> -->
-
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center gap-2">
-
                             <i class="fas fa-edit"></i>
                             <h4>Observaciones</h4>
                         </div>
@@ -111,41 +136,37 @@
             </div>
 
             <div class="form-column">
-                <form id="vacationForm" class="card">
+                <form id="specialForm" class="card">
                     <input type="hidden" name="idSolicitante" id="formIdSolicitante" value="">
                     <input type="hidden" name="idCreador" id="formIdCreador" value="">
                     <input type="hidden" name="idDepartamento" id="formIdDepartamento" value="">
-                    <input type="hidden" name="totalD" id="formTotalD">
-
+                    <input type="hidden" name="totalD" id="formTotalH">
 
                     <div class="card-header">
                         <div class="d-flex align-items-center gap-2">
                             <i class="fas fa-calendar-day"></i>
                             <h4 class="mb-0">Detalle de Ausencias</h4>
                         </div>
-
-                        <div class="hours-per-day-container">
-                            <label class="form-label mb-0">Horas de Jornada:</label>
-                            <select id="workingHoursSelect" class="form-select form-select-sm">
-                                <option value="8">8</option>
-                                <option value="9">9</option>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label mb-0">Jornada:</label>
+                            <select id="workingHoursSelect" class="form-select form-select-sm" style="width: auto;">
+                                <option value="8" selected>8 horas</option>
+                                <option value="9">9 horas</option>
                             </select>
-
                         </div>
                     </div>
 
-
                     <div class="card-body">
-                        <p class="form-description">Añade los días que deseas solicitar. Puedes especificar si es un día completo o medio día.</p>
-                        <div id="vacationEntriesContainer"></div>
-                        <button type="button" class="btn-add-day" id="addDayBtn"><i class="fas fa-plus-circle"></i> Añadir Otro Día</button>
+                        <p class="form-description">Añade los días que deseas solicitar. Usa <i class="fa-solid fa-toggle-on"></i>  para especificar un horario personalizado.</p>
+                        <div id="specialEntriesContainer">
+                            </div>
+                        <button type="button" class="btn-add-day mt-2" id="addDayBtn"><i class="fas fa-plus-circle"></i> Añadir Otro Día</button>
                     </div>
-
 
                     <div class="card-footer">
                         <div class="total-summary">
                             <span>Total de Horas:</span>
-                            <span id="totalDiasSolicitados" class="total-value">0.00</span>
+                            <span id="totalHorasSolicitadas" class="total-value">0.00</span>
                         </div>
                         <button type="submit" class="btn-submit" id="submitBtn">
                             <i class="fas fa-paper-plane"></i> Enviar Solicitud
@@ -175,12 +196,19 @@
     </div>
 
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-    <script type="module" src="../../assets/js/pages/pages/tickets/add-ticket-special.js"></script>
+    <script type="module" src="../../assets/js/pages/pages/tickets/add-ticket-special.js"> </script>
+    
+    <script>
+        
+
+        function logout() {
+            console.log("Cerrando sesión...");
+        }
+    </script>
 </body>
 
 </html>

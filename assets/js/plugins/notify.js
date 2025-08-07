@@ -5,17 +5,17 @@ export const notyf = new Notyf({
         {
             type: 'success',
             background: '#4CAF50',
-            icon: { className: 'fas fa-check', tagName: 'i', color: '#fff' }
+            icon: { className: 'fas fa-circle-check', tagName: 'i', color: '#fff' }
         },
         {
             type: 'error',
             background: '#FF5252',
-            icon: { className: 'fas fa-times', tagName: 'i', color: '#fff' }
+            icon: { className: 'fas fa-times-circle', tagName: 'i', color: '#fff' }
         },
         {
             type: 'warning',
             background: '#FFC107',
-            icon: { className: 'fas fa-exclamation-triangle', tagName: 'i', color: '#fff' }
+            icon: { className: 'fas fa-circle-exclamation', tagName: 'i', color: '#fff' }
         }
     ]
 });

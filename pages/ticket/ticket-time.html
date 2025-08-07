@@ -1,215 +1,208 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reposición de Tiempo</title>
+    <title>Solicitud de Faltas y Reposiciones</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
     <link rel="stylesheet" href="../dashboards/style.css">
     <link rel="stylesheet" href="../../assets/css/ticket-vacations.css">
+
     <style>
-        /* Estilos específicos para este formulario */
-        .page-header h1 {
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+        /* Estilos CSS para mejorar la distribución */
+        .sidebar-collapsed .sidebar {
+            display: none;
         }
-        .form-grid-reposicion {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: 1fr 1fr;
+
+        .sidebar-collapsed .main-content {
+            margin-left: 0 !important;
         }
-        .form-grid-reposicion .card-body {
-            padding: 20px;
-        }
-        .form-grid-reposicion .card-footer {
-            display: flex;
-            justify-content: flex-end;
-            padding: 15px 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-        .btn-submit-arrow {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #fff;
-            background-color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            border-radius: 0.25rem;
-            cursor: pointer;
+
+        .btn-add-day {
+            background: none;
+            border: 1px dashed #0d6efd;
+            color: #0d6efd;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
             transition: all 0.2s ease-in-out;
         }
-        .btn-submit-arrow .fa-arrow-right {
-            margin-left: 10px;
-            font-size: 1.5rem;
+
+        .btn-add-day:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .card-footer {
+            background-color: #fff;
+            border-top: 1px solid rgba(0, 0, 0, .125);
+        }
+
+        .form-container {
+            display: block;
+        }
+
+        .special-entry-item {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        
+        .special-entry-item:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
+
 <body>
-    <div class="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2 class="sidebar-logo">PERMISOS</h2>
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
-                <li><a href="../ticket/new-ticket.html" class="active"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
-                <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Boletas</a></li>
-                <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
-            </ul>
-            <div class="sidebar-footer">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                    <i class="fa fa-sign-out-alt"></i> Cerrar sesión
-                </a>
-            </div>
-        </aside>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-logo">PERMISOS</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="../dashboards/main.html"><i class="fa fa-home"></i> Inicio</a></li>
+            <li><a href="../ticket/new-ticket.html" class="active"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
+            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Boletas</a></li>
+            <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
+    </aside>
 
-        <main class="main-content">
-            <header class="topbar">
-                <button class="btn-toggle-sidebar" id="toggleSidebar" aria-label="Toggle sidebar">
-                    <i class="fa fa-bars"></i>
-                </button>
-                <div class="topbar-actions">
-                    <i class="fa fa-bell" aria-label="Notificaciones"></i>
-                    <div class="dropdown">
-                        <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
-                             alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
-                             data-bs-toggle="dropdown" aria-expanded="false">
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="avatar">
-                            <li><a class="dropdown-item" href="../pages/profile/profile.html"><i class="fa fa-user fa-fw me-2"></i> Perfil</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fa fa-cog fa-fw me-2"></i> Configuración</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"><i class="fa fa-sign-out-alt fa-fw me-2"></i> Cerrar sesión</a></li>
-                        </ul>
-                    </div>
+    <div class="main-content">
+        <header class="topbar">
+            <button class="btn-toggle-sidebar" id="toggleSidebar">
+                <i class="fa fa-bars"></i>
+            </button>
+            <div class="topbar-actions">
+                <i class="fa fa-bell"></i>
+                <div class="dropdown">
+                    <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
+                        alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="../pages/profile/profile.html"><i
+                                    class="fa fa-user fa-fw me-2"></i> Perfil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa fa-cog fa-fw me-2"></i> Configuración</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal"><i class="fa fa-sign-out-alt fa-fw me-2"></i> Cerrar
+                                sesión</a></li>
+                    </ul>
                 </div>
-            </header>
-
-            <div class="page-header">
-                <h1>Reposición de tiempo</h1>
             </div>
+        </header>
 
-            <form id="reposicionForm">
-                <div class="row mb-4">
-                   
-                    <div class="col-md-5">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <label class="form-label">Observaciones:</label>
-                                <textarea class="form-control" rows="5"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <label class="form-label">Horas x Día:</label>
-                                <select class="form-select">
-                                    <option>8</option>
-                                    <option>7.5</option>
-                                    <option>4</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+        <div class="page-header">
+            <h1>Crear Nueva Solicitud de Reposición de Tiempo</h1>
+            <p>Completa los detalles de ausencias y reposiciones para generar una nueva boleta.</p>
+        </div>
+
+        <div class="row">
+            <div class="col text-end">
+                <div class="d-flex align-items-center gap-2 mb-5 justify-content-end">
+                    <label class="form-label mb-0"><strong>Jornada:</strong></label>
+                    <select id="workingHoursSelect" class="form-select form-select-sm" style="width: auto;">
+                        <option value="8" selected>8 horas</option>
+                        <option value="9">9 horas</option>
+                    </select>
                 </div>
-
-                <div class="form-grid-reposicion">
-                    <section class="card">
+            </div>
+        </div>
+        <form id="absenceAndReplacementForm" class="form-container">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card h-100 d-flex flex-column">
                         <div class="card-header">
-                            <i class="fas fa-calendar-minus"></i>
-                            <h4>Detalle de ausencias:</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3 row g-2 align-items-center">
-                                <div class="col-12">
-                                    <input type="text" class="form-control flatpickr-input" placeholder="Seleccionar fecha" readonly="readonly">
-                                </div>
-                                <div class="col-12 d-flex align-items-center mt-2">
-                                    <div class="form-check me-3">
-                                        <input class="form-check-input" type="checkbox" id="todoElDiaAusencia" value="todo">
-                                        <label class="form-check-label" for="todoElDiaAusencia">Todo el día</label>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <select class="form-select form-select-sm me-2" style="width: auto;">
-                                            <option>12:00 AM</option>
-                                            <option>01:00 AM</option>
-                                            <option>02:00 AM</option>
-                                            </select>
-                                        <span>a</span>
-                                        <select class="form-select form-select-sm ms-2" style="width: auto;">
-                                            <option>12:00 AM</option>
-                                            <option>01:00 AM</option>
-                                            <option>02:00 AM</option>
-                                            </select>
-                                    </div>
-                                </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-calendar-minus"></i>
+                                <h4 class="mb-0">Detalle de Ausencias</h4>
                             </div>
-                            </div>
-                        <div class="card-footer d-flex justify-content-between align-items-center">
-                            <span>Total Horas:</span>
-                            <strong>0</strong>
                         </div>
-                    </section>
 
-                    <section class="card">
-                        <div class="card-header">
-                            <i class="fas fa-calendar-plus"></i>
-                            <h4>Detalle de reposición:</h4>
-                        </div>
                         <div class="card-body">
-                            <div class="mb-3 row g-2 align-items-center">
-                                <div class="col-12">
-                                    <input type="text" class="form-control flatpickr-input" placeholder="Seleccionar fecha" readonly="readonly">
-                                </div>
-                                <div class="col-12 d-flex align-items-center mt-2">
-                                    <div class="form-check me-3">
-                                        <input class="form-check-input" type="checkbox" id="todoElDiaReposicion" value="todo">
-                                        <label class="form-check-label" for="todoElDiaReposicion">Todo el día</label>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <select class="form-select form-select-sm me-2" style="width: auto;">
-                                            <option>12:00 AM</option>
-                                            <option>01:00 AM</option>
-                                            <option>02:00 AM</option>
-                                            </select>
-                                        <span>a</span>
-                                        <select class="form-select form-select-sm ms-2" style="width: auto;">
-                                            <option>12:00 AM</option>
-                                            <option>01:00 AM</option>
-                                            <option>02:00 AM</option>
-                                            </select>
-                                    </div>
-                                </div>
-                            </div>
-                            </div>
-                        <div class="card-footer d-flex justify-content-between align-items-center">
-                            <span>Total Horas:</span>
-                            <strong>0</strong>
-                            <button type="submit" class="btn btn-primary btn-submit-arrow">
-                                Solicitar <i class="fas fa-arrow-right"></i>
+                            <p class="form-description">Añade los días de ausencia que deseas solicitar.</p>
+                            <div id="absenceEntriesContainer"></div>
+                            <button type="button" class="btn-add-day mt-4" id="addAbsenceDayBtn">
+                                <i class="fas fa-plus-circle"></i> Añadir Día de Ausencia
                             </button>
                         </div>
-                    </section>
+                        <div class="card-footer mt-auto">
+                            <div class="total-summary">
+                                <span>Total Horas Ausencia:</span>
+                                <span id="totalAbsenceHours" class="total-value">0.00</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </main>
+
+                <div class="col-lg-6">
+                    <div class="card h-100 d-flex flex-column">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-calendar-plus"></i>
+                                <h4 class="mb-0">Detalle de Reposición</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="form-description">Especifica los días en que repondrás el tiempo.</p>
+                            <div id="replacementEntriesContainer"></div>
+                            <button type="button" class="btn-add-day mt-4" id="addReplacementDayBtn">
+                                <i class="fas fa-plus-circle"></i> Añadir Día de Reposición
+                            </button>
+                        </div>
+                        <div class="card-footer mt-auto">
+                            <div class="total-summary">
+                                <span>Total Horas Reposición:</span>
+                                <span id="totalReplacementHours" class="total-value">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-edit"></i>
+                                <h4>Observaciones</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <textarea id="observaciones" name="observaciones" class="form-control" rows="4"
+                                placeholder="Añade un comentario general a tu boleta."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> Enviar Solicitud
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal fade" id="logoutModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Cerrar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p>¿Estás seguro de que deseas cerrar la sesión?</p>
@@ -221,19 +214,20 @@
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+    <script type="module" src="../../assets/js/pages/pages/tickets/ticket-time.js"></script>
+
     <script>
-        // Inicializar flatpickr para los campos de fecha
-        flatpickr(".flatpickr-input", {
-            locale: "es",
-            dateFormat: "F j, Y",
-            altInput: true,
-            altFormat: "d-m-Y"
-        });
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '../../pages/authentication/signin/login.html';
+        }
     </script>
 </body>
+
 </html>
