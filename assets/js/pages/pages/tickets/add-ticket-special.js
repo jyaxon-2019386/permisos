@@ -60,7 +60,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const addDayEntry = () => {
         if (document.querySelectorAll('.special-entry-item').length >= MAX_SPECIAL_DAYS) {
-            notyf.error(`Solo puedes añadir un máximo de ${MAX_SPECIAL_DAYS} días.`);
+            notyf.open({
+                type: 'warning',
+                message: `Solo puedes añadir un máximo de ${MAX_SPECIAL_DAYS} días.`
+            })
             return;
         }
         entryCounter++;

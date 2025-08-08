@@ -26,10 +26,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     function addVacationDayEntry() {
         if (entryCounter >= MAX_VACATION_DAYS) {
-            notyf.error(`Solo puedes añadir un máximo de ${MAX_VACATION_DAYS} días.`, 'error');
+            notyf.open({
+                type: 'warning',
+                message: `Solo puedes añadir un máximo de ${MAX_VACATION_DAYS} días.`
+            })
             return;
         }
-
         entryCounter++;
         const newEntryDiv = document.createElement('div');
         newEntryDiv.classList.add('date-entry');
