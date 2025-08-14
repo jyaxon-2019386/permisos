@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (selectElement.value === "Todo el día.") total += 1;
             else if (selectElement.value.includes("Medio día")) total += 0.5;
         });
-        totalDiasSolicitadosSpan.textContent = total.toFixed(2);
+        totalDiasSolicitadosSpan.textContent = total;
         formTotalD.value = total;
     }
 

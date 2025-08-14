@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,9 +23,9 @@
         .sidebar-collapsed .main-content {
             margin-left: 0 !important;
         }
-        
     </style>
 </head>
+
 <body>
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -55,10 +56,16 @@
                         alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
                         data-bs-toggle="dropdown" aria-expanded="false">
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="../pages/profile/profile.html"><i class="fa fa-user fa-fw me-2"></i> Perfil</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fa fa-cog fa-fw me-2"></i> Configuración</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"><i class="fa fa-sign-out-alt fa-fw me-2"></i> Cerrar sesión</a></li>
+                        <li><a class="dropdown-item" href="../pages/profile/profile.html"><i
+                                    class="fa fa-user fa-fw me-2"></i> Perfil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fa fa-cog fa-fw me-2"></i> Configuración</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal"><i class="fa fa-sign-out-alt fa-fw me-2"></i> Cerrar
+                                sesión</a></li>
                     </ul>
                 </div>
             </div>
@@ -88,7 +95,8 @@
                         <h4>Observaciones</h4>
                     </div>
                     <div class="card-body">
-                        <textarea id="observaciones" name="observaciones" class="form-control" rows="4" placeholder="Añade un comentario a tu boleta."></textarea>
+                        <textarea id="observaciones" name="observaciones" class="form-control" rows="4"
+                            placeholder="Añade un comentario a tu boleta."></textarea>
                     </div>
                 </div>
             </div>
@@ -99,22 +107,24 @@
                     <input type="hidden" name="idCreador" id="formIdCreador" value="">
                     <input type="hidden" name="idDepartamento" id="formIdDepartamento" value="">
                     <input type="hidden" name="totalD" id="formTotalD">
-                    
+
                     <div class="card-header">
                         <i class="fas fa-calendar-day"></i>
                         <h4>Detalle de los Días Solicitados</h4>
                     </div>
 
                     <div class="card-body">
-                        <p class="form-description">Añade los días que deseas solicitar. Puedes especificar si es un día completo o medio día.</p>
+                        <p class="form-description">Añade los días que deseas solicitar. Puedes especificar si es un día
+                            completo o medio día.</p>
                         <div id="vacationEntriesContainer"></div>
-                        <button type="button" class="btn-add-day" id="addDayBtn"><i class="fas fa-plus-circle"></i> Añadir Otro Día</button>
+                        <button type="button" class="btn-add-day" id="addDayBtn"><i class="fas fa-plus-circle"></i>
+                            Añadir Otro Día</button>
                     </div>
 
                     <div class="card-footer">
                         <div class="total-summary">
                             <span>Total de Días:</span>
-                            <span id="totalDiasSolicitados" class="total-value">0.00</span>
+                            <span id="totalDiasSolicitados" class="total-value">0</span>
                         </div>
                         <button type="submit" class="btn-submit" id="submitBtn">
                             <i class="fas fa-paper-plane"></i> Enviar Solicitud
@@ -142,7 +152,7 @@
             </div>
         </div>
     </div>
-    
+
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
@@ -151,4 +161,5 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script type="module" src="../../assets/js/pages/pages/tickets/add-ticket.js"></script>
 </body>
+
 </html>

@@ -89,9 +89,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                         </div>
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="row mt-4">
                     <div class="col-12">
-                        <label class="form-label">Descripción</label>
+                        <label class="form-label">Descripción (opcional)</label>
                         <input type="text" class="form-control entry-description" placeholder="Ej: Cita médica, cita personal, etc.">
                     </div>
                 </div>

@@ -1,40 +1,45 @@
 import { notyf } from "../../../plugins/notify.js";
 
-document.addEventListener('DOMContentLoaded', async function () {
-    const avatarURL = sessionStorage.getItem('avatar');
+document.addEventListener("DOMContentLoaded", async function () {
+    // Avatar
+    const avatarURL = sessionStorage.getItem("avatar");
     if (avatarURL) {
-        const avatarEl = document.getElementById('avatar');
+        const avatarEl = document.getElementById("avatar");
         if (avatarEl) avatarEl.src = avatarURL;
     }
 
-    const toggleSidebarBtn = document.getElementById('toggleSidebar');
-    const sanctionForm = document.getElementById('sanctionForm');
-    const addDayBtn = document.getElementById('addDayBtn');
-    const sanctionEntriesContainer = document.getElementById('sanctionEntriesContainer');
-    const totalDiasSolicitadosSpan = document.getElementById('totalDiasSolicitados');
-    const formTotalD = document.getElementById('formTotalD');
+    // Elementos del DOM
+    const toggleSidebarBtn = document.getElementById("toggleSidebar");
+    const sanctionForm = document.getElementById("sanctionForm");
+    const addDayBtn = document.getElementById("addDayBtn");
+    const sanctionEntriesContainer = document.getElementById("sanctionEntriesContainer");
+    const totalDiasSolicitadosSpan = document.getElementById("totalDiasSolicitados");
+    const formTotalD = document.getElementById("formTotalD");
 
     let entryCounter = 0;
-    const MAX_VACATION_DAYS = 10;
+    const MAX_DAYS = 10;
 
-    toggleSidebarBtn.addEventListener('click', function () {
-        document.body.classList.toggle('sidebar-collapsed');
+    // Sidebar toggle
+    toggleSidebarBtn.addEventListener("click", function () {
+        document.body.classList.toggle("sidebar-collapsed");
     });
 
-    addDayBtn.addEventListener('click', addVacationDayEntry);
-    addVacationDayEntry(); // Añadir primer día
+    // Botón para añadir días
+    addDayBtn.addEventListener("click", addSanctionDayEntry);
+    addSanctionDayEntry(); // Primer día por defecto
 
-    function addVacationDayEntry() {
-        if (entryCounter >= MAX_VACATION_DAYS) {
+    function addSanctionDayEntry() {
+        if (entryCounter >= MAX_DAYS) {
             notyf.open({
-                type: 'warning',
-                message: `Solo puedes añadir un máximo de ${MAX_VACATION_DAYS} días.`
-            })
+                type: "warning",
+                message: `Solo puedes añadir un máximo de ${MAX_DAYS} días.`,
+            });
             return;
         }
         entryCounter++;
-        const newEntryDiv = document.createElement('div');
-        newEntryDiv.classList.add('date-entry');
+
+        const newEntryDiv = document.createElement("div");
+        newEntryDiv.classList.add("date-entry");
         newEntryDiv.dataset.id = entryCounter;
 
         newEntryDiv.innerHTML = `
@@ -47,14 +52,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         sanctionEntriesContainer.appendChild(newEntryDiv);
 
-        newEntryDiv.querySelector('.btn-remove-day').addEventListener('click', function () {
+        // Eliminar entrada
+        newEntryDiv.querySelector(".btn-remove-day").addEventListener("click", function () {
             newEntryDiv.remove();
-            updateTotalDays();
             updateEntryLabels();
+            updateTotalDays();
         });
 
-
-        const dateInput = newEntryDiv.querySelector('input.date-picker');
+        // Inicializar calendario
+        const dateInput = newEntryDiv.querySelector("input.date-picker");
         flatpickr(dateInput, {
             altInput: true,
             altFormat: "j F, Y",
@@ -63,18 +69,18 @@ document.addEventListener('DOMContentLoaded', async function () {
             locale: "es",
         });
 
-        dateInput.addEventListener('change', updateTotalDays);
+        dateInput.addEventListener("change", updateTotalDays);
         updateTotalDays();
         updateEntryLabels();
     }
 
     function updateEntryLabels() {
-        const entries = sanctionEntriesContainer.querySelectorAll('.date-entry');
+        const entries = sanctionEntriesContainer.querySelectorAll(".date-entry");
         entries.forEach((entryDiv, index) => {
             const newIndex = index + 1;
             entryDiv.dataset.id = newIndex;
 
-            const dateInput = entryDiv.querySelector('input.date-picker');
+            const dateInput = entryDiv.querySelector("input.date-picker");
             const dateLabel = entryDiv.querySelector('label[for^="fecha"]');
             dateInput.id = `fecha${newIndex}`;
             dateInput.name = `fecha${newIndex}`;
@@ -83,18 +89,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
         entryCounter = entries.length;
     }
-    
+
     function updateTotalDays() {
-        let total = 0;
-        sanctionEntriesContainer.querySelectorAll('.date-entry').forEach(entry => {
-            const selectElement = entry.querySelector('select');
-            if (selectElement.value === "totalDiasSolicitados") total += 1;
-        });
-        totalDiasSolicitadosSpan.textContent = total.toFixed(2);
+        // Cada día cuenta como 1
+        const total = sanctionEntriesContainer.querySelectorAll(".date-entry").length;
+        totalDiasSolicitadosSpan.textContent = total;
         formTotalD.value = total;
     }
 
-    sanctionForm.addEventListener('submit', async function (e) {
+    // Enviar formulario
+    sanctionForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const formData = new FormData(sanctionForm);
@@ -104,33 +108,52 @@ document.addEventListener('DOMContentLoaded', async function () {
             data[key] = value;
         });
 
-        const entries = sanctionEntriesContainer.querySelectorAll('.date-entry');
+        // Agregar días dinámicos
+        const entries = sanctionEntriesContainer.querySelectorAll(".date-entry");
+        let fechasValidas = true;
+
         entries.forEach((entry, index) => {
-            const idx = index + 1;
-            const fecha = entry.querySelector(`input[name="fecha${idx}"]`)?.value;
-            if (fecha) {
-                data[`fecha${idx}`] = fecha;
+            const dateInput = entry.querySelector("input.date-picker");
+            if (!dateInput.value || dateInput.value.trim() === "") {
+                fechasValidas = false;
             }
         });
 
-        if (!data.totalD || parseFloat(data.totalD) <= 0) {
-            notyf.error('Debes agregar al menos un día válido para enviar la solicitud.', 'error');
+        if (!fechasValidas) {
+            notyf.error("Debes ingresar todas las fechas de los días agregados.");
             return;
         }
+
+
+        // Validación de días
+        if (!data.totalD || parseFloat(data.totalD) <= 0) {
+            notyf.error("Debes agregar al menos un día válido para enviar la solicitud.");
+            return;
+        }
+        
+        const tipoSeleccionado = document.querySelector('input[name="tipoSancion"]:checked')?.value || null;
+
+        if (!tipoSeleccionado) {
+            notyf.error("Debes seleccionar un tipo de sanción.");
+            return;
+        }
+
+        data.tipo = tipoSeleccionado; // string simple
+
 
         await postTicketSanction(data);
     });
 
-    const idUsuario = sessionStorage.getItem('idUsuario');
+    // Cargar datos del usuario
+    const idUsuario = sessionStorage.getItem("idUsuario");
     try {
         const response = await fetch(`../../assets/php/auth/auth.php?quest=getUserData&idUsuario=${idUsuario}`);
         const data = await response.json();
 
         if (response.ok) {
-            document.getElementById('formIdSolicitante').value = data.user.idSolicitante;
-            document.getElementById('formIdCreador').value = data.user.idSolicitante;
-            document.getElementById('formIdDepartamento').value = data.user.idDepartamento;
-            // No existe el tipo de sanción en este código, así que se omite la lógica de marcado de radios
+            document.getElementById("formIdSolicitante").value = data.user.idSolicitante;
+            document.getElementById("formIdCreador").value = data.user.idSolicitante;
+            document.getElementById("formIdDepartamento").value = data.user.idDepartamento;
         } else {
             console.error("Error al obtener los datos del usuario:", data.error);
         }
@@ -139,11 +162,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 });
 
-
+// Guardar boleta de sanción
 async function postTicketSanction(data) {
-    // Obtener nivel del usuario desde el endpoint
     try {
-        const idUsuario = sessionStorage.getItem('idUsuario');
+        const idUsuario = sessionStorage.getItem("idUsuario");
         const response = await fetch(`../../assets/php/auth/auth.php?quest=getUserData&idUsuario=${idUsuario}`);
         const userData = await response.json();
 
@@ -154,20 +176,15 @@ async function postTicketSanction(data) {
             data.idEstado = null;
         }
     } catch (error) {
-        console.error("Error al realizar la solicitud para obtener el nivel del usuario:", error);
+        console.error("Error al obtener nivel:", error);
         data.idEstado = null;
     }
 
     const today = new Date();
-    data.fechaSolicitud = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    data.observaciones1 = document.getElementById('observaciones')?.value || null;
-    data.observaciones2 = null;
-    data.observaciones3 = null;
-    data.observaciones4 = null;
-    data.idJefe = null;
-    data.idGerente = null;
-    data.idRH = null;
+    data.fechaSolicitud = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    data.observaciones1 = document.getElementById("observaciones")?.value || null;
 
+    // Normalizar datos vacíos
     for (const key in data) {
         if (data[key] === "" || data[key] === undefined) {
             data[key] = null;
@@ -175,51 +192,37 @@ async function postTicketSanction(data) {
     }
 
     for (let i = 1; i <= 10; i++) {
-        if (!data[`fecha${i}`]) {
-            data[`fecha${i}`] = null;
-        }
-
+        if (!data[`fecha${i}`]) data[`fecha${i}`] = null;
     }
 
     try {
-        data.quest = 'postTicketSanction';
+        data.quest = "postTicketSanction"; // endpoint adaptado
 
-        const response = await fetch('../../assets/php/tickets/tickets.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+        const response = await fetch("../../assets/php/tickets/tickets.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
         });
 
         const result = await response.json();
 
         if (!response.ok) {
-            // Mostrar mensaje de error con notyf
-            notyf.error(result.detalle || result.error || 'Error al crear la boleta');
+            notyf.error(result.detalle || result.error || "Error al crear la boleta");
         } else {
-            // Mostrar mensaje de éxito con notyf
-            notyf.success(result.success || 'Boleta creada correctamente');
-            // Redireccionar a la página de boletas
+            notyf.success(result.success || "Boleta creada correctamente");
             setTimeout(() => {
-                window.location.href = '../../pages/ticket/new-ticket.html';
+                window.location.href = "../../pages/ticket/new-ticket.html";
             }, 2000);
-        } 
-
+        }
         return result;
-
     } catch (error) {
-        // Mostrar mensaje de error de conexión con notyf
-        notyf.error('Error de conexión: ' + error.message);
+        notyf.error("Error de conexión: " + error.message);
     }
 }
 
-
+// Logout
 function logout() {
-    sessionStorage.clear('usuario');
-    sessionStorage.clear('avatar');
-    sessionStorage.clear('id_usuario');
-    window.location.href = '../../pages/authentication/signin/login.html';
+    sessionStorage.clear();
+    window.location.href = "../../pages/authentication/signin/login.html";
 }
-
 window.logout = logout;

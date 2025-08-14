@@ -641,6 +641,7 @@ switch ($request_method) {
                     break;
                 }
             break;
+            
     case 'POST':
         switch ($quest) {
             case 'postTicketVacations': // Crear boleta de vacaciones
@@ -737,6 +738,14 @@ switch ($request_method) {
                     break;
                 }
 
+                // Validación para evitar fechas duplicadas
+                $fechasNoNulas = array_filter($fechas); // elimina los null
+                if (count($fechasNoNulas) !== count(array_unique($fechasNoNulas))) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No puedes agregar días con fechas duplicadas."]);
+                    break;
+                }
+
                 odbc_exec($con, "SET LANGUAGE SPANISH;");
 
                 $sql = "INSERT INTO BoletaVacaciones (
@@ -789,7 +798,7 @@ switch ($request_method) {
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                    echo json_encode(["success" => "Boleta de vacaciones creada correctamente."]);
                 } else {
                     http_response_code(500);
                     echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);
@@ -886,6 +895,14 @@ switch ($request_method) {
                     break;
                 }
 
+                // Validación para evitar fechas duplicadas
+                $fechasNoNulas = array_filter($fechas); // elimina los null
+                if (count($fechasNoNulas) !== count(array_unique($fechasNoNulas))) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No puedes agregar días con fechas duplicadas."]);
+                    break;
+                }
+
                 // Capturar horas
                 $horaI1 = $data['horaI1'] ?? null;
                 $horaF1 = $data['horaF1'] ?? null;
@@ -956,7 +973,7 @@ switch ($request_method) {
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                    echo json_encode(["success" => "Boleta de Falta Justificada creada correctamente."]);
                 } else {
                     http_response_code(500);
                     echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);
@@ -968,7 +985,6 @@ switch ($request_method) {
                 }
 
                 // Obtener nuevo correlativo
-                // **NOTA:** La tabla es BoletaReposicion, no BoletaEspecial.
                 $sqlCorrelativo = "SELECT ISNULL(MAX(correlativo), 0) + 1 AS nuevoCorrelativo FROM BoletaReposicion";
                 $result = odbc_exec($con, $sqlCorrelativo);
                 $correlativo = 1;
@@ -978,7 +994,6 @@ switch ($request_method) {
 
                 $fechaSolicitud = trim($data['fechaSolicitud'] ?? '');
 
-                // **NOTA:** Solo hay una columna de observaciones en tu tabla.
                 $observaciones1 = limpiarTexto($data['observaciones1'] ?? null);
 
                 $idSolicitante = trim($data['idSolicitante'] ?? '');
@@ -1031,7 +1046,7 @@ switch ($request_method) {
 
                 $tieneParValido = false;
 
-                for ($i = 1; $i <= 5; $i++) {
+               for ($i = 1; $i <= 5; $i++) {
                     // Datos de Ausencia
                     $fecha = isset($data['fecha' . $i]) ? trim($data['fecha' . $i]) : null;
                     $horaIA = isset($data['horaI' . $i]) ? trim($data['horaI' . $i]) : null;
@@ -1043,11 +1058,11 @@ switch ($request_method) {
                     $horaf[$i] = (strtolower($horafA) === 'null' || $horafA === '') ? null : $horafA;
                     $descA[$i] = (strtolower($descA_val) === 'null' || $descA_val === '') ? null : $descA_val;
 
-                    // Validar pares de ausencia
-                    if (($fechas[$i] && (!$horaI[$i] || !$horaf[$i] || !$descA[$i])) || 
-                        ((!$fechas[$i]) && ($horaI[$i] || $horaf[$i] || $descA[$i]))) {
+                    // Validar pares de ausencia: solo fecha y horas obligatorias
+                    if (($fechas[$i] && (!$horaI[$i] || !$horaf[$i])) || 
+                        ((!$fechas[$i]) && ($horaI[$i] || $horaf[$i]))) {
                         http_response_code(400);
-                        echo json_encode(["error" => "Debes ingresar una fecha, horas y descripción válidas. Revisar el día de Ausencia #{$i}."]);
+                        echo json_encode(["error" => "Debes ingresar una fecha y horas válidas. Revisar el día de Ausencia #{$i}."]);
                         break 2;
                     }
 
@@ -1062,11 +1077,11 @@ switch ($request_method) {
                     $horafR[$i] = (strtolower($horafR_val) === 'null' || $horafR_val === '') ? null : $horafR_val;
                     $descR[$i] = (strtolower($descR_val) === 'null' || $descR_val === '') ? null : $descR_val;
 
-                    // Validar pares de reposición
-                    if (($fechasR[$i] && (!$horaIR[$i] || !$horafR[$i] || !$descR[$i])) ||
-                        ((!$fechasR[$i]) && ($horaIR[$i] || $horafR[$i] || $descR[$i]))) {
+                    // Validar pares de reposición: solo fecha y horas obligatorias
+                    if (($fechasR[$i] && (!$horaIR[$i] || !$horafR[$i])) ||
+                        ((!$fechasR[$i]) && ($horaIR[$i] || $horafR[$i]))) {
                         http_response_code(400);
-                        echo json_encode(["error" => "Debes ingresar una fecha, horas y descripción válidas. Revisar el día de Reposición #{$i}."]);
+                        echo json_encode(["error" => "Debes ingresar una fecha y horas válidas. Revisar el día de Reposición #{$i}."]);
                         break 2;
                     }
 
@@ -1076,15 +1091,23 @@ switch ($request_method) {
                     }
                 }
 
+
                 if (!$tieneParValido) {
                     http_response_code(400);
                     echo json_encode(["error" => "Debe ingresar al menos una fecha de ausencia o reposición con sus datos."]);
                     break;
                 }
 
+                // Validación para evitar fechas duplicadas
+                $fechasNoNulas = array_filter($fechas); // elimina los null
+                if (count($fechasNoNulas) !== count(array_unique($fechasNoNulas))) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No puedes agregar días con fechas duplicadas."]);
+                    break;
+                }
+
                 odbc_exec($con, "SET LANGUAGE SPANISH;");
 
-                // **NOTA:** SQL adaptado a las columnas de la tabla BoletaReposicion
                 $sql = "INSERT INTO BoletaReposicion (
                     correlativo, observaciones1, fechaSolicitud,
                     fecha1, horaI1, horaF1,
@@ -1239,6 +1262,14 @@ switch ($request_method) {
                     break;
                 }
 
+                // Validación para evitar fechas duplicadas
+                $fechasNoNulas = array_filter($fechas); // elimina los null
+                if (count($fechasNoNulas) !== count(array_unique($fechasNoNulas))) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No puedes agregar días con fechas duplicadas."]);
+                    break;
+                }
+
                 // Capturar horas
                 $fecha = $fechas[1] ?? null;
                 $horaI1 = $data['horaI1'] ?? null;
@@ -1290,7 +1321,7 @@ switch ($request_method) {
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                    echo json_encode(["success" => "Boleta de consulta al IGSS creada correctamente."]);
                 } else {
                     http_response_code(500);
                     echo json_encode(["error" => "Error al crear la boleta.", "detalle" => odbc_errormsg($con)]);
@@ -1398,7 +1429,7 @@ switch ($request_method) {
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                    echo json_encode(["success" => "Boleta suspension del IGSS creada correctamente."]);
                 } else {
                     http_response_code(500);
                     echo json_encode(["error" => "Error al crear la boleta.", "detalle" => odbc_errormsg($con)]);
@@ -1425,7 +1456,7 @@ switch ($request_method) {
                 $observaciones3 = limpiarTexto($data['observaciones3'] ?? null);
                 $observaciones4 = limpiarTexto($data['observaciones4'] ?? null);
 
-                $tipo = isset($data['tipo']) ? trim($data['tipo']) : '';
+                $tipo = limpiarTexto($data['tipo'] ?? null);
                 $idSolicitante = trim($data['idSolicitante'] ?? '');
                 $idCreador = trim($data['idCreador'] ?? '');
                 $idDepartamento = trim($data['idDepartamento'] ?? '');
@@ -1488,6 +1519,14 @@ switch ($request_method) {
                     break;
                 }
                 
+                // Validación para evitar fechas duplicadas
+                $fechasNoNulas = array_filter($fechas); // elimina los null
+                if (count($fechasNoNulas) !== count(array_unique($fechasNoNulas))) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "No puedes agregar días con fechas duplicadas."]);
+                    break;
+                }
+
                 odbc_exec($con, "SET LANGUAGE SPANISH;");
 
                 // 26 COLUMNAS EN DB
@@ -1541,7 +1580,7 @@ switch ($request_method) {
 
                 if ($exec) {
                     http_response_code(201);
-                    echo json_encode(["success" => "Boleta creada exitosamente."]);
+                    echo json_encode(["success" => "Boleta de sanción creada correctamente."]);
                 } else {
                     http_response_code(500);
                     echo json_encode(["error" => "Error al crear la boleta de vacaciones.", "detalle" => odbc_errormsg($con)]);

@@ -23,6 +23,19 @@
         .sidebar-collapsed .main-content {
             margin-left: 0 !important;
         }
+
+        .date-entry {
+            margin-bottom: 1rem;
+            /* espacio entre cada día */
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .date-entry .form-group {
+            flex: 1;
+        }
+
     </style>
 </head>
 
@@ -95,9 +108,7 @@
                     <input type="hidden" name="idSolicitante" id="formIdSolicitante" value="">
                     <input type="hidden" name="idCreador" id="formIdCreador" value="">
                     <input type="hidden" name="idDepartamento" id="formIdDepartamento" value="">
-                    
-                    <input type="hidden" name="totalD" id="formTotalD">
-
+                    <input type="hidden" name="totalD" id="formTotalD" value="">
                     <div class="card-header">
                         <i class="fas fa-calendar-day"></i>
                         <h4>Detalle de los Días Sansionados</h4>
@@ -108,7 +119,7 @@
                         <div class="d-flex justify-content-end gap-4 flex-wrap">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipoSancion" id="faltaInjustificada"
-                                    value="falta" checked>
+                                    value="Falta Injustificada" checked>
                                 <label class="form-check-label fw-bold" for="faltaInjustificada">
                                     Falta Injustificada
                                 </label>
@@ -116,14 +127,12 @@
 
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="tipoSancion" id="suspension"
-                                    value="suspension">
+                                    value="Suspensión">
                                 <label class="form-check-label fw-bold" for="suspension">
                                     Suspensión
                                 </label>
                             </div>
                         </div>
-
-
                         <hr>
 
                         <p class="form-description">Añade los días que deseas solicitar para la falta.</p>
@@ -135,14 +144,14 @@
 
 
                     <div class="card-footer">
-    <div class="total-summary">
-        <span>Total de Días:</span>
-        <span id="totalDiasSolicitados" class="total-value">0.00</span>
-    </div>
-    <button type="submit" class="btn-submit" id="submitBtn">
-        <i class="fas fa-paper-plane"></i> Enviar Solicitud
-    </button>
-</div>
+                        <div class="total-summary">
+                            <span>Total de Días:</span>
+                            <span id="totalDiasSolicitados" class="total-value">0.00</span>
+                        </div>
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Enviar Solicitud
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
