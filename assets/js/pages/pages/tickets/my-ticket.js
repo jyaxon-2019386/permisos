@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'details':
                 const tipoBoleta = tipoBoletaSelect.value;
                 const ticketDetails = await getTicketDetails(boletaId, tipoBoleta);
-                mostrarDetalles(ticketDetails, tipoBoleta); // <-- Pasa el tipoBoleta aquí
+                mostrarDetalles(ticketDetails, tipoBoleta);
                 break;
             case 'pdf':
                 exportarDetallePDF(boletaId);
@@ -86,7 +86,14 @@ async function getTickets(idCreador, quest) {
 
         const data = await response.json();
         if (data.success && data["my tickets"]) {
-            return data["my tickets"];
+            // Aseguramos que el estado se formatee correctamente para la tabla
+            return data["my tickets"].map(ticket => {
+                const estadoInfo = getEstado(ticket.Estado);
+                return {
+                    ...ticket,
+                    Estado: estadoInfo.texto
+                };
+            });
         } else {
             console.warn(data.error || `No se encontraron boletas para '${quest}'.`);
             return [];
@@ -113,21 +120,21 @@ function initDataTable(ticketsData) {
     dataTableInstance = new DataTable('#boletas-table', {
         data: ticketsData,
         responsive: true,
-        order: [[3, 'desc']], // Ordenar por la primera columna (ID Boleta) de forma descendente
+        order: [[0, 'desc']],
         columns: [
             {
                 data: 'idBoleta',
                 render: (data) => `<strong>#${data || '-'}</strong>`
             },
             {
-                data: 'fechaSolicitud',
-                render: (data) => formatearFecha(data)
+                data: 'FechaDeCreacion',
+                render: (data) => data || '-'
             },
             {
-                data: 'idEstado',
+                data: 'Estado',
                 render: (data) => {
-                    const estadoInfo = getEstado(data);
-                    return `<span class="badge rounded-pill ${estadoInfo.clase}">${estadoInfo.texto}</span>`;
+                    const estadoInfo = getEstadoPorTexto(data);
+                    return `<span class="badge rounded-pill ${estadoInfo.clase}">${data}</span>`;
                 }
             },
             {
@@ -154,10 +161,12 @@ function initDataTable(ticketsData) {
     });
 }
 
-// --- FUNCIONES AUXILIARES (MODIFICADAS Y AÑADIDAS) ---
-
-// Nuevo: Obtiene los detalles de la boleta desde el backend
-// Obtiene los detalles de una boleta desde el backend reutilizando el endpoint existente
+/**
+ * Obtiene los detalles de una boleta desde el backend.
+ * @param {string} idBoleta - El ID de la boleta a buscar.
+ * @param {string} quest - El tipo de boleta.
+ * @returns {Promise<object|null>}
+ */
 async function getTicketDetails(idBoleta, quest) {
     try {
         const idCreador = sessionStorage.getItem('idUsuario');
@@ -185,179 +194,144 @@ async function getTicketDetails(idBoleta, quest) {
     }
 }
 
+/**
+ * Genera el HTML para los detalles específicos de cada tipo de boleta y las observaciones.
+ * @param {object} ticket - El objeto con los datos de la boleta.
+ * @param {string} tipoTicket - El tipo de boleta.
+ * @returns {string} - El HTML generado.
+ */
 function generarDetallesDinamicos(ticket, tipoTicket) {
     let camposDinamicosHTML = '';
     
+    // --- Lógica para campos específicos de cada tipo de boleta ---
     switch (tipoTicket) {
         case 'getUserTicketVacations':
-    const startDate = new Date(ticket.fechaInicio);
-    const endDate = new Date(ticket.fechaFin);
-    let vacationDaysHTML = '';
-    
-    // Loop through each day from start to end
-    for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
-        vacationDaysHTML += `<li>${d.toLocaleDateString('es-GT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</li>`;
-    }
-    
-    camposDinamicosHTML = `
-        <div class="detail-card col-12">
-            <h5>Total de Días Solicitados</h5>
-            <p>${ticket.totalD || '0'}</p>
-        </div>
-        <div class="detail-card col-12">
-            <h5>Fechas solicitadas</h5>
-            <ul>${vacationDaysHTML}</ul>
-        </div>
-    `;
-    break;
+            const fechasYDetalles = [
+                { fecha: ticket.Fecha1, detalle: ticket.Detalle1 },
+                { fecha: ticket.Fecha2, detalle: ticket.Detalle2 },
+                { fecha: ticket.Fecha3, detalle: ticket.Detalle3 },
+                { fecha: ticket.Fecha4, detalle: ticket.Detalle4 },
+                { fecha: ticket.Fecha5, detalle: ticket.Detalle5 }
+            ];
 
-        case 'getUserTicketReplaceTime':
-            // Lógica para Reposición de Tiempo
-            camposDinamicosHTML = `
-                <div class="detail-card">
-                    <h5>Fecha a Reponer</h5>
-                    <p>${formatearFecha(ticket.fechaAReponer)}</p>
+            let vacationDaysHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%">Fecha</th>
+                                <th style="width: 70%">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let hasRows = false;
+            fechasYDetalles.forEach(item => {
+                if (item.fecha) {
+                    hasRows = true;
+                    vacationDaysHTML += `
+                        <tr>
+                            <td><i class="fa fa-calendar-check text-success me-1"></i>${formatearFecha(item.fecha)}</td>
+                            <td>${item.detalle || 'Sin detalle'}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            vacationDaysHTML += hasRows 
+                ? `</tbody></table></div>` 
+                : `<tr><td colspan="2" class="text-center text-muted">No se especificaron fechas.</td></tr></tbody></table></div>`;
+
+            camposDinamicosHTML += `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Días</h5>
+                        <p>${ticket.TotalDias || '0'}</p>
+                    </div>
                 </div>
-                <div class="detail-card">
-                    <h5>Fecha de Reposición</h5>
-                    <p>${formatearFecha(ticket.fechaReposicion)}</p>
-                </div>
-                <div class="detail-card">
-                    <h5>Total Horas a Reponer</h5>
-                    <p>${ticket.horaI1R || '0'}</p>
-                </div>
-                <div class="detail-card">
-                    <h5>Total Horas Repuestas</h5>
-                    <p>${ticket.horaFIR || '0'}</p>
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas y Detalles de la Solicitud</h5>
+                    ${vacationDaysHTML}
                 </div>
             `;
             break;
         
-        case 'getUserTicketJustification':
-            // Lógica para Falta Justificada
-            camposDinamicosHTML = `
-                <div class="detail-card">
-                    <h5>Fecha de la Falta</h5>
-                    <p>${formatearFecha(ticket.fechaInicio)}</p>
-                </div>
-                <div class="detail-card">
-                    <h5>Total Horas</h5>
-                    <p>${ticket.totalHoras || '0'}</p>
-                </div>
-            `;
-            break;
-
-        case 'getUserTicketRequestIGSS':
-        case 'getUserTicketOffIGSS':
-            // Lógica para IGSS
-            camposDinamicosHTML = `
-                <div class="detail-card">
-                    <h5>Fecha Consulta</h5>
-                    <p>${formatearFecha(ticket.fechaConsulta)}</p>
-                </div>
-                <div class="detail-card">
-                    <h5>Hora Inicio</h5>
-                    <p>${ticket.horaInicio || 'N/A'}</p>
-                </div>
-                <div class="detail-card">
-                    <h5>Hora Final</h5>
-                    <p>${ticket.horaFin || 'N/A'}</p>
-                </div>
-                <div class="detail-card">
-                    <h5>Total Horas</h5>
-                    <p>${ticket.horasTotal || '0.00'}</p>
-                </div>
-                <div class="detail-card col-12">
-                    <h5>Detalle de la Consulta</h5>
-                    <p>${ticket.detalleConsulta || 'N/A'}</p>
-                </div>
-            `;
-            break;
-
-        case 'getUserOff':
-            // Lógica para Sanciones
-            camposDinamicosHTML = `
-                <div class="detail-card col-12">
-                    <h5>Tipo de Sanción</h5>
-                    <p>${ticket.tipo || 'No especificado'}</p>
-                </div>
-            `;
-            break;
-
         default:
             camposDinamicosHTML = `<div class="col-12"><p>Detalles no configurados para este tipo de boleta.</p></div>`;
             break;
     }
 
+    // --- Lógica para manejar todas las observaciones ---
+    let observacionesHTML = '';
+    const observacionesKeys = ['observaciones1', 'observaciones2', 'observaciones3', 'observaciones4'];
+    observacionesKeys.forEach((key, index) => {
+        if (ticket[key] && ticket[key].trim() !== '') {
+            observacionesHTML += `<li class="list-group-item"><strong>Observación ${index + 1}:</strong> ${ticket[key]}</li>`;
+        }
+    });
+
+    if (observacionesHTML !== '') {
+        camposDinamicosHTML += `
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <h5>Observaciones</h5>
+                    <ul class="list-group list-group-flush mt-2">
+                        ${observacionesHTML}
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
     return camposDinamicosHTML;
 }
 
+/**
+ * Muestra el modal de SweetAlert con los detalles de la boleta.
+ * @param {object} detalles - El objeto con los datos de la boleta.
+ * @param {string} tipoBoleta - El tipo de boleta.
+ */
 function mostrarDetalles(detalles, tipoBoleta) {
     if (!detalles) {
-        Swal.fire({
-            title: 'Error',
-            text: 'No se pudieron cargar los detalles de la boleta.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-        });
+        Swal.fire('Error', 'No se pudieron cargar los detalles de la boleta.', 'error');
         return;
     }
 
     const tipoBoletaNombre = getNombreTipoBoleta(tipoBoleta);
-    const estadoInfo = getEstado(detalles.idEstado);
+    const estadoInfo = getEstado(detalles.Estado);
 
-    // Llama a la nueva función para generar el contenido HTML dinámico
     const camposDinamicosHTML = generarDetallesDinamicos(detalles, tipoBoleta);
 
     const content = document.createElement('div');
     content.className = 'ticket-details';
     
-    // Aquí se genera el HTML principal usando la información general y la parte dinámica
     content.innerHTML = `
         <div class="ticket-details-header">
             <div class="ticket-id">Boleta #${detalles.idBoleta}</div>
             <div class="ticket-status ${estadoInfo.clase}">${estadoInfo.texto}</div>
         </div>
 
-        <div class="ticket-details-grid">
-            <div class="detail-card">
-                <h5>Tipo de boleta</h5>
-                <p>${tipoBoletaNombre}</p>
-            </div>
-            <div class="detail-card">
-                <h5>Solicitante</h5>
-                <p>${detalles.idSolicitante || 'N/A'}</p>
-            </div>
-            <div class="detail-card">
-                <h5>Departamento</h5>
-                <p>${detalles.idDepartamento || 'N/A'}</p>
-            </div>
-            <div class="detail-card">
-                <h5>Fecha de solicitud</h5>
-                <p>${formatearFecha(detalles.fechaSolicitud)}</p>
-            </div>
-            ${camposDinamicosHTML} </div>
-
-        <div class="ticket-timeline">
-            <div class="timeline-title">Historial de la solicitud</div>
-            ${detalles.historial && detalles.historial.length > 0 ? detalles.historial.map(item => `
-                <div class="timeline-item">
-                    <div class="timeline-date">${formatearFecha(item.fecha)}</div>
-                    <div class="timeline-content">${item.accion} <span class="text-muted">por ${item.usuario}</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <h5>Tipo de boleta</h5>
+                    <p>${tipoBoletaNombre}</p>
                 </div>
-            `).join('') : '<p>No hay historial disponible.</p>'}
-        </div>
-        
-        <div class="action-buttons">
-            <button class="action-btn btn-print" onclick="imprimirDetalles(${detalles.idBoleta})">
-                <i class="fas fa-print"></i> Imprimir
-            </button>
-            <button class="action-btn btn-download" onclick="exportarDetallePDF(${detalles.idBoleta})">
-                <i class="fas fa-download"></i> Descargar PDF
-            </button>
-            <button class="action-btn btn-close-modal" onclick="Swal.close()">
-                <i class="fas fa-times"></i> Cerrar
-            </button>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <h5>Departamento</h5>
+                    <p>${detalles.Departamento || 'N/A'}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <h5>Fecha de solicitud</h5>
+                    <p>${detalles.FechaDeCreacion}</p>
+                </div>
+            </div>
+            ${camposDinamicosHTML}
         </div>
     `;
 
@@ -366,31 +340,38 @@ function mostrarDetalles(detalles, tipoBoleta) {
         html: content,
         width: '900px',
         showConfirmButton: false,
-        customClass: {
-            popup: 'custom-swal-popup'
-        },
-        didOpen: () => {
-            const popup = Swal.getPopup();
-            popup.style.borderRadius = '16px';
-            popup.style.overflow = 'hidden';
-        }
+        customClass: { popup: 'custom-swal-popup' }
     });
 }
 
+/**
+ * Formatea una cadena de fecha.
+ * @param {string} fechaStr - La cadena de fecha.
+ * @returns {string} - La fecha formateada.
+ */
 function formatearFecha(fechaStr) {
     if (!fechaStr) return '-';
-    try {
-        const fecha = new Date(fechaStr.replace(' ', 'T'));
-        if (isNaN(fecha.getTime())) return fechaStr;
-        return fecha.toLocaleDateString('es-GT', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
-        });
-    } catch (e) {
-        return fechaStr;
+    let fecha;
+    
+    if (fechaStr.includes('/')) {
+        const partes = fechaStr.split('/');
+        fecha = new Date(`${partes[1]}/${partes[0]}/${partes[2]}`);
+    } else {
+        fecha = new Date(fechaStr.replace(' ', 'T'));
     }
+
+    if (isNaN(fecha.getTime())) return fechaStr;
+
+    return fecha.toLocaleDateString('es-GT', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
 }
 
+/**
+ * Devuelve el nombre legible del tipo de boleta.
+ * @param {string} quest - El identificador del tipo de boleta.
+ * @returns {string}
+ */
 function getNombreTipoBoleta(quest) {
     const types = {
         'getUserTicketVacations': 'Vacaciones',
@@ -403,57 +384,15 @@ function getNombreTipoBoleta(quest) {
     return types[quest] || 'Desconocido';
 }
 
+/**
+ * Simula la exportación a PDF de una boleta.
+ * @param {number} id - El ID de la boleta.
+ */
 function exportarDetallePDF(id) {
     Swal.fire({
         title: 'Exportar a PDF',
-        text: `¿Deseas exportar los detalles de la boleta #${id} a PDF?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Exportar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#4361ee',
-        cancelButtonColor: '#6c757d'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Exportando...',
-                html: 'Generando documento PDF',
-                timer: 2000,
-                timerProgressBar: true,
-                didOpen: () => { Swal.showLoading(); }
-            }).then(() => {
-                Swal.fire({
-                    title: '¡Exportado!',
-                    text: `El PDF de la boleta #${id} se ha generado correctamente.`,
-                    icon: 'success',
-                    confirmButtonText: 'Descargar',
-                    confirmButtonColor: '#4361ee'
-                });
-            });
-        }
-    });
-}
-
-function imprimirDetalles(id) {
-    Swal.fire({
-        title: 'Preparando para imprimir',
-        html: 'Generando vista de impresión...',
-        timer: 1500,
-        timerProgressBar: true,
-        didOpen: () => { Swal.showLoading(); }
-    }).then(() => {
-        Swal.fire({
-            title: 'Listo para imprimir',
-            text: `La boleta #${id} se ha preparado para impresión.`,
-            icon: 'success',
-            confirmButtonText: 'Imprimir',
-            confirmButtonColor: '#4361ee',
-            showCancelButton: true,
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.print();
-            }
-        });
+        text: `Funcionalidad de exportar boleta #${id} a PDF no implementada.`,
+        icon: 'info',
+        confirmButtonText: 'Aceptar'
     });
 }

@@ -1,6 +1,3 @@
- /* ========================================
-           RESET Y CONFIGURACIÓN GENERAL
-        ======================================== */
 
  :root {
      --primary-color: #0d6efd;
@@ -743,7 +740,7 @@
  }
 
  #boletas-table th {
-     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+     background: linear-gradient(135deg, var(--primary-color), var(--sidebar-active-text));
      color: white;
      font-weight: 600;
      padding: 1rem;

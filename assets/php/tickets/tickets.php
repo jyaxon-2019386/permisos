@@ -6,19 +6,54 @@ switch ($request_method) {
         switch ($quest) {
             case 'getUserTicketVacations': // BOLETAS VACACIONES
                 $idCreador = isset($_GET['idCreador']) ? trim($_GET['idCreador']) : '';
-                $sql = "SELECT * FROM BoletaVacaciones WHERE idCreador = ?";
+                $sql = "SELECT 
+                            b.idBoleta, 
+                            CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
+                            u.nombre AS Solicitante, 
+                            d.nombre AS Departamento, 
+                            e.idEstado AS Estado,
+                            u.puesto AS Puesto,
+                            u.idEmpresa AS Empresa,
+                            b.totalD AS TotalDias,
+                            b.fecha1 AS Fecha1,
+                            b.fecha2 AS Fecha2,
+                            b.fecha3 AS Fecha3,
+                            b.fecha4 AS Fecha4,
+                            b.fecha5 AS Fecha5,
+                            b.desc1 AS Detalle1,
+                            b.desc2 AS Detalle2,
+                            b.desc3 AS Detalle3,
+                            b.desc4 AS Detalle4,
+                            b.desc5 AS Detalle5,
+                            b.observaciones1,
+                            b.observaciones2,
+                            b.observaciones3,
+                            b.observaciones4,
+                            b.fecha_actualizado AS FechaActualizado
+                            FROM 
+                                BoletaVacaciones b
+                            INNER JOIN 
+                                Estado e ON b.idEstado = e.idEstado
+                            INNER JOIN 
+                                Usuario u ON b.idSolicitante = u.idUsuario
+                            INNER JOIN 
+                                Departamento d ON u.idDepartamentoP = d.idDepartamento
+                            WHERE 
+                                b.idCreador = ?
+                            ORDER BY b.idBoleta DESC";
                 $stmt = odbc_prepare($con, $sql);
 
                 $exec = odbc_execute($stmt, [$idCreador]);
                 $tickets = [];
-                if($exec){
-                    while($row = odbc_fetch_array($stmt)){
-                        $row = array_map(function($val){
+                if ($exec) {
+                    while ($row = odbc_fetch_array($stmt)) {
+                        $row = array_map(function ($val) {
                             return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
                         }, $row);
                         $tickets[] = $row;
                     }
                 }
+
                 if (!empty($tickets)) {
                     http_response_code(200);
                     echo json_encode([
@@ -45,6 +80,43 @@ switch ($request_method) {
                     break;
                 }
                 $sql = "SELECT * FROM BoletaReposicion WHERE idCreador = ?";
+
+                $sql = "SELECT 
+                            b.idBoleta, 
+                            CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
+                            u.nombre AS Solicitante, 
+                            d.nombre AS Departamento, 
+                            e.idEstado AS Estado,
+                            u.idEmpresa AS Empresa,
+                            b.fecha1 AS Fecha1,
+                            b.fecha2 AS Fecha2,
+                            b.fecha3 AS Fecha3,
+                            b.fecha4 AS Fecha4,
+                            b.fecha5 AS Fecha5,
+                            b.fecha1R AS FechaR1,
+                            b.fecha2R AS FechaR2,
+                            b.fecha3R AS FechaR3,
+                            b.fecha4R AS FechaR4,
+                            b.fecha5R AS FechaR5,
+                            b.totalH AS totalHoras,
+                            b.totalH AS totalHorasR,
+                            b.observaciones1,
+                            b.observaciones2,
+                            b.observaciones3,
+                            b.observaciones4,
+                            b.fecha_actualizado AS FechaActualizado
+                            FROM 
+                                BoletaReposicion b
+                            INNER JOIN 
+                                Estado e ON b.idEstado = e.idEstado
+                            INNER JOIN 
+                                Usuario u ON b.idSolicitante = u.idUsuario
+                            INNER JOIN 
+                                Departamento d ON u.idDepartamentoP = d.idDepartamento
+                            WHERE 
+                                b.idCreador = ?
+                            ORDER BY b.idBoleta DESC";
+
                 $stmt = odbc_prepare($con, $sql);
 
                 $exec = odbc_execute($stmt, [$idCreador]);
