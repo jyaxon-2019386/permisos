@@ -17,17 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
  // --- Configuración de Conexión a Base de Datos ---
-$dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
-$user = 'sa';
-$password = 'Empresas0425';
+// $dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
+// $user = 'sa';
+// $password = 'Empresas0425';
 
 // $dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos"; 
 // $user = 'admin';
 // $password = '1215';
 
-// $dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
-// $user = 'sa';
-// $password = 'Empres@s0425';
+$dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
+$user = 'sa';
+$password = 'Empres@s0425';
 
 $con = odbc_connect($dsn, $user, $password);
 if (!$con) {

@@ -591,6 +591,14 @@
      border-left: 3px solid var(--primary-color);
  }
 
+ .detail-card-tipo{
+     background: #f9fafc;
+     border-radius: 10px;
+     padding: 1.25rem;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+     border-left: 3px solid red;
+ }
+
  .detail-card h5 {
      font-size: 0.9rem;
      color: var(--gray-color);
@@ -599,6 +607,20 @@
  }
 
  .detail-card p {
+     font-size: 1.1rem;
+     font-weight: 600;
+     color: var(--dark-color);
+     margin-bottom: 0;
+ }
+
+ .detail-card-tipo h5 {
+     font-size: 0.9rem;
+     color: var(--gray-color);
+     margin-bottom: 0.5rem;
+     font-weight: 500;
+ }
+
+ .detail-card-tipo p {
      font-size: 1.1rem;
      font-weight: 600;
      color: var(--dark-color);

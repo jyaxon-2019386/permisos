@@ -232,7 +232,7 @@ function generarDetallesDinamicos(ticket, tipoTicket) {
                     hasRows = true;
                     vacationDaysHTML += `
                         <tr>
-                            <td><i class="fa fa-calendar-check text-success me-1"></i>${formatearFecha(item.fecha)}</td>
+                            <td>${formatearFecha(item.fecha)}</td>
                             <td>${item.detalle || 'Sin detalle'}</td>
                         </tr>
                     `;
@@ -256,7 +256,217 @@ function generarDetallesDinamicos(ticket, tipoTicket) {
                 </div>
             `;
             break;
-        
+
+        case 'getUserTicketReplaceTime':
+            const fechasReposicion = [
+                { fecha: ticket.Fecha1, fechaR: ticket.FechaR1 },
+                { fecha: ticket.Fecha2, fechaR: ticket.FechaR2 },
+                { fecha: ticket.Fecha3, fechaR: ticket.FechaR3 },
+                { fecha: ticket.Fecha4, fechaR: ticket.FechaR4 },
+                { fecha: ticket.Fecha5, fechaR: ticket.FechaR5 }
+            ];
+
+            let replaceTimeHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50%">Fecha a reponer</th>
+                                <th style="width: 50%">Fecha de reposición</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let hasReplaceRows = false;
+            fechasReposicion.forEach(item => {
+                if (item.fecha || item.fechaR) {
+                    hasReplaceRows = true;
+                    replaceTimeHTML += `
+                        <tr>
+                            <td>${item.fecha ? formatearFecha(item.fecha) : 'N/A'}</td>
+                            <td>${item.fechaR ? formatearFecha(item.fechaR) : 'N/A'}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            replaceTimeHTML += hasReplaceRows 
+                ? `</tbody></table></div>` 
+                : `<tr><td colspan="2" class="text-center text-muted">No se especificaron fechas.</td></tr></tbody></table></div>`;
+
+            camposDinamicosHTML += `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.totalHoras || '0'} Horas</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.totalHorasR || '0'} Horas</p>
+                    </div>
+                </div>
+
+                <div class="col-md-12  detail-card-full">
+                    <h5>Fechas de la Solicitud</h5>
+                    ${replaceTimeHTML}
+                </div>
+            `;
+            break;
+            
+        case 'getUserTicketJustification':
+            const fechasJustificacion = [
+                { fecha: ticket.fecha1, detalle: ticket.Detalle1 },
+                { fecha: ticket.fecha2, detalle: ticket.Detalle2 },
+                { fecha: ticket.fecha3, detalle: ticket.Detalle3 },
+                { fecha: ticket.fecha4, detalle: ticket.Detalle4 },
+                { fecha: ticket.fecha5, detalle: ticket.Detalle5 }
+            ];
+
+            let justificationHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%">Fecha</th>
+                                <th style="width: 70%">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let hasJustificationRows = false;
+            fechasJustificacion.forEach(item => {
+                if (item.fecha) {
+                    hasJustificationRows = true;
+                    justificationHTML += `
+                        <tr>
+                            <td>${formatearFecha(item.fecha)}</td>
+                            <td>${item.detalle || 'Sin detalle'}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            justificationHTML += hasJustificationRows
+                ? `</tbody></table></div>`
+                : `<tr><td colspan="2" class="text-center text-muted">No se especificaron fechas.</td></tr></tbody></table></div>`;
+
+            camposDinamicosHTML += `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.totalHoras || '0'} Horas</p>
+                    </div>
+                </div>
+
+                <div class="col-md-12 detail-card-full">  
+                    <h5>Fechas y Detalles de la Justificación</h5>
+                    ${justificationHTML}
+                </div>
+            `;
+            break;
+            
+        case 'getUserTicketRequestIGSS':
+            const igssHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%">Fecha de Cita</th>
+                                <th style="width: 30%">Horario</th>
+                                <th style="width: 40%">Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatearFecha(ticket.Fecha) || '-'}</td>
+                                <td>${ticket.HoraInicio || '-'} a ${ticket.HoraFinal || '-'}</td>
+                                <td>${ticket.Detalle || 'Sin detalle'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            camposDinamicosHTML = `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.HorasTotal || '0'} Horas</p>
+                    </div>
+                </div>
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas y Horario de la Cita</h5>
+                    ${igssHTML}
+                </div>
+            `;
+            break;
+
+        case 'getUserTicketOffIGSS':
+            const suspensionHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%">Fecha de Inicio</th>
+                                <th style="width: 40%">Fecha de Finalización</th>
+                                <th style="width: 20%">Total de Días</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatearFecha(ticket.fechaInicio) || '-'}</td>
+                                <td>${formatearFecha(ticket.fechaFinal) || '-'}</td>
+                                <td>${ticket.TotalDias || '0'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            camposDinamicosHTML = `
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas de Suspensión</h5>
+                    ${suspensionHTML}
+                </div>
+            `;
+            break;
+            
+        case 'getUserOff':
+            const sancionHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%">Tipo</th>
+                                <th style="width: 60%">Detalle de Sanción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${ticket.Tipo || '-'}</td>
+                                <td>${ticket.observaciones1 || 'Sin detalle'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            camposDinamicosHTML = `
+            <div class="col-md-6">
+                <div class="detail-card-tipo">
+                    <h5>Tipo de Sanción</h5>
+                    <ul class="list-group list-group-flush mt-2">
+                        <strong>${ticket.Tipo}</strong>
+                    </ul>
+                </div>
+            </div>
+            `;
+            break;
+
         default:
             camposDinamicosHTML = `<div class="col-12"><p>Detalles no configurados para este tipo de boleta.</p></div>`;
             break;
@@ -347,23 +557,60 @@ function mostrarDetalles(detalles, tipoBoleta) {
 /**
  * Formatea una cadena de fecha.
  * @param {string} fechaStr - La cadena de fecha.
- * @returns {string} - La fecha formateada.
+ * @returns {string} - La fecha formateada o '-' si es inválida.
+ */
+/**
+ * Formatea una cadena de fecha a un formato legible en español de Guatemala.
+ * Valida que la fecha sea válida antes de intentar el formateo.
+ * @param {string} fechaStr - La cadena de fecha a formatear.
+ * @returns {string} - La fecha formateada o '-' si es inválida.
  */
 function formatearFecha(fechaStr) {
-    if (!fechaStr) return '-';
+    // Si la cadena es nula, vacía o solo espacios en blanco, retorna un guion.
+    if (!fechaStr || fechaStr.trim() === '') {
+        return '-';
+    }
+
+    // Comprobar si la cadena es la fecha no válida conocida.
+    if (fechaStr === '2000-01-01 00:00:00.000') {
+        return '-';
+    }
+
     let fecha;
-    
-    if (fechaStr.includes('/')) {
-        const partes = fechaStr.split('/');
-        fecha = new Date(`${partes[1]}/${partes[0]}/${partes[2]}`);
+
+    // Patrón regex para validar fechas en formato dd/mm/yyyy
+    const regexDDMMYYYY = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    const match = fechaStr.match(regexDDMMYYYY);
+
+    if (match) {
+        // Si el formato es dd/mm/yyyy, extrae las partes y crea el objeto Date.
+        // Se resta 1 al mes porque los meses en JavaScript van de 0 a 11.
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1;
+        const year = parseInt(match[3], 10);
+        fecha = new Date(year, month, day);
+
+        // Valida si el objeto Date creado corresponde a la fecha original
+        // Esto previene fechas como '31/02/2023' que JS podría convertir a '03/03/2023'.
+        if (fecha.getFullYear() !== year || fecha.getMonth() !== month || fecha.getDate() !== day) {
+            return '-';
+        }
     } else {
+        // Intenta parsear la fecha directamente si no coincide con el patrón dd/mm/yyyy.
+        // Se reemplaza ' ' con 'T' para manejar formatos ISO 8601 si aplica.
         fecha = new Date(fechaStr.replace(' ', 'T'));
     }
 
-    if (isNaN(fecha.getTime())) return fechaStr;
+    // Valida si el objeto Date es válido.
+    if (isNaN(fecha.getTime())) {
+        return '-';
+    }
 
+    // Formatea la fecha a un formato legible y retorna el resultado.
     return fecha.toLocaleDateString('es-GT', {
-        year: 'numeric', month: 'long', day: 'numeric'
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 }
 
@@ -384,15 +631,12 @@ function getNombreTipoBoleta(quest) {
     return types[quest] || 'Desconocido';
 }
 
-/**
- * Simula la exportación a PDF de una boleta.
- * @param {number} id - El ID de la boleta.
- */
-function exportarDetallePDF(id) {
-    Swal.fire({
-        title: 'Exportar a PDF',
-        text: `Funcionalidad de exportar boleta #${id} a PDF no implementada.`,
-        icon: 'info',
-        confirmButtonText: 'Aceptar'
-    });
+// Función para cerrar sesión y redirigir al login
+function logout() {
+    sessionStorage.clear('usuario');
+    sessionStorage.clear('avatar');
+    sessionStorage.clear('id_usuario');
+    window.location.href = '../../pages/authentication/signin/login.html';
 }
+
+window.logout = logout; // Exponer la función de logout globalmente
