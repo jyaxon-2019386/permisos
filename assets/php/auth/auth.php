@@ -36,7 +36,11 @@ switch ($request_method) {
 
                     if ($contrasena === $db_password) {
                         $_SESSION['idUsuario'] = $user['idUsuario'];
+                        $_SESSION['puesto'] = $user['puesto'];
+
                         $nombre = $user['nombre'];
+                        $puesto = $user['puesto'];
+
                         http_response_code(200);
                         echo json_encode([
                             "success" => true,
@@ -45,6 +49,7 @@ switch ($request_method) {
                             "nombre" => $nombre,
                             "usuario" => $usuario,
                             "idUsuario" => $user['idUsuario'],
+                            "puesto" => $puesto,
                         ]);
                     } else {
                         http_response_code(401);

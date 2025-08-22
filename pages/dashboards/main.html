@@ -23,7 +23,8 @@
         <ul class="sidebar-menu">
             <li><a href="./main.html" class="active"><i class="fa fa-home"></i> Inicio</a></li>
             <li><a href="../../pages/ticket/new-ticket.html"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
-            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Boletas</a></li>
+            <li id="authorizedTickets"><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i>Boletas Autorizadas</a></li>
+            <li id="myTicket"><a href="../ticket/my-ticket.html"><i class="fa fa-folder-open"></i>Mis Boletas</a></li>
             <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
         </ul>
         <div class="sidebar-footer">
@@ -94,7 +95,7 @@
                         </div>
                     </div>
 
-                    <div class="recommended-card">
+                    <div class="recommended-card" id="authorizedTicketsAction">
                         <div class="card-icon view">
                             <i class="fa fa-folder-open"></i>
                         </div>

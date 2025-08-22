@@ -6,6 +6,7 @@ switch ($request_method) {
         switch ($quest) {
             case 'getUserTicketVacations': // BOLETAS VACACIONES
                 $idCreador = isset($_GET['idCreador']) ? trim($_GET['idCreador']) : '';
+
                 $sql = "SELECT 
                             b.idBoleta, 
                             CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
@@ -422,9 +423,14 @@ switch ($request_method) {
                 }
             break;
             case 'getTicketVacationsRRHH': //OBTENER BOLETA VACACIONES RRHH
+
+        
+
+
                 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
                 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
                 $offset = ($page - 1) * $limit;
+                
 
                 // Consulta principal paginada
                 $sql = "SELECT 

@@ -21,13 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // $user = 'sa';
 // $password = 'Empresas0425';
 
-// $dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos"; 
-// $user = 'admin';
-// $password = '1215';
+$dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos"; 
+$user = 'admin';
+$password = '1215';
 
-$dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
-$user = 'sa';
-$password = 'Empres@s0425';
+// $dsn = "Driver={SQL Server};Server=192.168.1.7;Port=1433;Database=Permisos";
+// $user = 'sa';
+// $password = 'Empres@s0425';
 
 $con = odbc_connect($dsn, $user, $password);
 if (!$con) {
@@ -50,5 +50,15 @@ if ($request_method === 'GET' && isset($_GET['quest'])) {
     $quest = $data['quest'];      
 }
 
+function getUserRole($con, $idUsuario) {
+    $sql = "SELECT puesto FROM Usuario WHERE idUsuario = ?";
+    $stmt = odbc_prepare($con, $sql);
+    $exec = odbc_execute($stmt, [$idUsuario]);
 
+    if ($exec && odbc_fetch_row($stmt)) {
+        $puesto = odbc_result($stmt, "puesto");
+        return mb_convert_encoding($puesto, 'UTF-8', 'Windows-1252');
+    }
+    return null;
+}
 

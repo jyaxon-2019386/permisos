@@ -120,7 +120,7 @@ function initDataTable(ticketsData) {
     dataTableInstance = new DataTable('#boletas-table', {
         data: ticketsData,
         responsive: true,
-        order: [[0, 'desc']],
+        order: [[4, 'desc']],
         columns: [
             {
                 data: 'idBoleta',

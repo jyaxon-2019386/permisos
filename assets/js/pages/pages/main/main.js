@@ -3,6 +3,8 @@
 document.addEventListener("DOMContentLoaded", function () { 
   const avatarURL = sessionStorage.getItem('avatar');
   const username = sessionStorage.getItem('nombre');
+  const puesto = sessionStorage.getItem('puesto');
+
   if (avatarURL) {
     const avatarEl = document.getElementById('avatar');
     if (avatarEl) {
@@ -15,6 +17,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if(isUsername){
         isUsername.textContent = username;
     }
+  }
+
+  if (puesto) {
+    aplicarVisibilidadPorPuesto(puesto);
   }
 
   getLastTicker();
@@ -36,6 +42,26 @@ function logout() {
     sessionStorage.clear('id_usuario');
     window.location.href = '../../pages/authentication/signin/login.html';
 }
+
+// Función para aplicar la visibilidad de elementos según el puesto del usuario
+function aplicarVisibilidadPorPuesto(puesto) {
+    function normalizeString(str) {
+        return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+    const puestoNorm = normalizeString(puesto);
+
+    // Valido de esta manera por falta de control en la Base de Datos
+    if (puestoNorm !== "recepcion" && puestoNorm !== "asistente de nomina" && puestoNorm !== "asistente de reclutamiento") {
+        const btnReportes = document.getElementById("authorizedTicketsAction");
+        const btnBtn = document.getElementById("authorizedTickets");
+        if (btnReportes && btnBtn) {
+            btnReportes.style.display = "none";
+            btnBtn.style.display = "none";
+        }
+    }
+
+}
+
 
 async function getLastTicker() {
     const idCreador = sessionStorage.getItem('idUsuario') || '1';
