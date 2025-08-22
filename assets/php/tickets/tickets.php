@@ -833,6 +833,53 @@ switch ($request_method) {
                     ]);
                 break;
 
+                case 'getTicketVacationAuthorized':
+
+                    $idDepartamento = isset($_GET['idDepartamento']) ? trim($_GET['idDepartamento']) : '';
+
+                    $sql = "SELECT 
+                        b.idBoleta, 
+                        CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS [FechaDeCreacion], 
+                        u.nombre AS Solicitante, 
+                        e.idEstado AS Estado
+                    FROM BoletaVacaciones b
+                    INNER JOIN Estado e 
+                        ON b.idEstado = e.idEstado
+                    INNER JOIN Usuario u 
+                        ON b.idSolicitante = u.idUsuario
+                    WHERE b.idDepartamento = ?   
+                    AND b.idEstado IN (2,3,4)
+                    order BY b.idBoleta DESC";
+
+                    $stmt = odbc_prepare($con, $sql);
+
+                    $exec = odbc_execute($stmt, [$idDepartamento]);
+                    $tickets = [];
+                    if ($exec) {
+                        while ($row = odbc_fetch_array($stmt)) {
+                            $row = array_map(function ($val) {
+                                return !is_null($val) ? mb_convert_encoding($val, 'UTF-8', 'Windows-1252') : null;
+                            }, $row);
+                            $tickets[] = $row;
+                        }
+                    }
+
+                    if (!empty($tickets)) {
+                        http_response_code(200);
+                        echo json_encode([
+                            "success" => true,
+                            "message" => "Boletas encontradas",
+                            "my tickets" => $tickets
+                        ]);
+                    } else {
+                        http_response_code(400);
+                        echo json_encode([
+                            "success" => false,
+                            "error" => "Boletas no encontradas"
+                        ]);
+                    }
+                break;
+
                 default:
                     header("HTTP/1.1 400 Bad Request");
                     echo json_encode(["error" => "Quest GET no encontrado"]);

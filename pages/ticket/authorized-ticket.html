@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard PERMISOS</title>
+    <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="../../assets/css/my-ticket.css">
+    <link rel="stylesheet" href="../dashboards/style.css">
+   
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-logo">PERMISOS</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="./main.html" class="active"><i class="fa fa-home"></i> Inicio</a></li>
+            <li><a href="../../pages/ticket/new-ticket.html"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
+            <li><a href="../ticket/ticket.html"><i class="fa fa-folder-open"></i> Boletas</a></li>
+            <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar slide-up">
+
+            <button class="btn-toggle-sidebar" id="toggleSidebar">
+                <i class="fa fa-bars"></i>
+            </button>
+
+            <div class="topbar-actions">
+                <i class="fa fa-bell"></i>
+                <div class="dropdown">
+                    <img class="dropdown-toggle img-fluid rounded-circle border shadow" id="avatar"
+                        alt="Avatar de usuario" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="../../pages/pages/profile/profile.html">
+                                <i class="fa fa-user"></i> Perfil
+                            </a></li>
+                        <li><a class="dropdown-item" href="#">
+                                <i class="fa fa-cog"></i> Configuración
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                data-bs-target="#logoutModal">
+                                <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                            </a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="welcome-card">
+            <h1 class="welcome-title">Boletas Autorizadas</h1>
+            <p>Administra y consulta todas tus boletas generadas en el sistema</p>
+        </div>
+
+        <div class="boleta-controls">
+            <div class="filter-group">
+                <label for="tipoBoletaFilter" class="form-label">Filtrar por tipo de boleta:</label>
+                <select id="tipoBoletaFilter" class="form-select form-select-sm">
+                    <option value="getTicketVacationAuthorized">Vacaciones</option>
+                    <option value="getUserTicketReplaceTime">Reposición de Tiempo</option>
+                    <option value="getUserTicketJustification">Falta Justificada</option>
+                    <option value="getUserTicketRequestIGSS">Consulta IGSS</option>
+                    <option value="getUserTicketOffIGSS">Suspensión IGSS</option>
+                    <option value="getUserOff">Sanciones</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="recent-tickets-section">
+            <h2 class="subsection-title">Boletas Registradas</h2>
+            
+            <table id="boletas-table" class="table table-hover table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>N° Boleta</th>
+                        <th>Fecha de Creación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="boletas-table-body">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutModalLabel">Cerrar Sesión</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        ¿Estás seguro de que deseas cerrar la sesión?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="../../assets/js/pages/pages/tickets/state-ticket.js"> </script>
+    <script type="module" src="../../assets/js/pages/pages/tickets/authorized-ticket.js"></script>
+</body>
+</html>

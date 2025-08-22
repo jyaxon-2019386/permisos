@@ -24,6 +24,7 @@ export async function login() {
             sessionStorage.setItem('nombre', data.nombre);
             sessionStorage.setItem('idUsuario', data.idUsuario);
             sessionStorage.setItem('puesto', data.puesto); // 👈 Guardamos el rol/puesto
+            sessionStorage.setItem('departamento', data.idDepartamentoP); // 👈 Guardamos el departamento
 
             const avatar = `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(data.usuario)}`;
             sessionStorage.setItem('avatar', avatar);
