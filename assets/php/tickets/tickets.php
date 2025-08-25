@@ -910,6 +910,7 @@ switch ($request_method) {
                             b.idBoleta, 
                             CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                             u.nombre AS Solicitante, 
+                            u.puesto AS Puesto,
                             e.idEstado AS Estado,
                             u.idEmpresa AS Empresa,
                             b.fecha1 AS Fecha1,
@@ -979,7 +980,7 @@ switch ($request_method) {
                 b.idBoleta, 
                 CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                 u.nombre AS Solicitante, 
-                u.puesto AS Cargo,
+                u.puesto AS Puesto,
                 u.idEmpresa AS Empresa,
                 e.idEstado AS Estado, 
                 b.fecha1 AS fecha1,
@@ -1046,32 +1047,32 @@ switch ($request_method) {
                     $idDepartamento = isset($_GET['idDepartamento']) ? trim($_GET['idDepartamento']) : '';
                     $idSolicitante = isset($_GET['idSolicitante']) ? trim($_GET['idSolicitante']) : '';
                     $sql = "SELECT 
-                b.idBoleta, 
-                CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
-                u.nombre AS Solicitante, 
-                u.puesto AS Cargo,
-                u.idEmpresa AS Empresa, 
-                e.idEstado AS Estado,
-                b.fecha1 AS Fecha,
-                b.desc1 AS Detalle,
-                b.horaI1 AS HoraInicio,
-                b.horaF1 AS HoraFinal,
-                b.observaciones1 AS observaciones1,
-                b.observaciones2 AS observaciones2,
-                b.observaciones3 AS observaciones3,
-                b.observaciones4 AS observaciones4,
-                b.totalH as HorasTotal,
-                b.fecha_actualizado AS FechaActualizado
-                FROM 
-                    BoletaConsultaIGSS b
-                INNER JOIN 
-                    Estado e ON b.idEstado = e.idEstado
-                INNER JOIN 
-                    Usuario u ON b.idSolicitante = u.idUsuario
-                
-                WHERE 
-                    b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?                    
-                ORDER BY b.idBoleta DESC";
+                    b.idBoleta, 
+                    CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
+                    u.nombre AS Solicitante, 
+                    u.puesto AS Puesto,
+                    u.idEmpresa AS Empresa, 
+                    e.idEstado AS Estado,
+                    b.fecha1 AS Fecha,
+                    b.desc1 AS Detalle,
+                    b.horaI1 AS HoraInicio,
+                    b.horaF1 AS HoraFinal,
+                    b.observaciones1 AS observaciones1,
+                    b.observaciones2 AS observaciones2,
+                    b.observaciones3 AS observaciones3,
+                    b.observaciones4 AS observaciones4,
+                    b.totalH as HorasTotal,
+                    b.fecha_actualizado AS FechaActualizado
+                    FROM 
+                        BoletaConsultaIGSS b
+                    INNER JOIN 
+                        Estado e ON b.idEstado = e.idEstado
+                    INNER JOIN 
+                        Usuario u ON b.idSolicitante = u.idUsuario
+                    
+                    WHERE 
+                        b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?                    
+                    ORDER BY b.idBoleta DESC";
 
                     $stmt = odbc_prepare($con, $sql);
 
@@ -1111,7 +1112,7 @@ switch ($request_method) {
                     b.idBoleta, 
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
                     u.nombre AS Solicitante,
-                    u.puesto AS Cargo,
+                    u.puesto AS Puesto,
                     u.idEmpresa AS Empresa, 
                     e.idEstado AS Estado, 
                     b.fechaInicio AS fechaInicio,
@@ -1122,15 +1123,15 @@ switch ($request_method) {
                     b.observaciones3,
                     b.observaciones4,
                     b.fecha_actualizado AS FechaActualizado
-                FROM 
-                    BoletaSuspencionIGSS b
-                INNER JOIN 
-                    Estado e ON b.idEstado = e.idEstado
-                INNER JOIN 
-                    Usuario u ON b.idSolicitante = u.idUsuario 
-                WHERE 
-                    b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?
-                ORDER BY b.idBoleta DESC";
+                    FROM 
+                        BoletaSuspencionIGSS b
+                    INNER JOIN 
+                        Estado e ON b.idEstado = e.idEstado
+                    INNER JOIN 
+                        Usuario u ON b.idSolicitante = u.idUsuario 
+                    WHERE 
+                        b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?
+                    ORDER BY b.idBoleta DESC";
 
                     $stmt = odbc_prepare($con, $sql);
 
@@ -1171,7 +1172,7 @@ switch ($request_method) {
                     b.tipo AS Tipo,
                     CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion,
                     u.nombre AS Solicitante,
-                    u.puesto AS Cargo,
+                    u.puesto AS Puesto,
                     u.idEmpresa AS Empresa,
                     e.idEstado AS Estado,
                     b.observaciones1,
@@ -1179,15 +1180,15 @@ switch ($request_method) {
                     b.observaciones3,
                     b.observaciones4,
                     b.fecha_actualizado AS FechaActualizado
-                FROM 
-                    BoletaSancion b
-                INNER JOIN 
-                    Estado e ON b.idEstado = e.idEstado
-                INNER JOIN 
-                    Usuario u ON b.idSolicitante = u.idUsuario
-                WHERE 
-                    b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?                  
-                ORDER BY b.idBoleta DESC";
+                    FROM 
+                        BoletaSancion b
+                    INNER JOIN 
+                        Estado e ON b.idEstado = e.idEstado
+                    INNER JOIN 
+                        Usuario u ON b.idSolicitante = u.idUsuario
+                    WHERE 
+                        b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?                  
+                    ORDER BY b.idBoleta DESC";
 
                     $stmt = odbc_prepare($con, $sql);
 
@@ -2284,6 +2285,69 @@ switch ($request_method) {
                 }
 
             break;
+            
+            case 'putTicketStateVacation': // ACTUALIZAR BOLETAS DE VACACIONES
+                $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
+                $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
+
+                if ($idBoleta <= 0 || $nuevoEstado < 0) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
+                    break;
+                }
+
+                // Validar que solo se permita estado 12 o 13
+                if (!in_array($nuevoEstado, [4, 13])) {
+                    http_response_code(400);
+                    echo json_encode([
+                        "error" => "Estado no permitido. Solo se aceptan los valores 12 o 13."
+                    ]);
+                    break;
+                }
+
+                // 1. Obtener el estado actual
+                $sqlEstado = "SELECT idEstado FROM BoletaVacaciones WHERE idBoleta = $idBoleta";
+                $resEstado = odbc_exec($con, $sqlEstado);
+
+                if (!$resEstado || !odbc_fetch_row($resEstado)) {
+                    http_response_code(404);
+                    echo json_encode(["error" => "No se encontró la boleta con ID $idBoleta."]);
+                    break;
+                }
+
+                $estadoActual = intval(odbc_result($resEstado, 'idEstado'));
+
+                // 2. Verificar si ya tiene el mismo estado
+                if ($estadoActual === $nuevoEstado) {
+                    http_response_code(409); // Conflicto
+                    echo json_encode([
+                        "error" => "La boleta ya tiene el estado especificado.",
+                        "estadoActual" => $estadoActual
+                    ]);
+                    break;
+                }
+
+                // 3. Actualizar si es diferente
+                $sql = "UPDATE BoletaVacaciones 
+                        SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
+                        WHERE idBoleta = $idBoleta";
+
+                $exec = odbc_exec($con, $sql);
+
+                if ($exec) {
+                    http_response_code(200);
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Boleta actualizada correctamente.",
+                        "idBoleta" => $idBoleta
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
+                }
+
+            break;
+
                 default:
                     header('HTTP/1.1 400 Bad Request');
                     echo json_encode(['error' => 'Quest PUT no encontrado']);

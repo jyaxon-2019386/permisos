@@ -492,4 +492,34 @@ body {
     background-color: #ffebee;
     color: #c62828; 
 }
-    
+
+.icon-large {
+    font-size: 2rem; /* Aumenta el tamaño del icono */
+    color: #007bff; /* Cambia el color del icono */
+    fill: currentColor; /* Asegura que el relleno use el color actual */
+}
+
+/* Clase para los botones de acción del modal */
+.btn-modern {
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.btn-modern.btn-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-modern.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px); /* Efecto de "levantar" el botón */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}

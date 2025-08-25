@@ -171,64 +171,274 @@ function initDataTable(ticketsData) {
 
 /**
  * Genera el HTML para los detalles específicos de cada tipo de boleta.
- * (Sin cambios en esta función, pero se incluye para que el código esté completo)
+ * @param {object} ticket - El objeto con los datos de la boleta.
+ * @param {string} tipoTicket - El tipo de boleta (p.ej., 'getTicketVacationAuthorized').
  */
 function generarDetallesDinamicos(ticket, tipoTicket) {
     let camposDinamicosHTML = '';
     
-    // La lógica de tus 'switch-case' para cada tipo de boleta va aquí...
-    // Ejemplo para 'Vacaciones':
-    if (tipoTicket === 'getTicketVacationAuthorized') {
-        const fechasYDetalles = [
-            { fecha: ticket.Fecha1, detalle: ticket.Detalle1 },
-            { fecha: ticket.Fecha2, detalle: ticket.Detalle2 },
-            { fecha: ticket.Fecha3, detalle: ticket.Detalle3 },
-            { fecha: ticket.Fecha4, detalle: ticket.Detalle4 },
-            { fecha: ticket.Fecha5, detalle: ticket.Detalle5 }
-        ];
-
-        let hasRows = fechasYDetalles.some(item => item.fecha && item.fecha.trim() !== '');
+    // El 'switch' ahora usa los valores correctos (los mismos que las opciones de tu select)
+    switch (tipoTicket) {
+        case 'getTicketVacationAuthorized':
+            const fechasYDetalles = [
+                { fecha: ticket.Fecha1, detalle: ticket.Detalle1 },
+                { fecha: ticket.Fecha2, detalle: ticket.Detalle2 },
+                { fecha: ticket.Fecha3, detalle: ticket.Detalle3 },
+                { fecha: ticket.Fecha4, detalle: ticket.Detalle4 },
+                { fecha: ticket.Fecha5, detalle: ticket.Detalle5 }
+            ];
         
-        let vacationDaysHTML = '<p class="text-muted">No se especificaron fechas.</p>';
+            let hasRows = fechasYDetalles.some(item => item.fecha && item.fecha.trim() !== '');
+            
+            let vacationDaysHTML = '<p class="text-muted">No se especificaron fechas.</p>';
+        
+            if (hasRows) {
+                vacationDaysHTML = `
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 30%">Fecha</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${fechasYDetalles.filter(item => item.fecha && item.fecha.trim() !== '').map(item => `
+                                    <tr>
+                                        <td>${formatearFecha(item.fecha)}</td>
+                                        <td>${item.detalle || 'Sin detalle'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>`;
+            }
+            
+            camposDinamicosHTML += `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Días</h5>
+                        <p>${ticket.TotalDias || '0'}</p>
+                    </div>
+                </div>
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas y Detalles de la Solicitud</h5>
+                    ${vacationDaysHTML}
+                </div>
+            `;
+            break;
+        case 'getTicketTimeAuthorized':
+            const fechasReposicion = [
+                { fecha: ticket.Fecha1, fechaR: ticket.FechaR1 },
+                { fecha: ticket.Fecha2, fechaR: ticket.FechaR2 },
+                { fecha: ticket.Fecha3, fechaR: ticket.FechaR3 },
+                { fecha: ticket.Fecha4, fechaR: ticket.FechaR4 },
+                { fecha: ticket.Fecha5, fechaR: ticket.FechaR5 }
+            ];
 
-        if (hasRows) {
-            vacationDaysHTML = `
+            let replaceTimeHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50%">Fecha a reponer</th>
+                                <th style="width: 50%">Fecha de reposición</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let hasReplaceRows = false;
+            fechasReposicion.forEach(item => {
+                if (item.fecha || item.fechaR) {
+                    hasReplaceRows = true;
+                    replaceTimeHTML += `
+                        <tr>
+                            <td>${item.fecha ? formatearFecha(item.fecha) : 'N/A'}</td>
+                            <td>${item.fechaR ? formatearFecha(item.fechaR) : 'N/A'}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            replaceTimeHTML += hasReplaceRows 
+                ? `</tbody></table></div>` 
+                : `<tr><td colspan="2" class="text-center text-muted">No se especificaron fechas.</td></tr></tbody></table></div>`;
+
+            camposDinamicosHTML += `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.totalHoras || '0'} Horas</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas Reponer</h5>
+                        <p>${ticket.totalHorasR || '0'} Horas</p>
+                    </div>
+                </div>
+                
+
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas de la Solicitud</h5>
+                    ${replaceTimeHTML}
+                </div>
+            `;
+        break;
+
+        case 'getTicketJustificationAuthorized':
+            const fechasJustificacion = [
+                { fecha: ticket.fecha1, detalle: ticket.Detalle1 },
+                { fecha: ticket.fecha2, detalle: ticket.Detalle2 },
+                { fecha: ticket.fecha3, detalle: ticket.Detalle3 },
+                { fecha: ticket.fecha4, detalle: ticket.Detalle4 },
+                { fecha: ticket.fecha5, detalle: ticket.Detalle5 }
+            ];
+
+            let justificationHTML = `
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 30%">Fecha</th>
-                                <th>Descripción</th>
+                                <th style="width: 70%">Descripción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${fechasYDetalles.filter(item => item.fecha && item.fecha.trim() !== '').map(item => `
-                                <tr>
-                                    <td>${formatearFecha(item.fecha)}</td>
-                                    <td>${item.detalle || 'Sin detalle'}</td>
-                                </tr>
-                            `).join('')}
+            `;
+
+            let hasJustificationRows = false;
+            fechasJustificacion.forEach(item => {
+                if (item.fecha) {
+                    hasJustificationRows = true;
+                    justificationHTML += `
+                        <tr>
+                            <td>${formatearFecha(item.fecha)}</td>
+                            <td>${item.detalle || 'Sin detalle'}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            justificationHTML += hasJustificationRows
+                ? `</tbody></table></div>`
+                : `<tr><td colspan="2" class="text-center text-muted">No se especificaron fechas.</td></tr></tbody></table></div>`;
+
+            camposDinamicosHTML += `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.totalHoras || '0'} Horas</p>
+                    </div>
+                </div>
+
+                <div class="col-md-12 detail-card-full">  
+                    <h5>Fechas y Detalles de la Justificación</h5>
+                    ${justificationHTML}
+                </div>
+            `;
+        break;
+        case 'getTicketRequestIGSSAuthorized':
+            const igssHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30%">Fecha de Cita</th>
+                                <th style="width: 30%">Horario</th>
+                                <th style="width: 40%">Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatearFecha(ticket.Fecha) || '-'}</td>
+                                <td>${ticket.HoraInicio || '-'} a ${ticket.HoraFinal || '-'}</td>
+                                <td>${ticket.Detalle || 'Sin detalle'}</td>
+                            </tr>
                         </tbody>
                     </table>
-                </div>`;
-        }
-        
-        camposDinamicosHTML += `
+                </div>
+            `;
+
+            camposDinamicosHTML = `
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Total de Horas</h5>
+                        <p>${ticket.HorasTotal || '0'} Horas</p>
+                    </div>
+                </div>
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas y Horario de la Cita</h5>
+                    ${igssHTML}
+                </div>
+            `;
+        break;
+        case 'getUserTicketOffIGSSAuthorized':
+            const suspensionHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%">Fecha de Inicio</th>
+                                <th style="width: 40%">Fecha de Finalización</th>
+                                <th style="width: 20%">Total de Días</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatearFecha(ticket.fechaInicio) || '-'}</td>
+                                <td>${formatearFecha(ticket.fechaFinal) || '-'}</td>
+                                <td>${ticket.TotalDias || '0'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            camposDinamicosHTML = `
+                <div class="col-md-12 detail-card-full">
+                    <h5>Fechas de Suspensión</h5>
+                    ${suspensionHTML}
+                </div>
+            `;
+        break;
+        case 'getUserOffAuthorized':
+            const sancionHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40%">Tipo</th>
+                                <th style="width: 60%">Detalle de Sanción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${ticket.Tipo || '-'}</td>
+                                <td>${ticket.observaciones1 || 'Sin detalle'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            camposDinamicosHTML = `
             <div class="col-md-6">
-                <div class="detail-card">
-                    <h5>Total de Días</h5>
-                    <p>${ticket.TotalDias || '0'}</p>
+                <div class="detail-card-tipo">
+                    <h5>Tipo de Sanción</h5>
+                    <ul class="list-group list-group-flush mt-2">
+                        <strong>${ticket.Tipo}</strong>
+                    </ul>
                 </div>
             </div>
-            <div class="col-md-12 detail-card-full">
-                <h5>Fechas y Detalles de la Solicitud</h5>
-                ${vacationDaysHTML}
-            </div>
-        `;
-    } else {
-         camposDinamicosHTML = `<div class="col-12"><p>Detalles no configurados para este tipo de boleta.</p></div>`;
-    }
+            `;
+        break;
 
+        default:
+            camposDinamicosHTML = `<div class="col-12"><p>Detalles no configurados para este tipo de boleta.</p></div>`;
+            break;
+    }
     // Lógica para las observaciones
     const observacionesKeys = ['observaciones1', 'observaciones2', 'observaciones3', 'observaciones4'];
     const observacionesHTML = observacionesKeys
@@ -253,10 +463,9 @@ function generarDetallesDinamicos(ticket, tipoTicket) {
 
     return camposDinamicosHTML;
 }
-
-
 /**
- * Muestra el modal de SweetAlert con los detalles de la boleta.
+ * Muestra el modal de SweetAlert con los detalles de la boleta,
+ * el campo para comentarios y botones de acción.
  * @param {object} detalles - El objeto con los datos de la boleta.
  * @param {string} tipoBoleta - El tipo de boleta.
  */
@@ -267,46 +476,54 @@ function mostrarDetalles(detalles, tipoBoleta) {
     }
 
     const tipoBoletaNombre = getNombreTipoBoleta(tipoBoleta);
-    // Usamos el texto y la clase que ya procesamos
-    const estadoInfo = { texto: detalles.EstadoTexto, clase: detalles.EstadoClase }; 
+    const estadoInfo = { texto: detalles.EstadoTexto, clase: detalles.EstadoClase };
 
     const camposDinamicosHTML = generarDetallesDinamicos(detalles, tipoBoleta);
 
-    const content = document.createElement('div');
-    content.className = 'ticket-details';
+    // Creamos el contenido HTML principal
+    const content = `
+        <div class="ticket-details">
+            <div class="ticket-details-header mb-3">
+                <div class="ticket-id">Boleta #${detalles.idBoleta}</div>
+                <div class="ticket-status ${estadoInfo.clase}">${estadoInfo.texto}</div>
+            </div>
 
-    content.innerHTML = `
-        <div class="ticket-details-header">
-            <div class="ticket-id">Boleta #${detalles.idBoleta}</div>
-            <div class="ticket-status ${estadoInfo.clase}">${estadoInfo.texto}</div>
-        </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Tipo de boleta</h5>
+                        <p>${tipoBoletaNombre}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Solicitante</h5>
+                        <p>${detalles.Solicitante || 'N/A'}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Fecha de solicitud</h5>
+                        <p>${detalles.FechaDeCreacion || 'N/A'}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h5>Puesto</h5>
+                        <p>${detalles.Puesto || 'N/A'}</p>
+                    </div>
+                </div>
+                ${camposDinamicosHTML}
+            </div>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="detail-card">
-                    <h5>Tipo de boleta</h5>
-                    <p>${tipoBoletaNombre}</p>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="detail-card">
+                        <h5>Comentario del autorizador</h5>
+                        <textarea id="autorizadorComentario" class="form-control" rows="3" placeholder="Agregue un comentario (opcional)"></textarea>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="detail-card">
-                    <h5>Solicitante</h5>
-                    <p>${detalles.Solicitante || 'N/A'}</p>
-                </div>
-            </div>
-             <div class="col-md-6">
-                <div class="detail-card">
-                    <h5>Fecha de solicitud</h5>
-                    <p>${detalles.FechaDeCreacion || 'N/A'}</p>
-                </div>
-            </div>
-             <div class="col-md-6">
-                <div class="detail-card">
-                    <h5>Puesto</h5>
-                    <p>${detalles.Puesto || 'N/A'}</p>
-                </div>
-            </div>
-            ${camposDinamicosHTML}
         </div>
     `;
 
@@ -314,13 +531,39 @@ function mostrarDetalles(detalles, tipoBoleta) {
         title: `Detalles de la Boleta #${detalles.idBoleta}`,
         html: content,
         width: '900px',
-        showConfirmButton: false,
+        showConfirmButton: true,
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: 'Autorizar',
+        denyButtonText: 'No Autorizar',
+        buttonsStyling: false,
         customClass: {
-            popup: 'custom-swal-popup'
+        popup: 'custom-swal-popup',
+        confirmButton: 'btn btn-modern btn-success me-2', // Agrega la clase 'btn-modern'
+        denyButton: 'btn btn-modern btn-danger' // Agrega la clase 'btn-modern'
+    }
+    }).then((result) => {
+        const comentario = document.getElementById('autorizadorComentario').value;
+
+        if (result.isConfirmed) {
+            // Lógica para la aprobación
+            Swal.fire({
+                title: 'Boleta Autorizada!',
+                text: comentario ? `Comentario: "${comentario}"` : '',
+                icon: 'success'
+            });
+            console.log('Boleta Autorizada:', detalles.idBoleta, 'Comentario:', comentario);
+        } else if (result.isDenied) {
+            // Lógica para la no aprobación
+            Swal.fire({
+                title: 'Boleta No Autorizada',
+                text: comentario ? `Comentario: "${comentario}"` : '',
+                icon: 'info'
+            });
+            console.log('Boleta No Autorizada:', detalles.idBoleta, 'Comentario:', comentario);
         }
     });
 }
-
 /**
  * Formatea una cadena de fecha a un formato legible.
  * @param {string} fechaStr - La cadena de fecha.
@@ -349,11 +592,11 @@ function formatearFecha(fechaStr) {
 function getNombreTipoBoleta(quest) {
     const types = {
         'getTicketVacationAuthorized': 'Vacaciones',
-        'getUserTicketReplaceTime': 'Reposición de Tiempo',
-        'getUserTicketJustification': 'Falta Justificada',
-        'getUserTicketRequestIGSS': 'Consulta IGSS',
-        'getUserTicketOffIGSS': 'Suspensión IGSS',
-        'getUserOff': 'Sanciones'
+        'getTicketTimeAuthorized': 'Reposición de Tiempo',
+        'getTicketJustificationAuthorized': 'Falta Justificada',
+        'getTicketRequestIGSSAuthorized': 'Consulta IGSS',
+        'getUserTicketOffIGSSAuthorized': 'Suspensión IGSS',
+        'getUserOffAuthorized': 'Sanciones'
     };
     return types[quest] || 'Desconocido';
 }

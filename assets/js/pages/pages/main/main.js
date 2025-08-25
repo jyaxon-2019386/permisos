@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const avatarURL = sessionStorage.getItem('avatar');
   const username = sessionStorage.getItem('nombre');
   const puesto = sessionStorage.getItem('puesto');
+  const idDepartamentoDep = sessionStorage.getItem('idDepartamentoDep');
 
   if (avatarURL) {
     const avatarEl = document.getElementById('avatar');
@@ -58,6 +59,15 @@ function aplicarVisibilidadPorPuesto(puesto) {
             btnReportes.style.display = "none";
             btnBtn.style.display = "none";
         }
+    }else if (puestoNorm !== "recepcion" || puestoNorm === "asistente de reclutamiento") {
+        const btnReportesx = document.getElementById("authorizedAllTickets");
+        const btnBtn = document.getElementById("authorizedAllTickets");
+        if (btnReportesx && btnBtn) {
+            btnReportesx.style.display = "none";
+            btnBtn.style.display = "none";
+        }
+
+
     }
 
 }
