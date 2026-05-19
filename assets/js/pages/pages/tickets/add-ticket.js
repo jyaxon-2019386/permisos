@@ -1,13 +1,6 @@
 import { notyf } from "../../../plugins/notify.js";
 
 document.addEventListener('DOMContentLoaded', async function () {
-    const avatarURL = sessionStorage.getItem('avatar');
-    if (avatarURL) {
-        const avatarEl = document.getElementById('avatar');
-        if (avatarEl) avatarEl.src = avatarURL;
-    }
-
-    const toggleSidebarBtn = document.getElementById('toggleSidebar');
     const vacationForm = document.getElementById('vacationForm');
     const addDayBtn = document.getElementById('addDayBtn');
     const vacationEntriesContainer = document.getElementById('vacationEntriesContainer');
@@ -16,10 +9,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     let entryCounter = 0;
     const MAX_VACATION_DAYS = 10;
-
-    toggleSidebarBtn.addEventListener('click', function () {
-        document.body.classList.toggle('sidebar-collapsed');
-    });
 
     addDayBtn.addEventListener('click', addVacationDayEntry);
     addVacationDayEntry(); // Añadir primer día
@@ -238,11 +227,3 @@ async function postTicketVacations(data) {
 }
 
 
-function logout() {
-    sessionStorage.clear('usuario');
-    sessionStorage.clear('avatar');
-    sessionStorage.clear('id_usuario');
-    window.location.href = '../../pages/authentication/signin/login.html';
-}
-
-window.logout = logout;

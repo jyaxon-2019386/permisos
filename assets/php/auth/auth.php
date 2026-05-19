@@ -113,11 +113,11 @@ switch ($request_method) {
                     u.inicioLabores, 
                     u.permiso, 
                     e.nombre AS empresa, 
-                    d.nivel AS nivel, 
+                    ISNULL(d.nivel, u.permiso) AS nivel, 
                     u.idDepartamentoP AS idDepartamento 
                 FROM Usuario u
                 INNER JOIN Empresa e ON u.idEmpresa = e.idEmpresa
-                INNER JOIN UsuarioDep d ON u.idDepartamentoP = d.idDepartamento AND u.idUsuario = d.idUsuario 
+                LEFT JOIN UsuarioDep d ON u.idDepartamentoP = d.idDepartamento AND u.idUsuario = d.idUsuario 
                 WHERE u.idUsuario = ?";
                 
                 $stmt = odbc_prepare($con, $sql);

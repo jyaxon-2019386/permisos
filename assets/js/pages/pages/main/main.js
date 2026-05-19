@@ -33,6 +33,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Toggle para el submenú de Permisos de Salida
+    const permitsToggle = document.getElementById('permitsToggle');
+    const permitsSubmenu = document.getElementById('permitsSubmenu');
+    if (permitsToggle && permitsSubmenu) {
+        permitsToggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            permitsSubmenu.classList.toggle('show');
+            // alternar icono chevron
+            const chevron = this.querySelector('.fa-chevron-down');
+            if (chevron) chevron.classList.toggle('rotated');
+        });
+    }
+
 });
 
 

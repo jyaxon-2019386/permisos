@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(); 
 }
 
- // --- Configuración de Conexión a Base de Datos ---
-$dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Port=1433;Database=Permisos";
-$user = 'sa';
-$password = 'Empresas0425';
+ //--- Configuración de Conexión a Base de Datos ---
+$dsn = "Driver={SQL Server};Server=JUAN-PABLO\\SQLEXPRESS;Database=Permisos;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;";
+$user = '';
+$password = '';
 
 // $dsn = "Driver={SQL Server};Server=LAPTOP-VURT2290;Port=1433;Database=Permisos"; 
 // $user = 'admin';
@@ -31,7 +31,6 @@ $password = 'Empresas0425';
 
 $con = odbc_connect($dsn, $user, $password);
 if (!$con) {
-    // Un mensaje de error más claro
     http_response_code(500);
     echo json_encode(["error" => "Error de conexión a la base de datos: " . odbc_errormsg()]);
     exit();

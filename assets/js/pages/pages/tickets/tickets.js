@@ -11,19 +11,6 @@ let currentSortColumn = null; // Columna actualmente ordenada
 let currentSortDirection = 'asc'; // Dirección de ordenamiento: 'asc' o 'desc'
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Cargar avatar al inicio
-    const avatarURL = sessionStorage.getItem('avatar');
-    if (avatarURL) {
-        const avatarEl = document.getElementById('avatar');
-        if (avatarEl) avatarEl.src = avatarURL;
-    }
-
-    const toggleSidebarBtn = document.getElementById('toggleSidebar');
-    if (toggleSidebarBtn) {
-        toggleSidebarBtn.addEventListener('click', function () {
-            document.body.classList.toggle('sidebar-collapsed');
-        });
-    }
 
     // Referencias a los elementos del DOM
     const idBoletaInput = document.getElementById('idBoletaFilter');

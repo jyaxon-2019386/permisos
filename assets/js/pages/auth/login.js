@@ -23,14 +23,14 @@ export async function login() {
             sessionStorage.setItem('usuario', data.usuario);
             sessionStorage.setItem('nombre', data.nombre);
             sessionStorage.setItem('idUsuario', data.idUsuario);
-            sessionStorage.setItem('puesto', data.puesto); // 👈 Guardamos el rol/puesto
-            sessionStorage.setItem('departamento', data.idDepartamentoP); // 👈 Guardamos el departamento
+            sessionStorage.setItem('puesto', data.puesto); 
+            sessionStorage.setItem('departamento', data.idDepartamentoP);
 
             const avatar = `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(data.usuario)}`;
             sessionStorage.setItem('avatar', avatar);
 
             setTimeout(() => {
-                window.location.href = "../../../pages/dashboards/main.html";
+                window.location.href = "../../../pages/ticket/new-ticket.html";
             }, 750);
 
             return true;

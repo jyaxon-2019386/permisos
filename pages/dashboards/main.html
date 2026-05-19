@@ -3,8 +3,9 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=../ticket/new-ticket.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard PERMISOS</title>
+    <title>Dashboard</title>
     <link rel="icon" type="image/png" href="../../assets/img/icons/favicon-16x16.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,6 +14,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
+    <style>
+        .sidebar-menu .submenu { display: none; list-style: none; padding-left: 12px; margin: 0; }
+        .sidebar-menu .submenu li a { display: block; padding: 8px 12px; color: inherit; text-decoration: none; }
+        .sidebar-menu .submenu.show { display: block; }
+        .sidebar-menu .menu-item > a { display:flex; align-items:center; justify-content:space-between; }
+        .fa-chevron-down.rotated { transform: rotate(180deg); transition: transform 0.2s; }
+    </style>
 </head>
 
 <body>
@@ -22,10 +30,21 @@
         </div>
         <ul class="sidebar-menu">
             <li><a href="./main.html" class="active"><i class="fa fa-home"></i> Inicio</a></li>
-            <li><a href="../../pages/ticket/new-ticket.html"><i class="fa fa-plus"></i> Nueva Solicitud</a></li>
+            <!-- <li><a href="../../pages/ticket/new-ticket.html"><i class="fa fa-plus"></i> Nueva Solicitud</a></li> -->
+            <li class="menu-item" id="permitsMenu">
+                <a href="#" id="permitsToggle"><i class="fa fa-door-open"></i> Permisos de Salida <i class="fa fa-chevron-down" style="float:right;"></i></a>
+                <ul class="submenu" id="permitsSubmenu">
+                    <li><a href="../ticket/add-ticket-vacation.html">Boletas Vacaciones</a></li>
+                    <li><a href="../ticket/ticket-time.html">Boletas Reposición de Tiempo</a></li>
+                    <li><a href="../ticket/special-ticket.html">Falta Justificada</a></li>
+                    <li><a href="../ticket/igss-ticket.html">Consulta IGSS</a></li>
+                    <li><a href="../ticket/igss-off-ticket.html">Suspensión IGSS</a></li>
+                    <li><a href="../ticket/sanction-ticket.html">Sanción</a></li>
+                </ul>
+            </li>
             <li id="authorizedTickets"><a href="../ticket/ticket.html"><i class="fa fa-folder-closed"></i>Boletas Autorizadas</a></li>
             <li id="authorizedAllTickets"><a href="../ticket/authorized-ticket.html"><i class="fa fa-folder-open"></i>Autorizar Boletas</a></li>
-            <li id="myTicket"><a href="../ticket/my-ticket.html"><i class="fa fa-folder"></i>Mis Boletas</a></li>
+            <!-- <li id="myTicket"><a href="../ticket/my-ticket.html"><i class="fa fa-folder"></i>Mis Boletas</a></li> -->
             <li><a href="../../pages/pages/profile/profile.html"><i class="fa fa-user"></i> Mi Perfil</a></li>
         </ul>
         <div class="sidebar-footer">
@@ -81,7 +100,7 @@
 
             <div class="recommended-section">
                 <div class="recommended-cards">
-                    <div class="recommended-card">
+                    <!-- <div class="recommended-card">
                         <div class="card-icon create">
                             <i class="fa fa-plus-square"></i>
                         </div>
@@ -94,7 +113,7 @@
                                 <i class="fa fa-plus"></i> Iniciar
                             </button>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="recommended-card" id="authorizedTicketsAction">
                         <div class="card-icon view">
@@ -111,7 +130,7 @@
                         </div>
                     </div>
 
-                    
+<!--                     
 
                     <div class="recommended-card">
                         <div class="card-icon view">
@@ -126,7 +145,7 @@
                                 <i class="fa fa-eye"></i> Ver
                             </button>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="recommended-card">
                         <div class="card-icon view">

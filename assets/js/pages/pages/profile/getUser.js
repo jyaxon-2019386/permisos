@@ -71,31 +71,7 @@ function mostrarError(msg) {
 }
 
 
-// Carga el avatar del usuario desde sessionStorage
-document.addEventListener("DOMContentLoaded", function () { 
-  const avatarURL = sessionStorage.getItem('avatar');
-  if (avatarURL) {
-    const avatarEl = document.getElementById('avatar');
-    if (avatarEl) {
-      avatarEl.src = avatarURL;
-    }
-  }
 
-  const toggleSidebarBtn = document.getElementById('toggleSidebar');
-    if (toggleSidebarBtn) {
-        toggleSidebarBtn.addEventListener('click', function () {
-            document.body.classList.toggle('sidebar-collapsed');
-        });
-    }
-    
-});
-
-function logout() {
-    sessionStorage.clear('usuario');
-    sessionStorage.clear('avatar');
-    sessionStorage.clear('id_usuario');
-    window.location.href = '../../authentication/signin/login.html';
-}
 
 // Llama directamente a getUser cuando cargue la página
 window.addEventListener('DOMContentLoaded', getUser);

@@ -1,6 +1,28 @@
 <?php
 require_once ('../configs/server.php'); // Incluye las configuraciones del servidor y SWITCH / CASE
 
+
+/**
+ * Devuelve el nombre de la tabla de base de datos correspondiente a un tipo de boleta.
+ * Esto actúa como una "lista blanca" para la seguridad.
+ * @param string $tipoBoleta - El identificador del tipo de boleta (ej. 'getTicketTimeAuthorized').
+ * @return string|null - El nombre de la tabla o null si el tipo no es válido.
+ */
+function getTableNameFromType($tipoBoleta) {
+
+    $mapaDeTablas = [
+        'getTicketVacationAuthorized'       => 'BoletaVacaciones',
+        'getTicketTimeAuthorized'           => 'BoletaReposicion',
+        'getTicketJustificationAuthorized'  => 'BoletaEspecial',
+        'getTicketRequestIGSSAuthorized'    => 'BoletaConsultaIGSS',
+        'getUserTicketOffIGSSAuthorized'    => 'BoletaSuspencionIGSS',
+        'getUserOffAuthorized'              => 'BoletaSancion'
+    ];
+
+    // Devuelve el nombre de la tabla si existe en el mapa, si no, devuelve null.
+    return isset($mapaDeTablas[$tipoBoleta]) ? $mapaDeTablas[$tipoBoleta] : null;
+}
+
 switch ($request_method) {
     case 'GET':
         switch ($quest) {
@@ -977,41 +999,41 @@ switch ($request_method) {
                     $idSolicitante = isset($_GET['idSolicitante']) ? trim($_GET['idSolicitante']) : '';
 
                     $sql = "SELECT 
-                b.idBoleta, 
-                CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
-                u.nombre AS Solicitante, 
-                u.puesto AS Puesto,
-                u.idEmpresa AS Empresa,
-                e.idEstado AS Estado, 
-                b.fecha1 AS fecha1,
-                b.fecha2 AS fecha2,
-                b.fecha3 AS fecha3,
-                b.fecha4 AS fecha4,
-                b.fecha5 AS fecha5,
-                
-                b.desc1A AS Detalle1,
-                b.desc2A AS Detalle2,
-                b.desc3A AS Detalle3,
-                b.desc4A AS Detalle4,
-                b.desc5A AS Detalle5,
+                        b.idBoleta, 
+                        CONVERT(VARCHAR(10), b.fechaSolicitud, 103) AS FechaDeCreacion, 
+                        u.nombre AS Solicitante, 
+                        u.puesto AS Puesto,
+                        u.idEmpresa AS Empresa,
+                        e.idEstado AS Estado, 
+                        b.fecha1 AS fecha1,
+                        b.fecha2 AS fecha2,
+                        b.fecha3 AS fecha3,
+                        b.fecha4 AS fecha4,
+                        b.fecha5 AS fecha5,
+                        
+                        b.desc1A AS Detalle1,
+                        b.desc2A AS Detalle2,
+                        b.desc3A AS Detalle3,
+                        b.desc4A AS Detalle4,
+                        b.desc5A AS Detalle5,
 
-                b.observaciones1 AS observaciones1,
-                b.observaciones2 AS observaciones2,
-                b.observaciones3 AS observaciones3,
-                b.observaciones4 AS observaciones4,
-                b.totalH AS totalHoras,
-                b.fecha_actualizado AS FechaActualizado
-                FROM 
-                    BoletaEspecial b
-                INNER JOIN 
-                    Estado e ON b.idEstado = e.idEstado
-                INNER JOIN 
-                    Usuario u ON b.idSolicitante = u.idUsuario
-                
-                WHERE 
-                    b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?
+                        b.observaciones1 AS observaciones1,
+                        b.observaciones2 AS observaciones2,
+                        b.observaciones3 AS observaciones3,
+                        b.observaciones4 AS observaciones4,
+                        b.totalH AS totalHoras,
+                        b.fecha_actualizado AS FechaActualizado
+                        FROM 
+                            BoletaEspecial b
+                        INNER JOIN 
+                            Estado e ON b.idEstado = e.idEstado
+                        INNER JOIN 
+                            Usuario u ON b.idSolicitante = u.idUsuario
+                        
+                        WHERE 
+                            b.idDepartamento = ? and b.idEstado in (1,2,3) and b.idSolicitante <> ?
 
-                ORDER BY b.idBoleta DESC";
+                        ORDER BY b.idBoleta DESC";
 
                     $stmt = odbc_prepare($con, $sql);
 
@@ -1228,6 +1250,184 @@ switch ($request_method) {
             
     case 'POST':
         switch ($quest) {
+            case 'BULK_UPDATE_STATE':
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                    header("HTTP/1.1 405 Method Not Allowed");
+                    echo json_encode(['success' => false, 'error' => 'Método no permitido.']);
+                    exit;
+                }
+
+                $data = json_decode(file_get_contents('php://input'), true);
+
+                if (!isset($data['tickets']) || !is_array($data['tickets']) || empty($data['tickets']) || !isset($data['idEstado'])) {
+                    header("HTTP/1.1 400 Bad Request");
+                    echo json_encode(['success' => false, 'error' => 'Faltan datos requeridos o el formato es incorrecto.']);
+                    exit;
+                }
+
+                if (!isset($_SESSION['idUsuario'])) {
+                    header("HTTP/1.1 401 Unauthorized");
+                    echo json_encode(['success' => false, 'error' => 'No se ha iniciado sesión.']);
+                    exit;
+                }
+
+                $idAutorizador = $_SESSION['idUsuario'];
+                $fechaActualizado = date('Y-m-d H:i:s');
+                $idEstado = filter_var($data['idEstado'], FILTER_VALIDATE_INT);
+                $comentario = isset($data['comentario']) ? trim($data['comentario']) : '';
+                $comentario_seguro = str_replace("'", "''", $comentario);
+
+                $successCount = 0;
+                $failCount = 0;
+
+                foreach ($data['tickets'] as $ticket) {
+                    if (!isset($ticket['idBoleta']) || !isset($ticket['tipoBoleta'])) {
+                        $failCount++;
+                        continue;
+                    }
+
+                    $tableName = getTableNameFromType($ticket['tipoBoleta']);
+                    $idBoleta = filter_var($ticket['idBoleta'], FILTER_VALIDATE_INT);
+
+                    if (!$tableName || !$idBoleta) {
+                        $failCount++;
+                        continue;
+                    }
+
+                    $sql = "UPDATE $tableName SET 
+                                idEstado = $idEstado, 
+                                observaciones1 = '$comentario_seguro', 
+                                idJefe = $idAutorizador, 
+                                fecha_actualizado = CONVERT(datetime, '$fechaActualizado', 120)
+                            WHERE 
+                                idBoleta = $idBoleta AND idEstado in (1, 2, 3)"; // Solo actualiza si está pendiente (idEstado = 1)
+
+                    $result = odbc_exec($con, $sql);
+
+                    if ($result && odbc_num_rows($result) > 0) {
+                        $successCount++;
+
+                        if ($idEstado == 4 && $tableName === 'BoletaVacaciones') {
+                            $sqlGetDias = "SELECT totalD, idSolicitante FROM BoletaVacaciones WHERE idBoleta = $idBoleta";
+                            $resDias = odbc_exec($con, $sqlGetDias);
+                            
+                            if ($resDias && odbc_fetch_row($resDias)) {
+                                $diasDescontar = (float) odbc_result($resDias, 'totalD');
+                                $idUsuarioSolicitante = odbc_result($resDias, 'idSolicitante');
+
+                                if ($diasDescontar > 0 && $idUsuarioSolicitante) {
+                                    $sqlUpdateSaldos = "UPDATE Usuario SET vacaciones = vacaciones - $diasDescontar WHERE idUsuario = $idUsuarioSolicitante";
+                                    odbc_exec($con, $sqlUpdateSaldos);
+                                }
+                            }
+                        }
+
+                    } else {
+                        $failCount++;
+                    }
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Proceso de autorización masiva finalizado.',
+                    'successCount' => $successCount,
+                    'failCount' => $failCount
+                ]);
+
+            break;
+            case 'putTicketStateVacation':
+                // 1. VERIFICAR MÉTODO HTTP
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                    header("HTTP/1.1 405 Method Not Allowed");
+                    echo json_encode(['success' => false, 'error' => 'Método no permitido.']);
+                    exit;
+                }
+
+                // 2. OBTENER DATOS
+                $data = json_decode(file_get_contents('php://input'), true);
+
+                // 3. VALIDAR DATOS DE ENTRADA (ahora incluye tipoBoleta)
+                if (!isset($data['idBoleta'], $data['idEstado'], $data['tipoBoleta'])) {
+                    header("HTTP/1.1 400 Bad Request");
+                    echo json_encode(['success' => false, 'error' => 'Faltan datos requeridos (idBoleta, idEstado, tipoBoleta).']);
+                    exit;
+                }
+
+                // 4. OBTENER EL NOMBRE DE LA TABLA DE FORMA SEGURA
+                $tableName = getTableNameFromType($data['tipoBoleta']);
+                if (!$tableName) {
+                    header("HTTP/1.1 400 Bad Request");
+                    echo json_encode(['success' => false, 'error' => 'El tipo de boleta proporcionado no es válido.']);
+                    exit;
+                }
+
+                // 5. ASIGNAR Y SANITIZAR VARIABLES
+                $idBoleta = filter_var($data['idBoleta'], FILTER_VALIDATE_INT);
+                $idEstado = filter_var($data['idEstado'], FILTER_VALIDATE_INT);
+                $comentario = isset($data['comentario']) ? trim($data['comentario']) : '';
+                $comentario_seguro = str_replace("'", "''", $comentario);
+
+                if (!isset($_SESSION['idUsuario'])) {
+                    header("HTTP/1.1 401 Unauthorized");
+                    echo json_encode(['success' => false, 'error' => 'No se ha iniciado sesión.']);
+                    exit;
+                }
+                $idAutorizador = $_SESSION['idUsuario'];
+                $fechaActualizado = date('Y-m-d H:i:s');
+
+                if (!$idBoleta || !$idEstado) {
+                    header("HTTP/1.1 400 Bad Request");
+                    echo json_encode(['success' => false, 'error' => 'Datos inválidos.']);
+                    exit;
+                }
+
+                // 6. CONSTRUIR Y EJECUTAR LA CONSULTA SQL DINÁMICA
+                // El nombre de la tabla ($tableName) ahora es una variable segura.
+                // Se asume que todas tus tablas de boletas tienen estas columnas.
+                $sql = "UPDATE $tableName SET 
+                            idEstado = $idEstado, 
+                            observaciones1 = '$comentario_seguro', 
+                            idJefe = $idAutorizador, 
+                            fecha_actualizado = CONVERT(datetime, '$fechaActualizado', 120)
+                        WHERE 
+                            idBoleta = $idBoleta";
+
+                $result = odbc_exec($con, $sql);
+
+                /// 7. VERIFICAR EL RESULTADO Y ENVIAR RESPUESTA
+                if ($result) {
+                    $filas_afectadas = odbc_num_rows($result);
+                    if ($filas_afectadas > 0) {
+                        
+                        // --- INICIO LÓGICA DESCUENTO DE VACACIONES ---
+                        if ($idEstado == 4 && $tableName === 'BoletaVacaciones') {
+                            // Obtener los días solicitados y el ID del solicitante de la boleta recién autorizada
+                            $sqlGetDias = "SELECT totalD, idSolicitante FROM BoletaVacaciones WHERE idBoleta = $idBoleta";
+                            $resDias = odbc_exec($con, $sqlGetDias);
+                            
+                            if ($resDias && odbc_fetch_row($resDias)) {
+                                $diasDescontar = (float) odbc_result($resDias, 'totalD');
+                                $idUsuarioSolicitante = odbc_result($resDias, 'idSolicitante');
+
+                                if ($diasDescontar > 0 && $idUsuarioSolicitante) {
+                                    // Descontar los días en la tabla Usuario
+                                    $sqlUpdateSaldos = "UPDATE Usuario SET vacaciones = vacaciones - $diasDescontar WHERE idUsuario = $idUsuarioSolicitante";
+                                    odbc_exec($con, $sqlUpdateSaldos);
+                                }
+                            }
+                        }
+                        // --- FIN LÓGICA DESCUENTO DE VACACIONES ---
+
+                        echo json_encode(['success' => true, 'message' => "Boleta de tipo '$tableName' actualizada."]);
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'No se encontró la boleta o no se realizaron cambios.']);
+                    }
+                } else {
+                    header("HTTP/1.1 500 Internal Server Error");
+                    echo json_encode(['success' => false, 'error' => 'Error en la base de datos: ' . odbc_errormsg($con)]);
+                }
+                
+            break; // Fin del case
             case 'postTicketVacations': // Crear boleta de vacaciones
 
                 function limpiarTexto($texto) {
@@ -2282,68 +2482,6 @@ switch ($request_method) {
                         "success" => false,
                         "message" => "Error al actualizar la boleta."
                     ]);
-                }
-
-            break;
-            
-            case 'putTicketStateVacation': // ACTUALIZAR BOLETAS DE VACACIONES
-                $idBoleta = isset($data['idBoleta']) ? intval($data['idBoleta']) : 0;
-                $nuevoEstado = isset($data['nuevoEstado']) ? intval($data['nuevoEstado']) : -1;
-
-                if ($idBoleta <= 0 || $nuevoEstado < 0) {
-                    http_response_code(400);
-                    echo json_encode(["error" => "Datos incompletos o inválidos para actualizar la boleta"]);
-                    break;
-                }
-
-                // Validar que solo se permita estado 12 o 13
-                if (!in_array($nuevoEstado, [4, 13])) {
-                    http_response_code(400);
-                    echo json_encode([
-                        "error" => "Estado no permitido. Solo se aceptan los valores 12 o 13."
-                    ]);
-                    break;
-                }
-
-                // 1. Obtener el estado actual
-                $sqlEstado = "SELECT idEstado FROM BoletaVacaciones WHERE idBoleta = $idBoleta";
-                $resEstado = odbc_exec($con, $sqlEstado);
-
-                if (!$resEstado || !odbc_fetch_row($resEstado)) {
-                    http_response_code(404);
-                    echo json_encode(["error" => "No se encontró la boleta con ID $idBoleta."]);
-                    break;
-                }
-
-                $estadoActual = intval(odbc_result($resEstado, 'idEstado'));
-
-                // 2. Verificar si ya tiene el mismo estado
-                if ($estadoActual === $nuevoEstado) {
-                    http_response_code(409); // Conflicto
-                    echo json_encode([
-                        "error" => "La boleta ya tiene el estado especificado.",
-                        "estadoActual" => $estadoActual
-                    ]);
-                    break;
-                }
-
-                // 3. Actualizar si es diferente
-                $sql = "UPDATE BoletaVacaciones 
-                        SET idEstado = $nuevoEstado, fecha_actualizado = GETDATE() 
-                        WHERE idBoleta = $idBoleta";
-
-                $exec = odbc_exec($con, $sql);
-
-                if ($exec) {
-                    http_response_code(200);
-                    echo json_encode([
-                        "success" => true,
-                        "message" => "Boleta actualizada correctamente.",
-                        "idBoleta" => $idBoleta
-                    ]);
-                } else {
-                    http_response_code(500);
-                    echo json_encode(["success" => false, "message" => "Error al ejecutar la actualización."]);
                 }
 
             break;

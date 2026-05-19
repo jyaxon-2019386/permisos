@@ -1,18 +1,6 @@
 import { notyf } from '../../../plugins/notify.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
-    // --- Basic UI Setup ---
-    const avatarURL = sessionStorage.getItem('avatar');
-    if (avatarURL) {
-        const avatarEl = document.getElementById('avatar');
-        if (avatarEl) avatarEl.src = avatarURL;
-    }
-
-    const toggleSidebarBtn = document.getElementById('toggleSidebar');
-    if (toggleSidebarBtn) {
-        toggleSidebarBtn.addEventListener('click', () => document.body.classList.toggle('sidebar-collapsed'));
-    }
-
     // --- Form Element Selectors ---
     const igssForm = document.getElementById('igssForm');
     const container = document.getElementById('igssEntriesContainer');
@@ -265,10 +253,3 @@ async function postTicketIgss(data) {
         notyf.error('Error de conexión: ' + error.message);
     }
 }
-
-function logout() {
-    sessionStorage.clear();
-    window.location.href = '../../pages/authentication/signin/login.html';
-}
-
-window.logout = logout;

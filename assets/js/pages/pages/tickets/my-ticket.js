@@ -1,20 +1,6 @@
 let dataTableInstance;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Cargar avatar al inicio
-    const avatarURL = sessionStorage.getItem('avatar');
-    if (avatarURL) {
-        const avatarEl = document.getElementById('avatar');
-        if (avatarEl) avatarEl.src = avatarURL;
-    }
-
-    // Funcionalidad para la barra lateral
-    const toggleSidebarBtn = document.getElementById('toggleSidebar');
-    if (toggleSidebarBtn) {
-        toggleSidebarBtn.addEventListener('click', function () {
-            document.body.classList.toggle('sidebar-collapsed');
-        });
-    }
 
     const tipoBoletaSelect = document.getElementById('tipoBoletaFilter');
 
@@ -630,13 +616,3 @@ function getNombreTipoBoleta(quest) {
     };
     return types[quest] || 'Desconocido';
 }
-
-// Función para cerrar sesión y redirigir al login
-function logout() {
-    sessionStorage.clear('usuario');
-    sessionStorage.clear('avatar');
-    sessionStorage.clear('id_usuario');
-    window.location.href = '../../pages/authentication/signin/login.html';
-}
-
-window.logout = logout; // Exponer la función de logout globalmente
